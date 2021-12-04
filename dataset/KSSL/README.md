@@ -1,4 +1,4 @@
-SoilSpectroscopy.org: Kellogg Soil Survey Laboratory (KSSL)
+Dataset import: Kellogg Soil Survey Laboratory (KSSL)
 ================
 Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman (<jsanderman@woodwellclimate.org>)
 26 November, 2021
@@ -18,7 +18,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2021-11-26
+Last update: 2021-11-26  
 Dataset: [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
 The USDA-NRCS Kellogg Soil Survey Laboratory has a large and growing
@@ -946,9 +946,9 @@ doi:[10.1002/saj2.20009](https://doi.org/10.1002/saj2.20009)
 <div id="ref-wijewardane2018predicting">
 
 Wijewardane, N. K., Ge, Y., Wills, S., & Libohova, Z. (2018). Predicting
-physical and chemical properties of us soils with a mid-infrared
+physical and chemical properties of US soils with a mid-infrared
 reflectance spectral library. *Soil Science Society of America Journal*,
-*82*(3), 722–731.
+*82*(3), 722–731. doi:[10.2136/sssaj2017.10.0361](https://doi.org/10.2136/sssaj2017.10.0361)
 
 </div>
 
