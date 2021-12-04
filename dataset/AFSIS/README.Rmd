@@ -1,0 +1,330 @@
+---
+title: "Dataset import: Africa Soil Information Service (AfSIS-I) SSL"
+author: "Tomislav Hengl (tom.hengl@opengeohub.org) and Jonathan Sanderman (jsanderman@woodwellclimate.org)"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  github_document:
+    toc: true
+    toc_depth: 4
+bibliography: ../../tex/refs.bib
+csl: ../../tex/apa.csl  
+fig_caption: yes
+link-citations: yes
+twitter-handle: soilspec
+header-includes:
+- \usepackage{caption}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+[<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
+
+[<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />](http://creativecommons.org/licenses/by-sa/4.0/)
+
+This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
+
+
+```{r, include=FALSE}
+library(captioner)
+fig_nums <- captioner(prefix = "Fig.")
+```
+
+## AfSIS-1 inputs
+
+Part of: <https://github.com/soilspectroscopy>  
+Project: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)  
+Last update: `r Sys.Date()`  
+Dataset: [AFSIS1.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis1.ssl)
+
+```{r, include=FALSE}
+options(warn=0)
+```
+
+Mid-Infrared Spectra (MIRS) from AfSIS1 Soil and Plant Spectroscopy Laboratory Africa Soil Information Service (AfSIS) Phase I 2009-2013. Described in detail in @towett2015total and @Vagen_2020.
+
+The dataset has two versions one published via the [World Agroforestry website](https://doi.org/10.34725/DVN/QXCWP1), one via AWS (<https://registry.opendata.aws/afsis/>). A copy of AfSIS SSL data is also available via <https://github.com/laura-summerauer/ssl-central-africa>.
+
+```{r, echo=FALSE}
+#library(devtools)
+#install_github('barkasn/fastSave')
+ls <- c("vroom", "Hmisc", "R.utils", "plyr", "rgdal", "terra", "dplyr", "data.table", "ggplot2", 
+        "devtools", "tidyverse", "DescTools", "fastSave", "olctools", "uuid", "prospectr", "measurements")
+new.packages <- ls[!(ls %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+x = lapply(ls, require, character.only = TRUE)
+```
+
+Directory/folder path
+
+```{r}
+dir = "/mnt/soilspec4gg/ossl/dataset/AFSIS/"
+```
+
+```{r, echo=FALSE, eval=FALSE}
+#load.pigz(paste0(dir, "afsis1.RData"))
+source("../../R-code/functions/SSL_functions.R")
+```
+
+## Data import
+
+### Soil site and laboratory data import:
+
+```{r}
+afsis1.xy = read.csv("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/2009-2013/Georeferences/georeferences.csv")
+afsis1.xy$observation.date.begin_iso.8601_yyyy.mm.dd = "2011-12-01"
+afsis1.xy$observation.date.end_iso.8601_yyyy.mm.dd = "2013-12-01"
+afsis1.lst = list.files("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/2009-2013/Wet_Chemistry", pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
+afsis1.hor = plyr::rbind.fill(lapply(afsis1.lst, read.csv))
+tansis.xy = read.csv("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/tansis/Georeferences/georeferences.csv")
+#summary(tansis.xy$Sampling.date)
+tansis.xy$observation.date.begin_iso.8601_yyyy.mm.dd = "2018-01-01"
+tansis.xy$observation.date.end_iso.8601_yyyy.mm.dd = "2018-12-01"
+tansis.lst = list.files("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/tansis/Wet_Chemistry", pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
+tansis.hor = plyr::rbind.fill(lapply(tansis.lst, read.csv))
+afsis1t.df = plyr::rbind.fill(list(plyr::join(afsis1.hor, afsis1.xy, by="SSN"), plyr::join(tansis.hor, tansis.xy, by="SSN")))
+afsis1t.df$layer.upper.depth_usda_cm = ifelse(afsis1t.df$Depth=="sub", 20, 0)
+afsis1t.df$layer.lower.depth_usda_cm = ifelse(afsis1t.df$Depth=="sub", 50, 20)
+afsis1t.df$layer.sequence_usda_uint16 = ifelse(afsis1t.df$Depth=="sub", 2, 1)
+afsis1t.df$oc_usda.calc_wpct = rowMeans(afsis1t.df[,c("C...Org", "X.C")], na.rm=TRUE) 
+afsis1t.df$n.tot_usda.4h2_wpct = rowMeans(afsis1t.df[,c("Total.nitrogen", "X.N")], na.rm=TRUE) 
+afsis1t.df$ph.h2o_usda.4c1_index = rowMeans(afsis1t.df[,c("PH", "pH")], na.rm=TRUE)
+## remove empty columns:
+afsis1t.df = afsis1t.df[,-which(sapply(afsis1t.df, function(i){sum(!is.na(i))<100}))]
+```
+
+#### Soil lab information
+
+Harmonization function:
+
+```{r}
+in.name = c("Psa.w4clay", "Psa.w4silt", "Psa.w4sand", "ExAc",
+            "M3.P", "M3.Zn", "M3.Ca", "M3.Mg", "M3.Na", "M3.K", "EC", "oc_usda.calc_wpct", 
+            "n.tot_usda.4h2_wpct", "ph.h2o_usda.4c1_index", "layer.upper.depth_usda_cm", 
+            "layer.lower.depth_usda_cm", "layer.sequence_usda_uint16", "Latitude", "Longitude",
+            "Scientist")
+#in.name[which(!in.name %in% names(afsis1t.df))]
+afsis1.yw = as.data.frame(afsis1t.df[,in.name])
+out.name = c("clay.tot_usda.3a1_wpct", "silt.tot_usda.3a1_wpct",
+             "sand.tot_usda.3a1_wpct", "al.kcl_usda.4b3_cmolkg", "p.ext_usda.4d6_mgkg", 
+             "zn.meh3_usda.4d6_mgkg", "ca.meh3_usda.4d6_mgkg", "mg.meh3_usda.4d6_mgkg",
+             "na.meh3_usda.4d6_mgkg", "k.meh3_usda.4d6_mgkg", "ec.w_usda.4f1_dsm", "oc_usda.calc_wpct", 
+            "n.tot_usda.4h2_wpct", "ph.h2o_usda.4c1_index", "layer.upper.depth_usda_cm", 
+            "layer.lower.depth_usda_cm", "layer.sequence_usda_uint16", "latitude_wgs84_dd", "longitude_wgs84_dd",
+            "surveyor.title_utf8_txt")
+## compare values
+summary(afsis1.yw$Latitude)
+fun.lst = as.list(rep("x*1", length(in.name)))
+fun.lst[[which(in.name=="Scientist")]] = "paste(x)"
+## save translation rules:
+#View(data.frame(in.name, out.name, unlist(fun.lst)))
+write.csv(data.frame(in.name, out.name, unlist(fun.lst)), "./afsis1_soilab_transvalues.csv")
+afsis1.soil = transvalues(afsis1.yw, out.name, in.name, fun.lst)
+afsis1.soil$id.layer_local_c = afsis1t.df$SSN
+#summary(duplicated(afsis1.soil$id.layer_local_c))
+```
+
+Exporting the table:
+
+```{r}
+afsis1.soil$id.layer_uuid_c = openssl::md5(make.unique(paste0(afsis1.soil$id.layer_local_c)))
+afsis1.soil$sample.doi_idf_c = "10.1016/j.geodrs.2015.06.002"
+afsis1.soil$sample.contact.name_utf8_txt = "Keith Shepherd"
+afsis1.soil$sample.contact.email_ietf_email = "afsis.info@africasoils.net"
+x.na = soilab.name[which(!soilab.name %in% names(afsis1.soil))]
+if(length(x.na)>0){ for(i in x.na){ afsis1.soil[,i] <- NA } }
+soilab.rds = paste0(dir, "ossl_soillab_v1.rds")
+if(!file.exists(soilab.rds)){
+  saveRDS.gz(afsis1.soil[,soilab.name], soilab.rds)
+}
+```
+
+#### Soil site information
+
+```{r}
+afsis1.site = as.data.frame(afsis1.soil[,c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm", 
+                                           "layer.sequence_usda_uint16", "latitude_wgs84_dd", "longitude_wgs84_dd",
+                                           "surveyor.title_utf8_txt", "id.layer_local_c")])
+afsis1.site$id.location_olc_c = olctools::encode_olc(afsis1.site$latitude_wgs84_dd, afsis1.site$longitude_wgs84_dd, 10)
+```
+
+Exporting the table:
+
+```{r}
+afsis1.site$id.layer_uuid_c = openssl::md5(make.unique(paste0(afsis1.site$id.layer_local_c)))
+afsis1.site$observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library'
+afsis1.site$observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io'
+afsis1.site$dataset.title_utf8_txt = "Africa Soil Information Service (AfSIS-1)"
+afsis1.site$surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya"
+afsis1.site$dataset.code_ascii_c = "AFSIS1.SSL"
+afsis1.site$location.method_any_c = "GPS"
+afsis1.site$location.error_any_m = 30
+afsis1.site$observation.date.begin_iso.8601_yyyy.mm.dd = as.Date("1996-11-01")
+afsis1.site$observation.date.end_iso.8601_yyyy.mm.dd = as.Date("2006-11-01")
+afsis1.site$dataset.license.title_ascii_txt = "ODC Open Database License" 
+afsis1.site$dataset.license.address_idn_url = "https://opendatacommons.org/licenses/odbl/"
+afsis1.site$dataset.address_idn_url = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya"
+afsis1.site$dataset.owner_utf8_txt = "the World Agroforestry Centre (ICRAF), Crop Nutrition Laboratory Services Ltd. (CROPNUTS), and Rothamsted Research (RRES)"
+afsis1.site$dataset.contact.name_utf8_txt = "Keith Shepherd"
+afsis1.site$dataset.contact_ietf_email = "afsis.info@africasoils.net"
+x.na = site.name[which(!site.name %in% names(afsis1.site))]
+if(length(x.na)>0){ for(i in x.na){ afsis1.site[,i] <- NA } }
+soilsite.rds = paste0(dir, "ossl_soilsite_v1.rds")
+if(!file.exists(soilsite.rds)){
+  saveRDS.gz(afsis1.site[,site.name], soilsite.rds)
+}
+```
+
+
+### Mid-infrared spectroscopy data
+
+Mid-infrared (MIR) soil spectroscopy raw data (<https://doi.org/10.34725/DVN/QXCWP1>):
+
+```{r}
+mir.afsis1.lst = list.files(paste0(dir, "afsis_mir_2013"), pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
+afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
+dim(afsis1.mir)
+## 18257  1753
+## an independent copy:
+#afsis1.mir2 = vroom::vroom("/mnt/diskstation/data/ossl/dataset/CASSL/spectra_data/afsis_sectra.csv")
+#str(which(!afsis1.mir2$sample_id %in% afsis1.mir$SSN))
+```
+
+Add the [Universal Unique
+Identifier](https://cran.r-project.org/web/packages/uuid/) (UUI):
+
+```{r}
+afsis1.mir$id.scan_uuid_c = openssl::md5(make.unique(paste0("AFSIS.SSL", afsis1.mir$SSN)))
+```
+
+Resampling the MIR spectra from the original window size to 2 cm-1 in `afsis1.abs`.
+This operation can be time-consuming:
+
+```{r}
+sel.abs = names(afsis1.mir)[grep("^m", names(afsis1.mir))]
+## 1749
+afsis1.mir$id.scan_local_c = paste(afsis1.mir$Country, afsis1.mir$Num, sep="_")
+afsis1.abs = afsis1.mir[,c("id.scan_uuid_c", "SSN", "id.scan_local_c", sel.abs)]
+na.lst = rowSums(afsis1.abs[,sel.abs])
+str(which(is.na(na.lst)))
+## several incomplete scans
+afsis1.abs = afsis1.abs[-which(is.na(na.lst)),]
+dim(afsis1.abs)
+```
+
+
+```{r}
+wav.mir = as.numeric(gsub("m", "", sel.abs)) # Get wavelength only
+#summary(wav.mir)
+# Creating a matrix with only spectral values to resample it
+afsis1.mir.spec = as.matrix(afsis1.abs[,sel.abs])
+colnames(afsis1.mir.spec) = wav.mir
+rownames(afsis1.mir.spec) = afsis1.abs$id.scan_uuid_c
+## remove values out of range
+afsis1.mir = prospectr::resample(afsis1.mir.spec, wav.mir, seq(600, 4000, 2)) 
+## Error in splinefun(x = wav, y = x) : zero non-NA points
+afsis1.mir = as.data.frame(afsis1.mir)
+mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
+colnames(afsis1.mir) = mir.n
+#dim(afsis1.mir)
+#summary(afsis1.mir$scan_mir.602_abs)
+```
+
+Remove values out of range:
+
+```{r}
+afsis1.mir.f = parallel::mclapply(afsis1.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, NA, j))*1000) }, mc.cores=80)
+afsis1.mir.f = as.data.frame(do.call(cbind, afsis1.mir.f))
+#str(names(afsis1.mir.f))
+afsis1.mir.f$id.scan_uuid_c = rownames(afsis1.mir)
+```
+
+Plotting MIR spectra to see if there are still maybe negative values in the table:
+
+```{r}
+matplot(y=as.vector(t(afsis1.mir.f[250,mir.n])), x=seq(600, 4000, 2),
+        ylim = c(0,3000),
+        type = 'l', 
+        xlab = "Wavelength", 
+        ylab = "Absorbance"
+        )
+```
+
+Export final MIR table:
+
+```{r}
+afsis1.mir.f$id.layer_local_c = plyr::join(afsis1.mir.f["id.scan_uuid_c"], afsis1.abs[c("id.scan_uuid_c","SSN")])$SSN
+afsis1.mir.f$id.scan_local_c = plyr::join(afsis1.mir.f["id.scan_uuid_c"], afsis1.abs[c("id.scan_uuid_c","id.scan_local_c")])$id.scan_local_c
+afsis1.mir.f$id.layer_uuid_c = plyr::join(afsis1.mir.f["id.layer_local_c"], afsis1.soil[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
+summary(is.na(afsis1.mir.f$id.layer_uuid_c))
+## 16346 without soil data
+afsis1.mir.f$model.name_utf8_txt = "Bruker Tensor 27/HTs -XT_FT-IR"
+afsis1.mir.f$model.code_any_c = "Bruker_Tensor_27.HTS.XT"
+afsis1.mir.f$method.light.source_any_c = ""
+afsis1.mir.f$method.preparation_any_c = ""
+afsis1.mir.f$scan.file_any_c = ""
+afsis1.mir.f$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2009-01-01")
+afsis1.mir.f$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2013-12-01")
+afsis1.mir.f$scan.license.title_ascii_txt = "CC-BY"
+afsis1.mir.f$scan.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/"
+afsis1.mir.f$scan.doi_idf_c = "10.34725/DVN/QXCWP1"
+afsis1.mir.f$scan.contact.name_utf8_txt = "Vagen, Tor-Gunnar (World Agroforestry)"
+afsis1.mir.f$scan.contact.email_ietf_email = "afsis.info@africasoils.net"
+#summary(is.na(afsis1.mir.f$id.scan_uuid_c))
+```
+
+Save to RDS file:
+
+```{r}
+x.na = mir.name[which(!mir.name %in% names(afsis1.mir.f))]
+if(length(x.na)>0){ for(i in x.na){ afsis1.mir.f[,i] <- NA } }
+str(afsis1.mir.f[,mir.name[1:24]])
+mir.rds = paste0(dir, "ossl_mir_v1.rds")
+if(!file.exists(mir.rds)){
+  saveRDS.gz(afsis1.mir.f[,mir.name], mir.rds)
+  #arrow::write_parquet(afsis1.mir.f[,mir.name], paste0(dir, "ossl_mir_v1.parquet"))
+}
+#rm(afsis1.mir.spec); rm(afsis1.mir); rm(afsis1.abs)
+#gc()
+```
+
+
+### Quality control
+
+Check if some points don't have any spectral scans:
+
+```{r}
+summary(is.na(afsis1.mir.f$id.scan_uuid_c))
+mis.r = afsis1.mir.f$id.layer_uuid_c %in% afsis1.site$id.layer_uuid_c
+summary(mis.r)
+## some 16,346 scans have no soil data attached to it
+```
+
+
+### Distribution of points
+
+We can plot an world map showing distribution of the sampling locations
+for the AfSIS-1 points.
+
+```{r, afsis1.pnts_sites}
+afsis1.map = NULL
+library(maptools)
+data(wrld_simpl)
+afr = wrld_simpl[wrld_simpl$REGION==2,]
+mapWorld = borders(afr, colour = 'gray50', fill = 'gray50')
+afsis1.map = ggplot() + mapWorld
+afsis1.map = afsis1.map + geom_point(aes(x=afsis1.site$longitude_wgs84_dd, y=afsis1.site$latitude_wgs84_dd), color = 'blue', shape = 18, size=.9) + coord_fixed(ratio=1.1)
+afsis1.map
+```
+
+`r fig_nums("afsis1.pnts_sites", "afsis1-ISRIC locations of sites across the globe.")`
+
+Warning: Removed 167 rows containing missing values (geom_point).
+
+```{r, eval=FALSE}
+#save.image.pigz(file=paste0(dir, "afsis1.RData"), n.cores=32)
+#rmarkdown::render("dataset/AFSIS/README.Rmd")
+```
+
+## References

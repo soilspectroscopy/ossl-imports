@@ -1,0 +1,294 @@
+---
+title: "Importing VNIR KSSL data"
+author: Tomislav Hengl (tom.hengl@opengeohub.org), Wanderson Mendes de Sousa (wanderson.mendes@opengeohub.org)
+  and Leandro Parente (leandro.parente@opengeohub.org)
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Kellogg Soil Survey Laboratory inputs
+Part of: [SoilSpec4GG](https://gitlab.com/soilspec4gg)  
+Project: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  
+Last update:  `r Sys.Date()`  
+Download files: [diskstation.opengeohub.org](http://gofile.me/6J25n/uIkbNZ5jp)  
+
+```{r, include=FALSE}
+options(warn=0)
+```
+
+This R Markdown presents quick and short code to import and the visible and near-infrared spectra from KSSL library. Dataset properties are explained 
+in detail in [@wijewardane2018predicting] and [@sanderman2020mid].
+
+Input datasets:
+
+- `VNIR_Spectral_Library`: Entire folder containing all asd files with VNIR soil spectral reflectances;
+- `KSSL_DB_Access2000.mdb`: original DB as Microsoft Access MDB file;  
+
+For the DB structure and use refer to "Introduction to the KSSL Laboratory Information Management System" contacts: Rich Ferguson & Scarlett Murphy (NRCS USDA).
+
+Loading libraries:
+```{r, echo=FALSE}
+if(!require(Hmisc)){install.packages("Hmisc"); require(Hmisc)}
+if(!require(asdreader)){install.packages("asdreader"); require(asdreader)}
+if(!require(plyr)){install.packages("plyr"); require(plyr)}
+if(!require(dplyr)){install.packages("dplyr"); require(dplyr)}
+
+```
+
+#### Setting the folder path first of all
+
+```{r}
+dir = "/mnt/europa/SoilSpec/SoilSpec4GG/R_Codes/KSSL/"
+```
+
+#### _1. Importing mdb access file:_
+```{r}
+## Importing the access file/ see imported file into KSSL_README is the same as `kssl.df`
+kssl.df = mdb.get(paste(dir, "KSSL_DB_Access2000.mdb", sep = ""))
+names(kssl.df)
+
+```
+
+#### _2. Getting VNIR IDs and fields from `kssl.df` and then joining all VNIR info:_
+```{r}
+vnir.mas = kssl.df$vnir_scan_mas_data
+colnames(vnir.mas)
+vnir.det = kssl.df$vnir_scan_det_data
+colnames(vnir.det)
+vnir = plyr::join(vnir.det, vnir.mas)
+head(vnir, 5)
+```
+
+#### _3. Importing, reading and combining asd files into one dataframe:_
+
+Setting the folder location and create a list with the files.
+```{r}
+my_dir = paste(dir, "VNIR_Spectral_Library/", sep = "")
+
+## Grab the list of files from different subfolders
+vnir.data.files = list.files(path = my_dir, 
+                             recursive = T,
+                             pattern = ".asd",
+                             full.names = T)
+head(vnir.data.files, 5)
+```
+
+Reading ASD files through a function using `get_spectra` from `asdreader` R package:
+
+```{r}
+vnir.read.asd.files = function(x){
+  dat.read.asd = get_spectra(x)
+}
+
+## Taking the list of files as input, passing through the function and returning output in vector or matrix. 
+vnir.df.raw = sapply(vnir.data.files, vnir.read.asd.files)
+class(vnir.df.raw)
+```
+
+Converting matrix to dataframe and transposing it:
+
+```{r}
+vnir.df.raw = as.data.frame(t(vnir.df.raw))
+head(vnir.df.raw[, c(1:2)], 5)
+```
+Check single file to get bands' names
+Get the path to the demo file
+```{r}
+asd.tf <- paste(my_dir, "C2001USCA066/27038MD01.asd", sep = "")
+soil.spec <- get_spectra(asd.tf)
+```
+
+Example with single file name:
+```{r}
+matplot(t(soil.spec), type = 'l', xlab = "Wavelength (nm)", ylab = "Reflectance factor (x100)")
+```
+
+Getting the wavelength numbers and changing colnames in the `vnir.df.raw` table which contains the raw VNIR data:
+
+```{r}
+vnir.wav = colnames(soil.spec)
+colnames(vnir.df.raw) = vnir.wav
+```
+
+Getting the id from path folder to link with the data from .mdb tables.
+
+```{r}
+colnames(vnir)
+head(vnir$scan.path.name, 5)
+```
+
+```{r}
+vnir.df.raw$scan.path.name = rownames(vnir.df.raw)
+vnir.df.raw$scan.path.name = sub(".*/", "", vnir.df.raw$scan.path.name)
+vnir.df.raw = vnir.df.raw %>%
+  select("scan.path.name", everything())
+head(vnir.df.raw$scan.path.name, 5)
+```
+
+```{r}
+#names(vnir.df.raw) <- gsub(x = names(vnir.df.raw), pattern = "V", replacement = "")
+vnir.ok = plyr::join(vnir, vnir.df.raw)
+colnames(vnir.ok)[2162]### Example with single file name
+```
+
+Standarising the VNIR colnames:
+
+```{r}
+colnames(vnir.ok)[12:2162] <- paste("spec.vnir", colnames(vnir.ok)[12:2162], sep = "_")
+head(vnir.ok[, c(1:5, 12:14)], 5)
+```
+
+#### _Exporting only spectra_
+
+```{r}
+#colnames(vnir.ok)
+#saveRDS(vnir.ok, paste(dir, "vnir_09MAR2021.rds", sep = ""))
+```
+
+## Quality control
+
+Removing duplicates:
+```{r}
+drop.col = c("vnir.scan.det.id", "rep.num", "light.source", "scan.date", 
+             "scan.path.name", "vnir.scan.mas.id", "anal.batch.id", 
+             "batch.ord.pos", "caco3.predict", "caco3.mdistance")
+
+vnir.ok = vnir.ok[, !(names(vnir.ok) %in% drop.col)] #raw data 69715 obs
+
+vnir.ok <- vnir.ok %>%
+  group_by(smp.id) %>%
+  summarise_all(mean)
+
+head(vnir.ok[, 1:10], 5)
+```
+
+Linking the `lay.id` wih `smp.id` from mdb access sample table
+```{r}
+vnir.ok$lay_id = plyr::join(vnir.ok[,"smp.id"], kssl.df$sample, by="smp.id", match = "first")$lay.id
+
+vnir.ok = vnir.ok %>%
+  select(c("lay_id", "smp.id"), everything())
+
+
+## Linking the unique ID from `kssl.yw`
+kssl.yw = readRDS(paste(dir, "KSSL_soillab.rds", sep = ""))
+vnir.refl = plyr::join(vnir.ok, kssl.yw[, c("unique_id", "lay_id")])
+
+vnir.refl = vnir.refl %>%
+  select(c("unique_id", "lay_id", "smp.id"), everything())
+
+vnir.refl.ok = vnir.refl[!is.na(vnir.refl$unique_id), ] #31054 observations with soil data
+
+```
+
+Removing spectral response under 100%:
+(note: the reflectance ranges from 0 to 100%.)
+
+```{r}
+vnir.refl.plot = vnir.refl.ok[vnir.refl.ok$spec.vnir_350 < 1,]
+vnir.refl.plot = vnir.refl.ok[vnir.refl.ok$spec.vnir_1500 < 1,]
+vnir.refl.plot = vnir.refl.ok[vnir.refl.ok$spec.vnir_2500 < 1,]
+```
+
+Selecting the soil particles that will be linked to VNIR spectal data:
+
+```{r}
+vnir.refl.plot = plyr::join(vnir.refl.plot, kssl.yw[, c("unique_id", "lay_id", "clay.tot_3a1a1a_pctw",
+                                                        "sand.tot_3a1a1a_pctw", "silt.tot_3a1a1a_pctw")])
+
+vnir.refl.plot = vnir.refl.plot %>%
+  select(c("unique_id", "lay_id", "smp.id", "clay.tot_3a1a1a_pctw", "silt.tot_3a1a1a_pctw", "sand.tot_3a1a1a_pctw"), everything())
+
+row.has.na <- apply(vnir.refl.plot, 1, function(x){any(is.na(x))})
+sum(row.has.na) #  13885 observations with NAs
+vnir.refl.plot <- vnir.refl.plot[complete.cases(vnir.refl.plot),]
+
+# Selecting low and high values of clay content to grab the Unique Id 
+low.v = subset(vnir.refl.plot, clay.tot_3a1a1a_pctw <= 10)
+low.v[1:5, 1:5]
+
+high.v = subset(vnir.refl.plot, clay.tot_3a1a1a_pctw >= 60)
+high.v[1:20, 1:5]
+
+ids = c("79bc428e-8248-11eb-91f0-0242ac110002", "79be51c8-8248-11eb-91f0-0242ac110002", "79c428be-8248-11eb-91f0-0242ac110002", "79bc27e0-8248-11eb-91f0-0242ac110002")
+
+result = vnir.refl.plot[vnir.refl.plot$unique_id %in% ids,]
+```
+
+Grouping in soil texture - 6 levels:
+
+```{r}
+st.levels = c(-Inf, 10, 15, 25, 35, 60, Inf)
+st.labels = c("very sandy", "sandy", "sandy loam", "clayey loam", "clayey", "very clayey")
+result = result %>% mutate(soil.texture = cut(clay.tot_3a1a1a_pctw, st.levels, labels = st.labels))
+
+result = result %>%
+  select(c("unique_id", "lay_id", "smp.id", "clay.tot_3a1a1a_pctw", "soil.texture"), everything())
+
+result = result[order(result$clay.tot_3a1a1a_pctw),]
+result$soil.texture
+```
+
+Plotting the final spectral curves:
+(note: Sandy soils has to present high reflectance values while clayey soils has to display low values.)
+
+```{r}
+matplot(vnir.wav,
+        t(result[1:4, 8:2158]),
+        type = 'l',
+        #lty = 1:2,
+        lwd = 2,
+        col=c("burlywood3", "gold2", "red", "black"),
+        #ylim = c(0, 0.1),
+        xlim = c(350, 2500),
+        xlab =  'Wavelength (nm)', #expression(paste('Wavelength(cm'^'-1',')')),
+        ylab = 'Reflectance',
+        las=1, font=2)
+grid(lwd=1, nx=10, ny=10)
+legend(aes(1200, 0.28), legend=round(result$clay.tot_3a1a1a_pctw, 1), 
+       title = "Clay",
+       col= c("burlywood3", "gold2", "red", "black"),
+       #lty = 1:2,
+       lwd = 2,
+       cex = 1,
+       box.lty = 0,
+       x.intersp = 0.3,
+       seg.len = 1.2,
+       #ncol = 6,
+       bg = "transparent")
+
+legend(aes(1600, 0.28), legend=result$silt.tot_3a1a1a_pctw, 
+       title = "Silt",
+       col= c("burlywood3", "gold2", "red", "black"),
+       #lty = 1:2,
+       lwd = 2,
+       cex = 1,
+       box.lty = 0,
+       x.intersp = 0.3,
+       seg.len = 1.2,
+       #ncol = 6,
+       bg = "transparent")
+
+legend(aes(2000, 0.28), legend=result$sand.tot_3a1a1a_pctw, 
+       title = "Sand",
+       col= c("burlywood3", "gold2", "red", "black"),
+       #lty = 1:2,
+       lwd = 2,
+       cex = 1,
+       box.lty = 0,
+       x.intersp = 0.3,
+       seg.len = 1.2,
+       #ncol = 6,
+       bg = "transparent")
+
+```
+
+```{r}
+save.image(paste(dir, "KSSL_VNIR_Import.RData", sep = ""))
+```
+## End.
