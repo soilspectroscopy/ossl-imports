@@ -303,7 +303,7 @@ the table:
 matplot(y=as.vector(t(neon.mir.f[100,mir.n])), x=seq(600, 4000, 2),
         ylim = c(0,3000),
         type = 'l', 
-        xlab = "Wavelength", 
+        xlab = "Wavenumber", 
         ylab = "Absorbance"
         )
 ```
@@ -370,8 +370,7 @@ neon.map
 
 ![](README_files/figure-gfm/neon.pnts_sites-1.png)<!-- -->
 
-Fig. 1: The Central African Soil Spectral Library locations of sites
-across the globe.
+Fig. 1: The NEON Megapit Soil Archive locations.
 
 ``` r
 #save.image.pigz(file=paste0(dir, "NEONSSL.RData"), n.cores=32)
