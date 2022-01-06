@@ -47,13 +47,25 @@ soil.df = dplyr::distinct(soil.df)
 
 ## Sampling locations ----
 site.lst = list.files("/mnt/soilspec4gg/ossl/dataset", "ossl_soilsite_v1.rds", full.names = TRUE, recursive = TRUE)
-site.df = plyr::rbind.fill(lapply(site.lst, readRDS.gz))
+site.lst.df = lapply(site.lst, readRDS.gz)
+site.lst.df = lapply(site.lst.df, function(i){ i$observation.date.begin_iso.8601_yyyy.mm.dd <- paste(i$observation.date.begin_iso.8601_yyyy.mm.dd);
+i$observation.date.end_iso.8601_yyyy.mm.dd <- paste(i$observation.date.end_iso.8601_yyyy.mm.dd); return(i)})
+site.df = plyr::rbind.fill(site.lst.df)
+summary(as.factor(site.df$dataset.code_ascii_c))
+#AFSIS1.SSL  AFSIS2.SSL     CAF.SSL ICRAF.ISRIC    KSSL.SSL   LUCAS.SSL    NEON.SSL
+#      4536         820        1852        4239      117218       43927         304
+#head(site.df[site.df$dataset.code_ascii_c=="KSSL.SSL",1:10])
+#head(site.df[site.df$dataset.code_ascii_c=="AFSIS2.SSL",1:10])
 ## remove total duplicates
-site.df$observation.date.begin_iso.8601_yyyy.mm.dd = paste(site.df$observation.date.begin_iso.8601_yyyy.mm.dd)
-site.df$observation.date.end_iso.8601_yyyy.mm.dd = paste(site.df$observation.date.end_iso.8601_yyyy.mm.dd)
 site.df = dplyr::distinct(site.df)
 dim(site.df)
 # 124709     38
+site_yrs = site.df[!is.na(site.df$observation.date.begin_iso.8601_yyyy.mm.dd),c("observation.date.begin_iso.8601_yyyy.mm.dd", "dataset.code_ascii_c")]
+site_yrs$year = as.numeric(substr(x=site_yrs$observation.date.begin_iso.8601_yyyy.mm.dd, 1, 4))
+site_yrs$year = ifelse(site_yrs$year <1960, NA, ifelse(site_yrs$year>2024, NA, site_yrs$year))
+library(ggplot2)
+ggplot(site_yrs, aes(x=dataset.code_ascii_c, y=year)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
 #del2.col = names(site.df)[grep(glob2rx("*.1$"), names(site.df))]
 #summary(site.df$location.error_any_m)
 ## If location accuracy is missing, we assume that location accuracy is GPS
@@ -198,7 +210,7 @@ rm.ossl = plyr::join_all(list(soil.df[soil.df$id.layer_uuid_c %in% id.s,],
                          ov.tmp))
 #rm.ossl = rm.ossl[!is.na(rm.ossl$dataset.code_ascii_c),]
 dim(rm.ossl)
-## 152146   2963
+## 152146   2962
 summary(!is.na(rm.ossl$scan_mir.602_abs))
 summary(!is.na(rm.ossl$scan_visnir.452_pcnt))
 ## replace missing block ID's
