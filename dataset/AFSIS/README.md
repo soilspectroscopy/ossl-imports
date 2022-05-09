@@ -2,7 +2,7 @@ Dataset import: Africa Soil Information Service (AfSIS-I) SSL
 ================
 Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>)
-04 December, 2021
+07 May, 2022
 
 
 
@@ -31,7 +31,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2021-12-04  
+Last update: 2022-05-07  
 Dataset:
 [AFSIS1.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis1.ssl)
 
@@ -61,24 +61,33 @@ dir = "/mnt/soilspec4gg/ossl/dataset/AFSIS/"
 afsis1.xy = read.csv("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/2009-2013/Georeferences/georeferences.csv")
 afsis1.xy$observation.date.begin_iso.8601_yyyy.mm.dd = "2011-12-01"
 afsis1.xy$observation.date.end_iso.8601_yyyy.mm.dd = "2013-12-01"
-afsis1.lst = list.files("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/2009-2013/Wet_Chemistry", pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
-afsis1.hor = plyr::rbind.fill(lapply(afsis1.lst, read.csv))
+#afsis1.lst = list.files("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/2009-2013/Wet_Chemistry", pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
+#afsis1.hor = plyr::rbind.fill(lapply(afsis1.lst, read.csv))
+afsis1.hor = read.csv(paste0(dir, "AFSIS_ICRAFwetchem.csv"))
 tansis.xy = read.csv("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/tansis/Georeferences/georeferences.csv")
 #summary(tansis.xy$Sampling.date)
 tansis.xy$observation.date.begin_iso.8601_yyyy.mm.dd = "2018-01-01"
 tansis.xy$observation.date.end_iso.8601_yyyy.mm.dd = "2018-12-01"
 tansis.lst = list.files("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/tansis/Wet_Chemistry", pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
 tansis.hor = plyr::rbind.fill(lapply(tansis.lst, read.csv))
+## bind everything into single table
 afsis1t.df = plyr::rbind.fill(list(plyr::join(afsis1.hor, afsis1.xy, by="SSN"), plyr::join(tansis.hor, tansis.xy, by="SSN")))
 afsis1t.df$layer.upper.depth_usda_cm = ifelse(afsis1t.df$Depth=="sub", 20, 0)
 afsis1t.df$layer.lower.depth_usda_cm = ifelse(afsis1t.df$Depth=="sub", 50, 20)
 afsis1t.df$layer.sequence_usda_uint16 = ifelse(afsis1t.df$Depth=="sub", 2, 1)
-afsis1t.df$oc_usda.calc_wpct = rowMeans(afsis1t.df[,c("C...Org", "X.C")], na.rm=TRUE) 
-afsis1t.df$n.tot_usda.4h2_wpct = rowMeans(afsis1t.df[,c("Total.nitrogen", "X.N")], na.rm=TRUE) 
-afsis1t.df$ph.h2o_usda.4c1_index = rowMeans(afsis1t.df[,c("PH", "pH")], na.rm=TRUE)
+summary(afsis1t.df$Acidified.carbon)
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+    ##  0.0000  0.3935  0.7267  1.1756  1.4601 10.9342     224
+
+``` r
 ## remove empty columns:
 afsis1t.df = afsis1t.df[,-which(sapply(afsis1t.df, function(i){sum(!is.na(i))<100}))]
+dim(afsis1t.df)
 ```
+
+    ## [1] 2131   85
 
 #### Soil lab information
 
@@ -86,8 +95,8 @@ Harmonization function:
 
 ``` r
 in.name = c("Psa.w4clay", "Psa.w4silt", "Psa.w4sand", "ExAc",
-            "M3.P", "M3.Zn", "M3.Ca", "M3.Mg", "M3.Na", "M3.K", "EC", "oc_usda.calc_wpct", 
-            "n.tot_usda.4h2_wpct", "ph.h2o_usda.4c1_index", "layer.upper.depth_usda_cm", 
+            "M3.P", "M3.Zn", "M3.Ca", "M3.Mg", "M3.Na", "M3.K", "EC", "Acidified.carbon", 
+            "Total.nitrogen", "PH", "layer.upper.depth_usda_cm", 
             "layer.lower.depth_usda_cm", "layer.sequence_usda_uint16", "Latitude", "Longitude",
             "Scientist")
 #in.name[which(!in.name %in% names(afsis1t.df))]
@@ -100,13 +109,7 @@ out.name = c("clay.tot_usda.3a1_wpct", "silt.tot_usda.3a1_wpct",
             "layer.lower.depth_usda_cm", "layer.sequence_usda_uint16", "latitude_wgs84_dd", "longitude_wgs84_dd",
             "surveyor.title_utf8_txt")
 ## compare values
-summary(afsis1.yw$Latitude)
-```
-
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ## -29.981 -15.953  -6.860  -5.013   7.028  14.880     167
-
-``` r
+#summary(afsis1.yw$Latitude)
 fun.lst = as.list(rep("x*1", length(in.name)))
 fun.lst[[which(in.name=="Scientist")]] = "paste(x)"
 ## save translation rules:
@@ -182,7 +185,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -191,7 +194,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -200,7 +203,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -209,7 +212,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -218,7 +221,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -227,7 +230,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -236,7 +239,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -245,7 +248,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -254,7 +257,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -263,7 +266,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -272,7 +275,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -281,7 +284,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -290,7 +293,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -299,7 +302,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -308,7 +311,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -317,7 +320,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -326,7 +329,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -335,7 +338,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -344,7 +347,7 @@ afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
     ## Columns: 1,753
     ## Delimiter: ","
     ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3...
+    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -391,6 +394,8 @@ dim(afsis1.abs)
 
     ## [1] 18250  1752
 
+Detect all values out of range:
+
 ``` r
 wav.mir = as.numeric(gsub("m", "", sel.abs)) # Get wavelength only
 #summary(wav.mir)
@@ -398,30 +403,41 @@ wav.mir = as.numeric(gsub("m", "", sel.abs)) # Get wavelength only
 afsis1.mir.spec = as.matrix(afsis1.abs[,sel.abs])
 colnames(afsis1.mir.spec) = wav.mir
 rownames(afsis1.mir.spec) = afsis1.abs$id.scan_uuid_c
-## remove values out of range
+samples.na.gaps = apply(afsis1.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples.negative = apply(afsis1.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0)/length(j), 3) })
+sum(samples.negative>0)
+```
+
+    ## [1] 0
+
+``` r
+samples.extreme = apply(afsis1.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3)/length(j), 3) })
+sum(samples.extreme>0)
+```
+
+    ## [1] 1
+
+``` r
+## only 1 scan with extreme values
+```
+
+``` r
+## resample values
 afsis1.mir = prospectr::resample(afsis1.mir.spec, wav.mir, seq(600, 4000, 2)) 
 ## Error in splinefun(x = wav, y = x) : zero non-NA points
-afsis1.mir = as.data.frame(afsis1.mir)
+afsis1.mir = round(as.data.frame(afsis1.mir)*1000)
 mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
 colnames(afsis1.mir) = mir.n
 #dim(afsis1.mir)
 #summary(afsis1.mir$scan_mir.602_abs)
-```
-
-Remove values out of range:
-
-``` r
-afsis1.mir.f = parallel::mclapply(afsis1.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, NA, j))*1000) }, mc.cores=80)
-afsis1.mir.f = as.data.frame(do.call(cbind, afsis1.mir.f))
-#str(names(afsis1.mir.f))
-afsis1.mir.f$id.scan_uuid_c = rownames(afsis1.mir)
+afsis1.mir$id.scan_uuid_c = rownames(afsis1.mir)
 ```
 
 Plotting MIR spectra to see if there are still maybe negative values in
 the table:
 
 ``` r
-matplot(y=as.vector(t(afsis1.mir.f[250,mir.n])), x=seq(600, 4000, 2),
+matplot(y=as.vector(t(afsis1.mir[250,mir.n])), x=seq(600, 4000, 2),
         ylim = c(0,3000),
         type = 'l', 
         xlab = "Wavelength", 
@@ -429,30 +445,30 @@ matplot(y=as.vector(t(afsis1.mir.f[250,mir.n])), x=seq(600, 4000, 2),
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-75-1.png)<!-- -->
 
 Export final MIR table:
 
 ``` r
-afsis1.mir.f$id.layer_local_c = plyr::join(afsis1.mir.f["id.scan_uuid_c"], afsis1.abs[c("id.scan_uuid_c","SSN")])$SSN
+afsis1.mir$id.layer_local_c = plyr::join(afsis1.mir["id.scan_uuid_c"], afsis1.abs[c("id.scan_uuid_c","SSN")])$SSN
 ```
 
     ## Joining by: id.scan_uuid_c
 
 ``` r
-afsis1.mir.f$id.scan_local_c = plyr::join(afsis1.mir.f["id.scan_uuid_c"], afsis1.abs[c("id.scan_uuid_c","id.scan_local_c")])$id.scan_local_c
+afsis1.mir$id.scan_local_c = plyr::join(afsis1.mir["id.scan_uuid_c"], afsis1.abs[c("id.scan_uuid_c","id.scan_local_c")])$id.scan_local_c
 ```
 
     ## Joining by: id.scan_uuid_c
 
 ``` r
-afsis1.mir.f$id.layer_uuid_c = plyr::join(afsis1.mir.f["id.layer_local_c"], afsis1.soil[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
+afsis1.mir$id.layer_uuid_c = plyr::join(afsis1.mir["id.layer_local_c"], afsis1.soil[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
 ```
 
     ## Joining by: id.layer_local_c
 
 ``` r
-summary(is.na(afsis1.mir.f$id.layer_uuid_c))
+summary(is.na(afsis1.mir$id.layer_uuid_c))
 ```
 
     ##    Mode   FALSE    TRUE 
@@ -460,27 +476,30 @@ summary(is.na(afsis1.mir.f$id.layer_uuid_c))
 
 ``` r
 ## 16346 without soil data
-afsis1.mir.f$model.name_utf8_txt = "Bruker Tensor 27/HTs -XT_FT-IR"
-afsis1.mir.f$model.code_any_c = "Bruker_Tensor_27.HTS.XT"
-afsis1.mir.f$method.light.source_any_c = ""
-afsis1.mir.f$method.preparation_any_c = ""
-afsis1.mir.f$scan.file_any_c = ""
-afsis1.mir.f$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2009-01-01")
-afsis1.mir.f$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2013-12-01")
-afsis1.mir.f$scan.license.title_ascii_txt = "CC-BY"
-afsis1.mir.f$scan.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/"
-afsis1.mir.f$scan.doi_idf_c = "10.34725/DVN/QXCWP1"
-afsis1.mir.f$scan.contact.name_utf8_txt = "Vagen, Tor-Gunnar (World Agroforestry)"
-afsis1.mir.f$scan.contact.email_ietf_email = "afsis.info@africasoils.net"
-#summary(is.na(afsis1.mir.f$id.scan_uuid_c))
+afsis1.mir$model.name_utf8_txt = "Bruker Tensor 27/HTs -XT_FT-IR"
+afsis1.mir$model.code_any_c = "Bruker_Tensor_27.HTS.XT"
+afsis1.mir$method.light.source_any_c = ""
+afsis1.mir$method.preparation_any_c = ""
+afsis1.mir$scan.file_any_c = ""
+afsis1.mir$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2009-01-01")
+afsis1.mir$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2013-12-01")
+afsis1.mir$scan.license.title_ascii_txt = "CC-BY"
+afsis1.mir$scan.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/"
+afsis1.mir$scan.doi_idf_c = "10.34725/DVN/QXCWP1"
+afsis1.mir$scan.contact.name_utf8_txt = "Vagen, Tor-Gunnar (World Agroforestry)"
+afsis1.mir$scan.contact.email_ietf_email = "afsis.info@africasoils.net"
+#summary(is.na(afsis1.mir$id.scan_uuid_c))
+afsis1.mir$scan.mir.nafreq_ossl_pct = samples.na.gaps
+afsis1.mir$scan.mir.negfreq_ossl_pct = samples.negative
+afsis1.mir$scan.mir.extfreq_ossl_pct = samples.extreme
 ```
 
 Save to RDS file:
 
 ``` r
-x.na = mir.name[which(!mir.name %in% names(afsis1.mir.f))]
-if(length(x.na)>0){ for(i in x.na){ afsis1.mir.f[,i] <- NA } }
-str(afsis1.mir.f[,mir.name[1:24]])
+x.na = mir.name[which(!mir.name %in% names(afsis1.mir))]
+if(length(x.na)>0){ for(i in x.na){ afsis1.mir[,i] <- NA } }
+str(afsis1.mir[,mir.name[1:24]])
 ```
 
     ## 'data.frame':    18250 obs. of  24 variables:
@@ -500,22 +519,22 @@ str(afsis1.mir.f[,mir.name[1:24]])
     ##  $ scan.doi_idf_c                     : chr  "10.34725/DVN/QXCWP1" "10.34725/DVN/QXCWP1" "10.34725/DVN/QXCWP1" "10.34725/DVN/QXCWP1" ...
     ##  $ scan.contact.name_utf8_txt         : chr  "Vagen, Tor-Gunnar (World Agroforestry)" "Vagen, Tor-Gunnar (World Agroforestry)" "Vagen, Tor-Gunnar (World Agroforestry)" "Vagen, Tor-Gunnar (World Agroforestry)" ...
     ##  $ scan.contact.email_ietf_email      : chr  "afsis.info@africasoils.net" "afsis.info@africasoils.net" "afsis.info@africasoils.net" "afsis.info@africasoils.net" ...
+    ##  $ scan.mir.nafreq_ossl_pct           : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ scan.mir.negfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ scan.mir.extfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
     ##  $ scan_mir.600_abs                   : num  1528 1538 1586 1536 1531 ...
     ##  $ scan_mir.602_abs                   : num  1532 1544 1588 1536 1530 ...
     ##  $ scan_mir.604_abs                   : num  1532 1546 1591 1540 1531 ...
     ##  $ scan_mir.606_abs                   : num  1531 1547 1595 1547 1534 ...
     ##  $ scan_mir.608_abs                   : num  1531 1549 1599 1553 1539 ...
-    ##  $ scan_mir.610_abs                   : num  1532 1554 1604 1561 1544 ...
-    ##  $ scan_mir.612_abs                   : num  1532 1558 1609 1569 1548 ...
-    ##  $ scan_mir.614_abs                   : num  1531 1562 1612 1577 1550 ...
 
 ``` r
 mir.rds = paste0(dir, "ossl_mir_v1.rds")
 if(!file.exists(mir.rds)){
-  saveRDS.gz(afsis1.mir.f[,mir.name], mir.rds)
-  #arrow::write_parquet(afsis1.mir.f[,mir.name], paste0(dir, "ossl_mir_v1.parquet"))
+  saveRDS.gz(afsis1.mir[,mir.name], mir.rds)
+  #arrow::write_parquet(afsis1.mir[,mir.name], paste0(dir, "ossl_mir_v1.parquet"))
 }
-#rm(afsis1.mir.spec); rm(afsis1.mir); rm(afsis1.abs)
+#rm(afsis1.mir.spec); rm(afsis1.abs)
 #gc()
 ```
 
@@ -524,14 +543,14 @@ if(!file.exists(mir.rds)){
 Check if some points don’t have any spectral scans:
 
 ``` r
-summary(is.na(afsis1.mir.f$id.scan_uuid_c))
+summary(is.na(afsis1.mir$id.scan_uuid_c))
 ```
 
     ##    Mode   FALSE 
     ## logical   18250
 
 ``` r
-mis.r = afsis1.mir.f$id.layer_uuid_c %in% afsis1.site$id.layer_uuid_c
+mis.r = afsis1.mir$id.layer_uuid_c %in% afsis1.site$id.layer_uuid_c
 summary(mis.r)
 ```
 
@@ -540,7 +559,11 @@ summary(mis.r)
 
 ``` r
 ## some 16,346 scans have no soil data attached to it
+summary(duplicated(afsis1.mir$id.scan_uuid_c))
 ```
+
+    ##    Mode   FALSE 
+    ## logical   18250
 
 ### Distribution of points
 
@@ -550,18 +573,6 @@ for the AfSIS-1 points.
 ``` r
 afsis1.map = NULL
 library(maptools)
-```
-
-    ## Checking rgeos availability: TRUE
-
-    ## 
-    ## Attaching package: 'maptools'
-
-    ## The following object is masked from 'package:Hmisc':
-    ## 
-    ##     label
-
-``` r
 data(wrld_simpl)
 afr = wrld_simpl[wrld_simpl$REGION==2,]
 mapWorld = borders(afr, colour = 'gray50', fill = 'gray50')
@@ -570,7 +581,7 @@ afsis1.map = afsis1.map + geom_point(aes(x=afsis1.site$longitude_wgs84_dd, y=afs
 afsis1.map
 ```
 
-    ## Warning: Removed 167 rows containing missing values (geom_point).
+    ## Warning: Removed 68 rows containing missing values (geom_point).
 
 ![](README_files/figure-gfm/afsis1.pnts_sites-1.png)<!-- -->
 

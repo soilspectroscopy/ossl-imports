@@ -1,16 +1,30 @@
 Dataset import: Kellogg Soil Survey Laboratory (KSSL)
 ================
-Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman (<jsanderman@woodwellclimate.org>)
-26 November, 2021
+Tomislav Hengl (<tom.hengl@opengeohub.org>), Jonathan Sanderman
+(<jsanderman@woodwellclimate.org>), , Develyn Bloom
+(<develyn.bloom@ufl.edu>)
+08 May, 2022
 
 
+
+-   [Kellogg Soil Survey Laboratory
+    inputs](#kellogg-soil-survey-laboratory-inputs)
+-   [Import soil laboratory DB](#import-soil-laboratory-db)
+-   [Soil laboratory data](#soil-laboratory-data)
+-   [Soil site data](#soil-site-data)
+-   [Mid-infrared spectroscopy data](#mid-infrared-spectroscopy-data)
+-   [Visible and near-infrared spectroscopy
+    data](#visible-and-near-infrared-spectroscopy-data)
+-   [Quality control](#quality-control)
+-   [Distribution of points](#distribution-of-points)
+-   [References](#references)
 
 [<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
 
 [<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />](http://creativecommons.org/licenses/by-sa/4.0/)
 
-This work is licensed under a [Creative Commons
-Attribution-ShareAlike 4.0 International
+This work is licensed under a [Creative Commons Attribution-ShareAlike
+4.0 International
 License](http://creativecommons.org/licenses/by-sa/4.0/).
 
 ## Kellogg Soil Survey Laboratory inputs
@@ -18,23 +32,25 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2021-11-26  
-Dataset: [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
+Last update: 2022-05-08  
+Dataset:
+[KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
 The USDA-NRCS Kellogg Soil Survey Laboratory has a large and growing
 mid-infrared (MIR) spectral library. Calibration models are being
 developed to predict soil properties from MIR spectra. Dataset
-properties are explained in detail in Wijewardane, Ge, Wills, & Libohova
-([2018](#ref-wijewardane2018predicting)) and Sanderman, Savage, & Dangal
-([2020](#ref-sanderman2020mid)).
+properties are explained in detail in [Wijewardane, Ge, Wills, &
+Libohova](#ref-wijewardane2018predicting)
+([2018](#ref-wijewardane2018predicting)) and [Sanderman, Savage, &
+Dangal](#ref-sanderman2020mid) ([2020](#ref-sanderman2020mid)).
 
 Input datasets:
 
-  - `MIR_Spectra_Library_spectra_202011_202107.csv`: MIR soil spectral
-    reflectances (\>1700 channels);
-  - `vnir_09MAR2021.rds`: VNIR soil spectral reflectances (2151
+-   `MIR_Spectra_Library_spectra_202011_202107.csv`: MIR soil spectral
+    reflectances (>1700 channels);
+-   `vnir_09MAR2021.rds`: VNIR soil spectral reflectances (2151
     channels) imported;  
-  - `All_Spectra_Access_Portable_7-7-21.mdb`: original DB as Microsoft
+-   `All_Spectra_Access_Portable_7-7-21.mdb`: original DB as Microsoft
     Access MDB file;
 
 For the DB structure and use refer to “Introduction to the KSSL
@@ -61,9 +77,9 @@ if(!exists("kssl.df")){
 names(kssl.df$sample)
 ```
 
-    ##  [1] "smp.id"            "lay.id"            "smp.type"          "qc.control.type"   "smp.condition"     "smp.field.vol"    
-    ##  [7] "smp.wt"            "instr.id"          "smp.submit.id"     "smp.rcvd.date.id"  "smp.logger.id"     "smp.login.date.id"
-    ## [13] "smp.status"        "aphis.reg.code"
+    ##  [1] "smp.id"            "lay.id"            "smp.type"          "qc.control.type"   "smp.condition"    
+    ##  [6] "smp.field.vol"     "smp.wt"            "instr.id"          "smp.submit.id"     "smp.rcvd.date.id" 
+    ## [11] "smp.logger.id"     "smp.login.date.id" "smp.status"        "aphis.reg.code"
 
 ``` r
 analyte.check = as.data.frame(kssl.df$analyte)
@@ -79,8 +95,7 @@ names(kssl.df)
 
 Not all soil variables have enough measurements for calibration purposes
 and for this reason it was set up a table containing the target
-variables
-    (`OSSL_soilvars.csv`):
+variables (`OSSL_soilvars.csv`):
 
 ``` r
 summary(as.factor(kssl.df$layer_analyte$analyte.id), maxsum = 10)
@@ -89,8 +104,7 @@ summary(as.factor(kssl.df$layer_analyte$analyte.id), maxsum = 10)
     ##     622     623     624     420     479    1424      34      51      50 (Other) 
     ##   96052   96051   96048   95632   93516   64031   60498   60349   60320 2919453
 
-Join samples with measured soil
-analytics
+Join samples with measured soil analytics
 
 ``` r
 kssl.y = plyr::join(kssl.df$layer_analyte[,c("lay.analyte.id", "lay.id", "lab.id", "analyte.id", "calc.value")],
@@ -103,8 +117,7 @@ kssl.y = plyr::join(kssl.df$layer_analyte[,c("lay.analyte.id", "lay.id", "lab.id
 kssl.y$analyte_abbrev = kssl.y$analyte.abbrev
 ```
 
-Join samples with soil analytics calculated by some
-formula
+Join samples with soil analytics calculated by some formula
 
 ``` r
 kssl.calc = plyr::join(kssl.df$result[, c("result.id", "result.source.id", "calc.id", "lab.id", "calc.value")], 
@@ -167,8 +180,7 @@ analyte$count = plyr::join(analyte["analyte.id"], data.frame(count=sm, analyte.i
 #write.csv(analyte, paste0(dir, "KSSL_analyte_count.csv"))
 ```
 
-Bind measured and calculated
-values:
+Bind measured and calculated values:
 
 ``` r
 kssl.yl = rbind(kssl.y[,c("lay.id", "lab.id", "analyte_abbrev", "analyte.name", "calc.value")], calc.lst[,c("lay.id", "lab.id", "analyte_abbrev", "analyte.name", "calc.value")])
@@ -177,20 +189,21 @@ sel.col = paste(analyte$analyte_abbrev)
 str(sel.col)
 ```
 
-    ##  chr [1:56] "acid_tea" "al_dith" "al_kcl" "al_ox" "bsesat_cec3" "db_13b" "db_od" "ca_nh4d" "c_tot_ncs" "caco3" "cecd_nh4" ...
+    ##  chr [1:56] "acid_tea" "al_dith" "al_kcl" "al_ox" "bsesat_cec3" "db_13b" "db_od" "ca_nh4d" "c_tot_ncs" "caco3" ...
 
 ``` r
 kssl.yl = kssl.yl[which(kssl.yl$analyte_abbrev %in% sel.col),] 
 levels(as.factor(kssl.yl$analyte_abbrev))
 ```
 
-    ##  [1] "acid_tea"     "al_dith"      "al_el_meh3"   "al_kcl"       "al_ox"        "as_el_meh3"   "ba_el_meh3"   "bs_nh4oac"   
-    ##  [9] "bsesat_cec3"  "c_gypl2"      "c_tot_ncs"    "ca_el_meh3"   "ca_nh4d"      "caco3"        "cd_el_meh3"   "cecd_nh4"    
-    ## [17] "clay_tot_psa" "co_el_meh3"   "cr_el_meh3"   "cu_el_meh3"   "db_13b"       "db_od"        "ec_12pre"     "ecec"        
-    ## [25] "eoc_tot_c"    "fe_dith"      "fe_el_meh3"   "fe_kcl"       "fe_ox"        "k_el_meh3"    "k_nh4d"       "mg_el_meh3"  
-    ## [33] "mg_nh4d"      "mo_el_meh3"   "n_tot_ncs"    "na_el_meh3"   "na_nh4d"      "p_el_meh3"    "p_mehlich3"   "p_olsn"      
-    ## [41] "pb_el_meh3"   "ph_cacl2"     "ph_h2o"       "ph_kcl"       "ph_naf"       "s_tot_ncs"    "sand_tot_psa" "si_el_meh3"  
-    ## [49] "silt_tot_psa" "sr_el_meh3"   "w15l2"        "w3cld"        "zn_el_meh3"
+    ##  [1] "acid_tea"     "al_dith"      "al_el_meh3"   "al_kcl"       "al_ox"        "as_el_meh3"   "ba_el_meh3"  
+    ##  [8] "bs_nh4oac"    "bsesat_cec3"  "c_gypl2"      "c_tot_ncs"    "ca_el_meh3"   "ca_nh4d"      "caco3"       
+    ## [15] "cd_el_meh3"   "cecd_nh4"     "clay_tot_psa" "co_el_meh3"   "cr_el_meh3"   "cu_el_meh3"   "db_13b"      
+    ## [22] "db_od"        "ec_12pre"     "ecec"         "eoc_tot_c"    "fe_dith"      "fe_el_meh3"   "fe_kcl"      
+    ## [29] "fe_ox"        "k_el_meh3"    "k_nh4d"       "mg_el_meh3"   "mg_nh4d"      "mo_el_meh3"   "n_tot_ncs"   
+    ## [36] "na_el_meh3"   "na_nh4d"      "p_el_meh3"    "p_mehlich3"   "p_olsn"       "pb_el_meh3"   "ph_cacl2"    
+    ## [43] "ph_h2o"       "ph_kcl"       "ph_naf"       "s_tot_ncs"    "sand_tot_psa" "si_el_meh3"   "silt_tot_psa"
+    ## [50] "sr_el_meh3"   "w15l2"        "w3cld"        "zn_el_meh3"
 
 ``` r
 kssl.yl$ossl_code = plyr::join(kssl.yl["analyte_abbrev"], analyte[c("analyte_abbrev", "ossl_code")], match = "first")$ossl_code
@@ -230,7 +243,7 @@ sel.mis0 = which(!kssl.yw$lay.id %in% kssl.x$lay.id)
 str(sel.mis0) 
 ```
 
-    ##  int [1:30977] 1 1638 1639 1642 1643 1654 1657 1658 1684 1743 ...
+    ##  int [1:31027] 1 489 490 491 492 493 494 495 496 497 ...
 
 ``` r
 kssl.yw = kssl.yw[-sel.mis0,]
@@ -274,8 +287,7 @@ if(!file.exists(soilab.rds)){
 ## Soil site data
 
 Soil site information includes coordinates, soil site and soil horizon
-description
-information:
+description information:
 
 ``` r
 kssl.site = plyr::join_all(list(kssl.df$lims_site, kssl.df$layer, kssl.df$lims_pedon), by="lims.site.id")
@@ -328,8 +340,8 @@ for(k in c("NAD83")){ ## "NAD27"
 }
 ```
 
-    ## Warning in showSRID(uprojargs, format = "PROJ", multiline = "NO", prefer_proj = prefer_proj): Discarded datum Unknown based on
-    ## GRS80 ellipsoid in Proj4 definition
+    ## Warning in showSRID(uprojargs, format = "PROJ", multiline = "NO", prefer_proj = prefer_proj): Discarded datum Unknown
+    ## based on GRS80 ellipsoid in Proj4 definition
 
 ``` r
 #plot(kssl.site[,c("longitude_wgs84_dd","latitude_wgs84_dd")])
@@ -338,8 +350,7 @@ for(k in c("NAD83")){ ## "NAD27"
 
 Add the [Open Location
 Code](https://cran.r-project.org/web/packages/olctools/vignettes/Introduction_to_olctools.html)
-to the site
-table:
+to the site table:
 
 ``` r
 kssl.site$id.location_olc_c = olctools::encode_olc(kssl.site$latitude_wgs84_dd, kssl.site$longitude_wgs84_dd, 10)
@@ -349,8 +360,7 @@ kssl.site$id.location_olc_c[1:5]
     ## [1] "84PRGW8V+X6" "84PRGW8V+X6" "84PRGW8V+X6" "84PRGW8V+X6" "84PRGW8V+X6"
 
 Add the [Universal Unique
-Identifier](https://cran.r-project.org/web/packages/uuid/)
-(UUI):
+Identifier](https://cran.r-project.org/web/packages/uuid/) (UUI):
 
 ``` r
 kssl.site$id.layer_uuid_c = plyr::join(kssl.site["lay.id"], kssl.yw[,c("lay.id", "id.layer_uuid_c")])$id.layer_uuid_c 
@@ -358,8 +368,7 @@ kssl.site$id.layer_uuid_c = plyr::join(kssl.site["lay.id"], kssl.yw[,c("lay.id",
 
     ## Joining by: lay.id
 
-Add observation date from the project fiscal year (only year
-available):
+Add observation date from the project fiscal year (only year available):
 
 ``` r
 kssl.site$observation.date.begin_iso.8601_yyyy.mm.dd = as.Date(paste(plyr::join(kssl.site["proj.id"], kssl.df$project[,c("proj.id", "fiscal.year")])$fiscal.year), format="%Y")
@@ -374,8 +383,7 @@ kssl.site$location.address_utf8_txt = plyr::join(kssl.site["proj.id"], kssl.df$p
 
     ## Joining by: proj.id
 
-Missing coordinates can be derived from county
-names:
+Missing coordinates can be derived from county names:
 
 ``` r
 site_id.df = plyr::join(kssl.site[,c("lay.id","lims.site.id","longitude_wgs84_dd","latitude_wgs84_dd")], plyr::join_all(list(kssl.df$centroid, kssl.df$area, kssl.df$site_area_overlap)), match="first")
@@ -410,10 +418,10 @@ usa.county$fips.code = paste0(usa.county$STATEFP, usa.county$COUNTYFP)
 usa.county@data[usa.county$fips.code=="17099",]
 ```
 
-    ##      STATEFP COUNTYFP COUNTYNS GEOID    NAME       NAMELSAD LSAD CLASSFP MTFCC CSAFP CBSAFP METDIVFP FUNCSTAT      ALAND
-    ## 1871      17      099 00422247 17099 LaSalle LaSalle County   06      H1 G4020   176  36860     <NA>        A 2939990781
-    ##        AWATER    INTPTLAT     INTPTLON fips.code
-    ## 1871 33693285 +41.3433407 -088.8859312     17099
+    ##      STATEFP COUNTYFP COUNTYNS GEOID    NAME       NAMELSAD LSAD CLASSFP MTFCC CSAFP CBSAFP METDIVFP FUNCSTAT
+    ## 1871      17      099 00422247 17099 LaSalle LaSalle County   06      H1 G4020   176  36860     <NA>        A
+    ##           ALAND   AWATER    INTPTLAT     INTPTLON fips.code
+    ## 1871 2939990781 33693285 +41.3433407 -088.8859312     17099
 
 ``` r
 kssl.site$location.error_any_m = 30
@@ -435,8 +443,7 @@ summary(kssl.site$location.error_any_m)
 #colnames(kssl.site)
 ```
 
-Summarizing the soil site
-info:
+Summarizing the soil site info:
 
 ``` r
 summary(as.factor(ifelse(kssl.site$location.error_any_m==30, "GPS", "County centroids")))
@@ -457,7 +464,7 @@ sel.mis = which(!kssl.site$lay.id %in% kssl.x$lay.id)
 str(sel.mis)
 ```
 
-    ##  int [1:55799] 1822 1823 1825 1827 1836 1841 1845 1869 1926 1944 ...
+    ##  int [1:55849] 488 489 490 491 492 493 494 495 496 497 ...
 
 ``` r
 ## 33123
@@ -514,7 +521,7 @@ summary(as.factor(kssl.sitef$location.method_any_c))
 ```
 
     ## County centroids              GPS             NA's 
-    ##            67600            40948             8670
+    ##            67600            40898             8670
 
 ``` r
 #County centroids              GPS             NA's 
@@ -527,20 +534,27 @@ if(!file.exists(site.rds)){
 
 ## Mid-infrared spectroscopy data
 
-Mid-infrared (MIR) soil spectroscopy raw
-data:
+Mid-infrared (MIR) soil spectroscopy raw data:
 
 ``` r
-kssl.x = vroom::vroom(paste0(dir, "MIR_Spectra_Library_spectra_202011_202107.csv"))
+kssl.x = vroom::vroom(paste0(dir, "KSSL_MIR_spectra.csv"))
+dim(kssl.x)
+summary(kssl.x$`632`)
+kssl.meta = vroom::vroom(paste0(dir, "KSSL_MIR_spectra_metadata.csv"))
+str(which(!kssl.x$sample_id %in% kssl.meta$sample_id))
+#str(grep(kssl.x$sample_id, kssl.meta$sample_id))
+## multiple matches
+## multiple dates:
+kssl.meta$MeasurementsDateStart = as.Date(sapply(paste(kssl.meta$date_time_sm), function(i){strsplit(i, ";")[[1]][1]}))
+kssl.meta$MeasurementsDateEnd = as.Date(sapply(paste(kssl.meta$date_time_sm), function(i){rev(strsplit(i, ";")[[1]])[1]}))
 dim(kssl.x)
 ```
 
 Add the [Universal Unique
-Identifier](https://cran.r-project.org/web/packages/uuid/)
-(UUI):
+Identifier](https://cran.r-project.org/web/packages/uuid/) (UUI):
 
 ``` r
-kssl.x$id.scan_uuid_c = openssl::md5(make.unique(paste0("KSSL.SSL", kssl.x$sample_id)))
+kssl.x$id.scan_uuid_c = openssl::md5(make.unique(paste0("KSSL.SSL.MIR", kssl.x$sample_id)))
 ```
 
 For MIR drop the “XF” = different preparation method spectra scans. The
@@ -551,23 +565,23 @@ kssl.x$smp.id = substr(kssl.x$sample_id, 1, nchar(kssl.x$sample_id)-2)
 str(kssl.x$smp.id)
 ```
 
-    ##  chr [1:70639] "32987" "32988" "32989" "32990" "32991" "32992" "32993" "32994" "32995" "32996" "32997" "32998" "32999" ...
+    ##  chr [1:70589] "32987" "32988" "32989" "32990" "32991" "32992" "32993" "32994" "32995" "32996" "32997" "32998" ...
 
 ``` r
 length(labels(as.factor(unique(kssl.x$smp.id))))
 ```
 
-    ## [1] 70004
+    ## [1] 69954
 
 ``` r
 kssl.x$lay.id = plyr::join(kssl.x[,c("sample_id","smp.id")], kssl.df$sample, by="smp.id", match = "first")$lay.id
 length(labels(as.factor(unique(kssl.x$lay.id))))
 ```
 
-    ## [1] 69981
+    ## [1] 69931
 
 ``` r
-## 69,981
+## 69,931
 ```
 
 Select final columns of interest and export soil spectra table:
@@ -587,9 +601,13 @@ kssl.abs = as.data.frame(kssl.x)[sel.xs, c("id.scan_uuid_c", "lay.id", "smp.id",
 dim(kssl.abs)
 ```
 
-    ## [1] 69914  1702
+    ## [1] 69864  1704
 
-Small number of rows are duplicates:
+``` r
+## 69,864  1704
+```
+
+Small number of rows (77) are duplicates:
 
 ``` r
 sum(duplicated(kssl.abs$lay.id))
@@ -597,8 +615,13 @@ sum(duplicated(kssl.abs$lay.id))
 
     ## [1] 77
 
-Resampling the MIR spectra from the original window size to 2 cm-1 in
-`kssl.abs`. This operation can be time-consuming:
+Original spectrum range from 4000 to 603 cm-1 with window size of \~1-2
+cm-1. The absorbance values can range from 0 (reflectance = 1) to 3
+(reflectance = 0.001) highlighting that is not common in soils
+absorbance above 3. This means the electromagnetic energy (light)
+blocked by the sample is 99.9% when absorbance value is 3.
+
+Detect all values out of range:
 
 ``` r
 wav.mir = as.numeric(gsub("X", "", sel.abs)) # Get wavelength only
@@ -606,43 +629,56 @@ summary(wav.mir)
 ```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##     602    1451    2300    2300    3149    3998
+    ##     600    1450    2300    2300    3150    4000
 
 ``` r
-# Creating a matrix with only spectral values to resample it
+# Creating a matrix with only spectral values
 kssl.mir.spec = as.matrix(kssl.abs[,sel.abs])
 colnames(kssl.mir.spec) = wav.mir
 rownames(kssl.mir.spec) = kssl.abs$id.scan_uuid_c
-## remove values out of range
+## Detect and quantify any problems:
+library(doMC)
+cl = makeCluster(mc <- getOption("cl.cores", 80))
+samples.na.gaps = parallel::parRapply(cl, kssl.mir.spec, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples.negative = parallel::parRapply(cl, kssl.mir.spec, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
+sum(samples.negative>0)
+```
+
+    ## [1] 734
+
+``` r
+samples.extreme = parallel::parRapply(cl, kssl.mir.spec, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) })
+sum(samples.extreme>0)
+```
+
+    ## [1] 104
+
+``` r
+stopCluster(cl)
+```
+
+About 1% of scans have problems either negative or extreme values.
+Resampling the MIR spectra from the original window size to 2 cm-1 in
+`kssl.abs`. This operation can be time-consuming:
+
+``` r
+## stack all values
 kssl.mir = prospectr::resample(kssl.mir.spec, wav.mir, seq(600, 4000, 2), interpol = "spline") 
 ## Wavelength by 2 cm-1
-kssl.mir = as.data.frame(kssl.mir)
+kssl.mir = round(as.data.frame(kssl.mir)*1000)
 mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
 colnames(kssl.mir) = mir.n
 dim(kssl.mir)
 ```
 
-    ## [1] 69914  1701
+    ## [1] 69864  1701
 
-Original spectrum range from 4000 to 603 cm-1 with window size of ~1-2
-cm-1. The absorbance values can range from 0 (reflectance = 1) to 3
-(reflectance = 0.001) hightlighting that is not common in soils
-absorbance above 3. This means the electromagnetic energy (light)
-blocked by the sample is 99.9% when absorbance value is 3. Cleaning
-values out of
-range:
+Plotting MIR spectra to check:
 
 ``` r
-kssl.mir.f = parallel::mclapply(kssl.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, NA, j))*1000) }, mc.cores=80)
-kssl.mir.f = as.data.frame(do.call(cbind, kssl.mir.f))
-```
-
-Plotting MIR spectra to see if it is still negative values in the table:
-
-``` r
-#str(names(kssl.mir.f))
-kssl.mir.f$id.scan_uuid_c = rownames(kssl.mir)
-matplot(y=as.vector(t(kssl.mir.f[5700,mir.n])), x=seq(600, 4000, 2),
+#str(names(kssl.mir))
+kssl.mir$id.scan_uuid_c = rownames(kssl.mir)
+matplot(y=as.vector(t(kssl.mir[5700,mir.n])), x=seq(600, 4000, 2),
         ylim = c(0,3000),
         type = 'l', 
         xlab = "Wavelength", 
@@ -650,106 +686,129 @@ matplot(y=as.vector(t(kssl.mir.f[5700,mir.n])), x=seq(600, 4000, 2),
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-63-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-121-1.png)<!-- -->
 
-Export final MIR
-table:
+Export final MIR table:
 
 ``` r
-kssl.mir.f$id.layer_local_c = plyr::join(kssl.mir.f["id.scan_uuid_c"], kssl.abs[c("id.scan_uuid_c","lay.id")])$lay.id
+kssl.mir$id.layer_local_c = plyr::join(kssl.mir["id.scan_uuid_c"], kssl.abs[c("id.scan_uuid_c","lay.id")])$lay.id
 ```
 
     ## Joining by: id.scan_uuid_c
 
 ``` r
-str(kssl.mir.f$id.layer_local_c)
+str(kssl.mir$id.layer_local_c)
 ```
 
-    ##  'labelled' int [1:69914] 4301 4302 4303 4304 4305 4306 4307 4308 4309 4310 ...
+    ##  'labelled' int [1:69864] 4301 4302 4303 4304 4305 4306 4307 4308 4309 4310 ...
     ##  - attr(*, "label")= chr "lay_id"
 
 ``` r
-kssl.mir.f$id.layer_uuid_c = plyr::join(kssl.mir.f["id.layer_local_c"], kssl.yw[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
+kssl.mir$id.layer_uuid_c = plyr::join(kssl.mir["id.layer_local_c"], kssl.yw[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
 ```
 
     ## Joining by: id.layer_local_c
 
 ``` r
-summary(is.na(kssl.mir.f$id.layer_uuid_c))
+summary(is.na(kssl.mir$id.layer_uuid_c))
 ```
 
     ##    Mode   FALSE    TRUE 
-    ## logical   64788    5126
+    ## logical   64738    5126
 
 ``` r
 ## 5126 with missing values
-kssl.mir.f$id.scan_local_c = plyr::join(kssl.mir.f["id.scan_uuid_c"], kssl.abs[c("id.scan_uuid_c","smp.id")])$smp.id
+kssl.mir$id.scan_local_c = plyr::join(kssl.mir["id.scan_uuid_c"], kssl.abs[c("id.scan_uuid_c","smp.id")])$smp.id
 ```
 
     ## Joining by: id.scan_uuid_c
 
 ``` r
-kssl.mir.f$model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory"
-kssl.mir.f$model.code_any_c = "Bruker_Vertex_70.HTS.XT"
-kssl.mir.f$method.light.source_any_c = ""
-kssl.mir.f$method.preparation_any_c = ""
-kssl.mir.f$scan.file_any_c = ""
-kssl.mir.f$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2020-11-20")
-kssl.mir.f$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2020-11-20")
-kssl.mir.f$scan.license.title_ascii_txt = "CC-BY"
-kssl.mir.f$scan.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx"
-kssl.mir.f$scan.doi_idf_c = ""
-kssl.mir.f$scan.contact.name_utf8_txt = "Scarlett Murphy"
-kssl.mir.f$scan.contact.email_ietf_email = "Scarlett.Murphy@usda.gov"
+kssl.mir$model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory"
+kssl.mir$model.code_any_c = "Bruker_Vertex_70.HTS.XT"
+kssl.mir$method.light.source_any_c = plyr::join(kssl.x[sel.xs,"sample_id"], kssl.meta)$beamspl
+```
+
+    ## Joining by: sample_id
+
+``` r
+kssl.mir$method.preparation_any_c = ""
+## file names available:
+kssl.mir$scan.file_any_c = plyr::join(kssl.x[sel.xs,"sample_id"], kssl.meta)$file_id
+```
+
+    ## Joining by: sample_id
+
+``` r
+kssl.mir$scan.date.begin_iso.8601_yyyy.mm.dd = paste(plyr::join(kssl.x[sel.xs,"sample_id"], kssl.meta)$MeasurementsDateStart) #as.Date("2019-07-26")
+```
+
+    ## Joining by: sample_id
+
+``` r
+kssl.mir$scan.date.end_iso.8601_yyyy.mm.dd = paste(plyr::join(kssl.x[sel.xs,"sample_id"], kssl.meta)$MeasurementsDateEnd)
+```
+
+    ## Joining by: sample_id
+
+``` r
+kssl.mir$scan.license.title_ascii_txt = "CC-BY"
+kssl.mir$scan.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx"
+kssl.mir$scan.doi_idf_c = ""
+kssl.mir$scan.contact.name_utf8_txt = "Scarlett Murphy"
+kssl.mir$scan.contact.email_ietf_email = "Scarlett.Murphy@usda.gov"
+kssl.mir$scan.mir.nafreq_ossl_pct = samples.na.gaps
+kssl.mir$scan.mir.negfreq_ossl_pct = samples.negative
+kssl.mir$scan.mir.extfreq_ossl_pct = samples.extreme
 ```
 
 Save to RDS file:
 
 ``` r
-x.na = mir.name[which(!mir.name %in% names(kssl.mir.f))]
-if(length(x.na)>0){ for(i in x.na){ kssl.mir.f[,i] <- NA } }
-str(kssl.mir.f[,mir.name[1:24]])
+x.na = mir.name[which(!mir.name %in% names(kssl.mir))]
+if(length(x.na)>0){ for(i in x.na){ kssl.mir[,i] <- NA } }
+str(kssl.mir[,mir.name[1:24]])
 ```
 
-    ## 'data.frame':    69914 obs. of  24 variables:
-    ##  $ id.scan_uuid_c                     : chr  "a10c95104a1549ad1484426cd1595cdb" "789afd6f9f974918679149fef98c5000" "ef4d512f70b2b3259de12b4e5978558c" "31f753480956b63da64e5c5c916bab9a" ...
+    ## 'data.frame':    69864 obs. of  24 variables:
+    ##  $ id.scan_uuid_c                     : chr  "bc12dfe7d5f7160f78c85d8537db0a82" "0bfcbb85f307e9da6e1c5fa60a2f47c3" "f6268f57b0d4cf284c6c9261ed989403" "55f3c86ca2c1c80036ccb288215c2988" ...
     ##  $ id.scan_local_c                    : chr  "32987" "32988" "32989" "32990" ...
     ##  $ id.layer_uuid_c                    : chr  "147540e129e096fa91700e9db6588354" "b90ba83119860d7f6a6dfaab9f2aa150" "b052e2e0c0ad1b2d5036bd56e27d061c" "7e889fb76e0e07c11733550f2a6c7a5a" ...
     ##  $ id.layer_local_c                   : 'labelled' int  4301 4302 4303 4304 4305 4306 4307 4308 4309 4310 ...
     ##   ..- attr(*, "label")= chr "lay_id"
     ##  $ model.name_utf8_txt                : chr  "Bruker Vertex 70 with HTS-XT accessory" "Bruker Vertex 70 with HTS-XT accessory" "Bruker Vertex 70 with HTS-XT accessory" "Bruker Vertex 70 with HTS-XT accessory" ...
     ##  $ model.code_any_c                   : chr  "Bruker_Vertex_70.HTS.XT" "Bruker_Vertex_70.HTS.XT" "Bruker_Vertex_70.HTS.XT" "Bruker_Vertex_70.HTS.XT" ...
-    ##  $ method.light.source_any_c          : chr  "" "" "" "" ...
+    ##  $ method.light.source_any_c          : chr  "KBr" "KBr" "KBr" "KBr" ...
     ##  $ method.preparation_any_c           : chr  "" "" "" "" ...
-    ##  $ scan.file_any_c                    : chr  "" "" "" "" ...
-    ##  $ scan.date.begin_iso.8601_yyyy.mm.dd: Date, format: "2020-11-20" "2020-11-20" "2020-11-20" "2020-11-20" ...
-    ##  $ scan.date.end_iso.8601_yyyy.mm.dd  : Date, format: "2020-11-20" "2020-11-20" "2020-11-20" "2020-11-20" ...
+    ##  $ scan.file_any_c                    : chr  "32987XS01.0; 32987XS02.0; 32987XS03.0; 32987XS04.0" "32988XS01.0; 32988XS02.0; 32988XS03.0; 32988XS04.0" "32989XS01.0; 32989XS02.0; 32989XS03.0; 32989XS04.0" "32990XS01.0; 32990XS02.0; 32990XS03.0; 32990XS04.0" ...
+    ##  $ scan.date.begin_iso.8601_yyyy.mm.dd: chr  "2019-07-26" "2019-07-26" "2019-07-26" "2019-07-26" ...
+    ##  $ scan.date.end_iso.8601_yyyy.mm.dd  : chr  "2019-07-26" "2019-07-26" "2019-07-26" "2019-07-26" ...
     ##  $ scan.license.title_ascii_txt       : chr  "CC-BY" "CC-BY" "CC-BY" "CC-BY" ...
     ##  $ scan.license.address_idn_url       : chr  "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx" "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx" "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx" "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx" ...
     ##  $ scan.doi_idf_c                     : chr  "" "" "" "" ...
     ##  $ scan.contact.name_utf8_txt         : chr  "Scarlett Murphy" "Scarlett Murphy" "Scarlett Murphy" "Scarlett Murphy" ...
     ##  $ scan.contact.email_ietf_email      : chr  "Scarlett.Murphy@usda.gov" "Scarlett.Murphy@usda.gov" "Scarlett.Murphy@usda.gov" "Scarlett.Murphy@usda.gov" ...
-    ##  $ scan_mir.600_abs                   : num  1613 1561 1710 1653 1517 ...
+    ##  $ scan.mir.nafreq_ossl_pct           : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ scan.mir.negfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ scan.mir.extfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ scan_mir.600_abs                   : num  1613 1562 1710 1652 1516 ...
     ##  $ scan_mir.602_abs                   : num  1615 1567 1720 1659 1525 ...
-    ##  $ scan_mir.604_abs                   : num  1617 1576 1729 1668 1537 ...
+    ##  $ scan_mir.604_abs                   : num  1617 1576 1728 1668 1537 ...
     ##  $ scan_mir.606_abs                   : num  1620 1584 1737 1679 1550 ...
     ##  $ scan_mir.608_abs                   : num  1624 1592 1746 1689 1561 ...
-    ##  $ scan_mir.610_abs                   : num  1627 1600 1755 1697 1571 ...
-    ##  $ scan_mir.612_abs                   : num  1630 1607 1763 1702 1577 ...
-    ##  $ scan_mir.614_abs                   : num  1633 1612 1768 1707 1582 ...
 
 ``` r
 mir.rds = paste0(dir, "ossl_mir_v1.rds")
 if(!file.exists(mir.rds)){
-  saveRDS.gz(kssl.mir.f[,mir.name], mir.rds)
+  saveRDS.gz(kssl.mir[,mir.name], mir.rds)
 }
-rm(kssl.mir.spec); rm(kssl.mir); rm(kssl.abs)
+#rm(kssl.mir.spec); rm(kssl.mir); rm(kssl.abs)
 gc()
 ```
 
-    ##             used   (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells  17162230  916.6   30257581  1616.0   30257581  1616.0
-    ## Vcells 805355736 6144.4 2148284288 16390.2 1790167046 13657.9
+    ##              used   (Mb) gc trigger    (Mb)   max used    (Mb)
+    ## Ncells   16884549  901.8   30856917  1648.0   30856917  1648.0
+    ## Vcells 1168044979 8911.5 2072345853 15810.8 2072345379 15810.8
 
 ## Visible and near-infrared spectroscopy data
 
@@ -759,24 +818,41 @@ package](https://rdrr.io/cran/asdreader/man/get_spectra.html):
 
 ``` r
 kssl.vnir = readRDS.gz(paste0(dir, "vnir_09MAR2021.rds"))
+#kssl.vnir = vroom::vroom(paste0(dir, "VNIR_Spectra_Library_19APR2022.csv"))
+kssl.vnirmeta = read.csv(paste0(dir, "VNIR_Spectra_Library_meta.csv"))
 dim(kssl.vnir)
 ```
 
     ## [1] 69715  2162
 
-Clean up / remove negative values:
+``` r
+## 69,715  2162
+```
+
+Detect negative values:
 
 ``` r
 sel.vnir = grep("spec.vnir_", names(kssl.vnir))
 #hist(as.vector(unlist(kssl.vnir[,sel.vnir[sample.int(length(sel.vnir), 10)]])), breaks=45, main="VisNIR")
-kssl.vnir.f = parallel::mclapply(kssl.vnir[,sel.vnir], function(j){round(ifelse(j<0, NA, ifelse(j>1, NA, j))*100, 1)}, mc.cores=80)
-kssl.vnir.f = as.data.frame(do.call(cbind, kssl.vnir.f))
-dim(kssl.vnir.f)
+library(doMC)
+cl = makeCluster(mc <- getOption("cl.cores", 80))
+samples0.na.gaps = parallel::parRapply(cl, kssl.vnir[,sel.vnir], FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples0.negative = parallel::parRapply(cl, kssl.vnir[,sel.vnir], FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
+sum(samples0.negative>0, na.rm=TRUE)
 ```
 
-    ## [1] 69715  2151
+    ## [1] 64
 
 ``` r
+samples0.extreme = parallel::parRapply(cl, kssl.vnir[,sel.vnir], FUN=function(j){ round(100*sum(j >= 1, na.rm=TRUE)/length(j), 3) })
+sum(samples0.extreme>0, na.rm=TRUE)
+```
+
+    ## [1] 108
+
+``` r
+stopCluster(cl)
+kssl.vnir.f = round(kssl.vnir[,sel.vnir]*100, 1)
 vnir.s = sapply(names(kssl.vnir)[sel.vnir], function(i){ strsplit(i, "_")[[1]][2] })
 vnir.n = paste0("scan_visnir.", vnir.s, "_pcnt")
 names(kssl.vnir.f) = vnir.n
@@ -785,8 +861,8 @@ names(kssl.vnir.f) = vnir.n
 Plot and check individual curves:
 
 ``` r
-#str(names(kssl.mir.f))
 kssl.vnir.f$smp.id = kssl.vnir$smp.id
+#str(names(kssl.vnir))
 matplot(y=as.vector(t(kssl.vnir.f[4700,vnir.n])), x=vnir.s,
         ylim = c(0,60),
         type = 'l', 
@@ -795,13 +871,12 @@ matplot(y=as.vector(t(kssl.vnir.f[4700,vnir.n])), x=vnir.s,
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-68-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-126-1.png)<!-- -->
 
-Adding basic
-columns:
+Adding basic columns:
 
 ``` r
-kssl.vnir.f$id.layer_local_c = plyr::join(kssl.vnir.f[c("smp.id")], kssl.x[c("id.scan_uuid_c", "smp.id", "lay.id")], match = "first")$lay.id
+kssl.vnir.f$id.layer_local_c = plyr::join(kssl.vnir.f[c("smp.id")], kssl.x[c("smp.id", "lay.id")], match = "first")$lay.id
 ```
 
     ## Joining by: smp.id
@@ -814,24 +889,14 @@ summary(is.na(kssl.vnir.f$smp.id))
     ## logical   68259    1456
 
 ``` r
-kssl.vnir.f$id.scan_uuid_c = plyr::join(kssl.vnir.f[c("smp.id")], kssl.x[c("id.scan_uuid_c", "smp.id")], match = "first")$id.scan_uuid_c
-```
-
-    ## Joining by: smp.id
-
-``` r
+kssl.vnir.f$id.scan_uuid_c = openssl::md5(make.unique(paste0("KSSL.SSL.VNIR", kssl.vnir.f$smp.id)))
 summary(is.na(kssl.vnir.f$id.scan_uuid_c))
 ```
 
-    ##    Mode   FALSE    TRUE 
-    ## logical   33836   35879
+    ##    Mode   FALSE 
+    ## logical   69715
 
 ``` r
-## many missing IDs
-#   Mode   FALSE    TRUE 
-#logical   33836   35879
-v.unique_id = openssl::md5(make.unique(paste0("KSSL.SSL", 1:nrow(kssl.vnir.f))))
-kssl.vnir.f$id.scan_uuid_c = ifelse(is.na(kssl.vnir.f$id.scan_uuid_c), v.unique_id, kssl.vnir.f$id.scan_uuid_c)
 kssl.vnir.f$id.scan_local_c = kssl.vnir.f$smp.id
 kssl.vnir.f$id.layer_uuid_c = plyr::join(kssl.vnir.f["id.layer_local_c"], kssl.yw[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
 ```
@@ -859,6 +924,9 @@ kssl.vnir.f$scan.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda
 kssl.vnir.f$scan.doi_idf_c = ""
 kssl.vnir.f$scan.contact.name_utf8_txt = "Scarlett Murphy"
 kssl.vnir.f$scan.contact.email_ietf_email = "Scarlett.Murphy@usda.gov"
+kssl.vnir.f$scan.visnir.nafreq_ossl_pct = samples0.na.gaps
+kssl.vnir.f$scan.visnir.negfreq_ossl_pct = samples0.negative
+kssl.vnir.f$scan.visnir.extfreq_ossl_pct = samples0.extreme
 ```
 
 Save final table:
@@ -874,28 +942,36 @@ if(!file.exists(visnir.rds)){
 #rm(kssl.vnir)
 ```
 
-### Quality control
+## Quality control
 
 Check if some points don’t have any spectral scans:
 
 ``` r
-summary(is.na(kssl.mir.f$id.scan_uuid_c))
+summary(is.na(kssl.mir$id.scan_uuid_c))
 ```
 
     ##    Mode   FALSE 
-    ## logical   69914
+    ## logical   69864
 
 ``` r
-mis.r = kssl.mir.f$id.layer_uuid_c %in% kssl.sitef$id.layer_uuid_c
+mis.r = kssl.mir$id.layer_uuid_c %in% kssl.sitef$id.layer_uuid_c
 summary(mis.r)
 ```
 
     ##    Mode   FALSE    TRUE 
-    ## logical     649   69265
+    ## logical     649   69215
 
 ``` r
 ## some 649 scans have no soil data
 ```
+
+Check if now scan IDs are duplicate:
+
+``` r
+sum(duplicated(c(kssl.mir$id.scan_uuid_c, kssl.vnir.f$id.scan_uuid_c)))
+```
+
+    ## [1] 0
 
 ## Distribution of points
 
@@ -906,6 +982,20 @@ using:
 
 ``` r
 library(maps)
+```
+
+    ## 
+    ## Attaching package: 'maps'
+
+    ## The following object is masked from 'package:purrr':
+    ## 
+    ##     map
+
+    ## The following object is masked from 'package:plyr':
+    ## 
+    ##     ozone
+
+``` r
 library(ggplot2)
 #colnames(kssl.sitef)
 usa.xy = kssl.sitef[,c("lay.id", "id.location_olc_c", "longitude_wgs84_dd", "latitude_wgs84_dd")]
@@ -932,9 +1022,10 @@ Fig. 1: USDA KSSL locations of sites within USA48.
 
 ## References
 
-<div id="refs" class="references">
+<div id="refs" class="references csl-bib-body hanging-indent"
+line-spacing="2">
 
-<div id="ref-sanderman2020mid">
+<div id="ref-sanderman2020mid" class="csl-entry">
 
 Sanderman, J., Savage, K., & Dangal, S. R. (2020). Mid-infrared
 spectroscopy for prediction of soil health indicators in the united
@@ -943,12 +1034,13 @@ doi:[10.1002/saj2.20009](https://doi.org/10.1002/saj2.20009)
 
 </div>
 
-<div id="ref-wijewardane2018predicting">
+<div id="ref-wijewardane2018predicting" class="csl-entry">
 
-Wijewardane, N. K., Ge, Y., Wills, S., & Libohova, Z. (2018). Predicting
-physical and chemical properties of US soils with a mid-infrared
-reflectance spectral library. *Soil Science Society of America Journal*,
-*82*(3), 722–731. doi:[10.2136/sssaj2017.10.0361](https://doi.org/10.2136/sssaj2017.10.0361)
+Wijewardane, N. K., Ge, Y., Wills, S., & Libohova, Z. (2018). <span
+class="nocase">Predicting physical and chemical properties of US soils
+with a mid-infrared reflectance spectral library</span>. *Soil Science
+Society of America Journal*, *82*(3), 722–731.
+doi:[10.2136/sssaj2017.10.0361](https://doi.org/10.2136/sssaj2017.10.0361)
 
 </div>
 

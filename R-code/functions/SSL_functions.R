@@ -69,12 +69,14 @@ mir.name = c("id.scan_uuid_c", "id.scan_local_c", "id.layer_uuid_c", "id.layer_l
              "method.preparation_any_c", "scan.file_any_c", "scan.date.begin_iso.8601_yyyy.mm.dd",
              "scan.date.end_iso.8601_yyyy.mm.dd", "scan.license.title_ascii_txt", "scan.license.address_idn_url",
              "scan.doi_idf_c", "scan.contact.name_utf8_txt", "scan.contact.email_ietf_email",
+             "scan.mir.nafreq_ossl_pct", "scan.mir.negfreq_ossl_pct", "scan.mir.extfreq_ossl_pct",
              paste0("scan_mir.", seq(600, 4000, by=2), "_abs"))
 visnir.name = c("id.scan_uuid_c", "id.scan_local_c", "id.layer_uuid_c", "id.layer_local_c", "model.name_utf8_txt",
                 "model.code_any_c", "method.light.source_any_c", "method.preparation_any_c",
                 "scan.file_any_c", "scan.date.begin_iso.8601_yyyy.mm.dd", "scan.date.end_iso.8601_yyyy.mm.dd",
                 "scan.license.title_ascii_txt", "scan.license.address_idn_url", "scan.doi_idf_c",
                 "scan.contact.name_utf8_txt", "scan.contact.email_ietf_email",
+                "scan.visnir.nafreq_ossl_pct", "scan.visnir.negfreq_ossl_pct", "scan.visnir.extfreq_ossl_pct",
                 paste0("scan_visnir.", seq(350, 2500, by=2), "_pcnt"))
 
 ## Function to find a mode

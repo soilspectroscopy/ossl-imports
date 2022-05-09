@@ -3,7 +3,7 @@ Dataset import: The Land-Use/Cover Area Survey Soil and Spectral Library
 ================
 Tomislav Hengl (<tom.hengl@opengeohub.org>) and Leandro Parente
 (<leandro.parente@opengeohub.org>)
-04 December, 2021
+08 May, 2022
 
 
 
@@ -34,7 +34,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2021-12-04  
+Last update: 2022-05-08  
 Dataset:
 [LUCAS.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#lucas.ssl)
 
@@ -65,6 +65,7 @@ Directory/folder path
 
 ``` r
 dir = "/mnt/soilspec4gg/ossl/dataset/LUCAS/"
+#load.pigz(paste0(dir, "LUCAS.RData"))
 ```
 
 ## Data import
@@ -234,7 +235,7 @@ Bind two datasets:
 
 ``` r
 lucas.soil = plyr::rbind.fill(df.2009w, df.2015w)
-lucas.soil$id.layer_uuid_c = openssl::md5(make.unique(paste0("LUCAS.SSL", lucas.soil$id.layer_local_c)))
+lucas.soil$id.layer_uuid_c = openssl::md5(make.unique(paste0("LUCAS", lucas.soil$id.layer_local_c)))
 ```
 
 Exporting the table:
@@ -336,22 +337,50 @@ summary(as.numeric(lucas.vnir2015$`2100`))
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ## 0.08286 0.31486 0.36267 0.37528 0.41948 1.10233
 
-Clean up / remove negative values. Values need to be converted to
-reflectances.
+Detect negative values / convert to reflectances.
 
 ``` r
 sel.vnir2015 = names(lucas.vnir2015)[6:ncol(lucas.vnir2015)]
 ## 4200
-lucas.vnir2015.f = parallel::mclapply(as.data.frame(lucas.vnir2015)[,6:ncol(lucas.vnir2015)], function(j){j <- 1/exp(as.numeric(j)); round(ifelse(j<0, NA, ifelse(j>1, NA, j))*100, 1)}, mc.cores=32)
-#lucas.vnir2015.f = parallel::mclapply(as.data.frame(lucas.vnir2015)[,6:ncol(lucas.vnir2015)], function(j){round(ifelse(j<0, NA, ifelse(j>1, NA, j))*100, 1)}, mc.cores=80)
+## convert to percent reflectance
+lucas.vnir2015.f = parallel::mclapply(as.data.frame(lucas.vnir2015)[,6:ncol(lucas.vnir2015)], function(j){1/exp(as.numeric(j))}, mc.cores=32)
 lucas.vnir2015.f = as.data.frame(do.call(cbind, lucas.vnir2015.f))
-dim(lucas.vnir2015.f)
+library(doMC)
 ```
 
-    ## [1] 43560  4200
+    ## Loading required package: foreach
+
+    ## 
+    ## Attaching package: 'foreach'
+
+    ## The following objects are masked from 'package:purrr':
+    ## 
+    ##     accumulate, when
+
+    ## Loading required package: iterators
+
+    ## Loading required package: parallel
 
 ``` r
-## 43560  4200
+cl = makeCluster(mc <- getOption("cl.cores", 32))
+samples0.na.gaps = parallel::parRapply(cl, lucas.vnir2015.f, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples0.negative = parallel::parRapply(cl, lucas.vnir2015.f, FUN=function(j){ round(100*sum(j <= 0, na.rm = TRUE)/length(j), 3) })
+sum(samples0.negative>0, na.rm=TRUE)
+```
+
+    ## [1] 0
+
+``` r
+samples0.extreme = parallel::parRapply(cl, lucas.vnir2015.f, FUN=function(j){ round(100*sum(j >= 1, na.rm = TRUE)/length(j), 3) })
+sum(samples0.extreme>0, na.rm=TRUE)
+```
+
+    ## [1] 0
+
+``` r
+stopCluster(cl)
+lucas.vnir2015.f = round(lucas.vnir2015.f*100, 1)
+vnir2015.s = sapply(names(lucas.vnir2015)[sel.vnir2015], function(i){ strsplit(i, "_")[[1]][2] })
 vnir2015.n = paste0("scan_visnir.", sel.vnir2015, "_pcnt")
 names(lucas.vnir2015.f) = vnir2015.n
 lucas.vnir2015.f$id.layer_local_c = paste0("2015.", lucas.vnir2015$PointID)
@@ -359,9 +388,9 @@ lucas.vnir2015.f$id.scan_local_c = make.unique(paste(lucas.vnir2015$SampleID))
 rm(lucas.vnir2015); gc()
 ```
 
-    ##             used   (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells   4982452  266.1    8807212   470.4    8807212   470.4
-    ## Vcells 695886910 5309.2 1650453960 12592.0 1650407435 12591.7
+    ##             used   (Mb) gc trigger   (Mb)   max used    (Mb)
+    ## Ncells   5124043  273.7    9126245  487.4    9126245   487.4
+    ## Vcells 433635577 3308.4 1264314646 9646.0 1646089843 12558.7
 
 Plot and check individual curves:
 
@@ -374,12 +403,31 @@ matplot(y=as.vector(t(lucas.vnir2015.f[10250,vnir2015.n])), x=as.numeric(sel.vni
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
 ``` r
 sel.vnir2009 = names(lucas.vnir2009)
-lucas.vnir2009.f = parallel::mclapply(as.data.frame(lucas.vnir2009), function(j){j <- 1/exp(as.numeric(j)); round(ifelse(j<0, NA, ifelse(j>1, NA, j))*100, 1)}, mc.cores=32)
+lucas.vnir2009.f = parallel::mclapply(as.data.frame(lucas.vnir2009), function(j){1/exp(as.numeric(j))}, mc.cores=32)
 lucas.vnir2009.f = as.data.frame(do.call(cbind, lucas.vnir2009.f))
+library(doMC)
+cl = makeCluster(mc <- getOption("cl.cores", 32))
+samples1.na.gaps = parallel::parRapply(cl, lucas.vnir2009.f, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples1.negative = parallel::parRapply(cl, lucas.vnir2009.f, FUN=function(j){ round(100*sum(j <= 0)/length(j), 3) })
+sum(samples1.negative>0, na.rm=TRUE)
+```
+
+    ## [1] 0
+
+``` r
+samples1.extreme = parallel::parRapply(cl, lucas.vnir2009.f, FUN=function(j){ round(100*sum(j >= 1)/length(j), 3) })
+sum(samples0.extreme>0, na.rm=TRUE)
+```
+
+    ## [1] 0
+
+``` r
+stopCluster(cl)
+lucas.vnir2009.f = round(lucas.vnir2009.f*100, 1)
 vnir2009.n = paste0("scan_visnir.", sel.vnir2009, "_pcnt")
 names(lucas.vnir2009.f) = vnir2009.n
 lucas.vnir2009.f$id.layer_local_c = paste0("2009.", LUCAS.SOIL$POINT_ID)
@@ -387,9 +435,9 @@ lucas.vnir2009.f$id.scan_local_c = make.unique(paste(LUCAS.SOIL$sample.ID))
 rm(lucas.vnir2009); gc()
 ```
 
-    ##             used   (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells   4982370  266.1    8807212   470.4    8807212   470.4
-    ## Vcells 695806385 5308.6 1650453960 12592.0 1650407435 12591.7
+    ##             used   (Mb) gc trigger   (Mb)   max used    (Mb)
+    ## Ncells   5124058  273.7    9126245  487.4    9126245   487.4
+    ## Vcells 433501504 3307.4 1264314646 9646.0 1646089843 12558.7
 
 Plot and check individual curves:
 
@@ -402,7 +450,7 @@ matplot(y=as.vector(t(lucas.vnir2009.f[524,vnir2009.n])), x=as.numeric(sel.vnir2
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
 
 Add missing columns:
 
@@ -411,10 +459,16 @@ lucas.vnir2009.f$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2009-06-01")
 lucas.vnir2009.f$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2012-11-01")
 lucas.vnir2009.f$scan.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/content/lucas-2009-topsoil-data"
 lucas.vnir2009.f$scan.doi_idf_c = "10.1371/journal.pone.0066409"
+lucas.vnir2009.f$scan.visnir.nafreq_ossl_pct = samples1.na.gaps
+lucas.vnir2009.f$scan.visnir.negfreq_ossl_pct = samples1.negative
+lucas.vnir2009.f$scan.visnir.extfreq_ossl_pct = samples1.extreme
 lucas.vnir2015.f$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2015-03-01")
 lucas.vnir2015.f$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2015-12-01")
 lucas.vnir2015.f$scan.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/content/lucas2015-topsoil-data"
 lucas.vnir2015.f$scan.doi_idf_c = "10.2788/97922"
+lucas.vnir2015.f$scan.visnir.nafreq_ossl_pct = samples0.na.gaps
+lucas.vnir2015.f$scan.visnir.negfreq_ossl_pct = samples0.negative
+lucas.vnir2015.f$scan.visnir.extfreq_ossl_pct = samples0.extreme
 ```
 
 Bind the two periods into a single object:
@@ -422,11 +476,11 @@ Bind the two periods into a single object:
 ``` r
 lucas.vnir.f = plyr::rbind.fill(lucas.vnir2009.f, lucas.vnir2015.f)
 #v.unique_id = uuid::UUIDgenerate(use.time=TRUE, n=nrow(lucas.vnir.f)) 
-v.unique_id = openssl::md5(make.unique(paste0("LUCAS.SSL", lucas.vnir.f$id.scan_local_c)))
+v.unique_id = openssl::md5(make.unique(paste0("LUCAS.VNIR", lucas.vnir.f$id.scan_local_c)))
 lucas.vnir.f$id.scan_uuid_c = v.unique_id
 ```
 
-Resample values and remove artifacts:
+Resample values and remove values 350–450 nm:
 
 ``` r
 lucas.vnir.spec = lucas.vnir.f[,grep("scan_visnir.", names(lucas.vnir.f))]
@@ -439,12 +493,17 @@ lucas.vnir = prospectr::resample(lucas.vnir.spec, wav.nir, seq(350, 2500, by=2),
 lucas.vnir = as.data.frame(lucas.vnir)
 visnir.n = paste0("scan_visnir.", seq(350, 2500, by=2), "_pcnt")
 colnames(lucas.vnir) = visnir.n
-## https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0066409
-## The beginning of the Vis (400–500 nm) showed instrumental artifacts and was therefore removed.
+```
+
+The beginning of the Vis (400–500 nm) showed instrumental artifacts and
+was therefore removed. For more details see:
+<https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0066409>:
+
+``` r
 lucas.vnir = lucas.vnir[,-(1:length(seq(350, 450, by=2)))]
 ```
 
-Final check:
+Final check (now without 350–450 nm):
 
 ``` r
 matplot(y=as.vector(t(lucas.vnir[100,])), x=seq(452, 2500, by=2),
@@ -455,7 +514,7 @@ matplot(y=as.vector(t(lucas.vnir[100,])), x=seq(452, 2500, by=2),
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
 
 Adding other basic columns:
 
@@ -488,6 +547,24 @@ summary(is.na(lucas.vnir$id.layer_uuid_c))
 
 ``` r
 ## 2 NA
+lucas.vnir$scan.visnir.nafreq_ossl_pct = plyr::join(lucas.vnir["id.scan_uuid_c"], lucas.vnir.f[,c("id.scan_uuid_c", "scan.visnir.nafreq_ossl_pct")])$scan.visnir.nafreq_ossl_pct
+```
+
+    ## Joining by: id.scan_uuid_c
+
+``` r
+lucas.vnir$scan.visnir.negfreq_ossl_pct = plyr::join(lucas.vnir["id.scan_uuid_c"], lucas.vnir.f[,c("id.scan_uuid_c", "scan.visnir.negfreq_ossl_pct")])$scan.visnir.negfreq_ossl_pct
+```
+
+    ## Joining by: id.scan_uuid_c
+
+``` r
+lucas.vnir$scan.visnir.extfreq_ossl_pct = plyr::join(lucas.vnir["id.scan_uuid_c"], lucas.vnir.f[,c("id.scan_uuid_c", "scan.visnir.extfreq_ossl_pct")])$scan.visnir.extfreq_ossl_pct
+```
+
+    ## Joining by: id.scan_uuid_c
+
+``` r
 lucas.vnir$scan.date.begin_iso.8601_yyyy.mm.dd = lucas.vnir.f$scan.date.begin_iso.8601_yyyy.mm.dd
 lucas.vnir$scan.date.end_iso.8601_yyyy.mm.dd = lucas.vnir.f$scan.date.end_iso.8601_yyyy.mm.dd
 lucas.vnir$scan.license.address_idn_url = lucas.vnir.f$scan.license.address_idn_url
@@ -526,7 +603,7 @@ lucas.mir = vroom::vroom("/mnt/soilspec4gg/ossl/dataset/validation/LUCAS_Woodwel
     ## Columns: 3,035
     ## Delimiter: ","
     ## chr [   1]: run_date
-    ## dbl [3034]: WHRC_ID, LUCAS_ID, POINT_ID, GPS_LAT, GPS_LONG, coarse, clay, silt, sand, pH_in_H2O, pH_in_CaCl2, OC, CaCO3, N, P, K, CEC, 5996.485, 5994....
+    ## dbl [3034]: WHRC_ID, LUCAS_ID, POINT_ID, GPS_LAT, GPS_LONG, coarse, clay, silt, sand, pH_in_H2O, pH_in_CaCl2, OC, CaCO3, N, P, K, CEC, 5996.485, 5994.556, 5992.627, 5990....
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
@@ -560,14 +637,8 @@ str(lucas.mir$id.layer_local_c[which(!lucas.mir$id.layer_local_c %in% lucas.site
     ##  chr(0)
 
 ``` r
-lucas.mir$id.scan_uuid_c = plyr::join(lucas.mir["id.layer_local_c"], lucas.vnir[c("id.scan_uuid_c","id.layer_local_c")])$id.scan_uuid_c
-```
-
-    ## Joining by: id.layer_local_c
-
-``` r
+lucas.mir$id.scan_uuid_c = openssl::md5(make.unique(paste0("LUCAS.MIR", lucas.mir$id.layer_local_c)))
 #summary(duplicated(lucas.mir$id.scan_uuid_c))
-## 8
 ```
 
 Resampling the MIR spectra from the original window size to 2 cm-1 in
@@ -593,28 +664,34 @@ summary(wav.mir)
 lucas.mir.spec = as.matrix(lucas.abs[,sel.abs])
 colnames(lucas.mir.spec) = wav.mir
 #rownames(lucas.mir.spec) = lucas.mir$id.scan_uuid_c
-## remove values out of range
-lucas.mir = prospectr::resample(lucas.mir.spec, wav.mir, seq(600, 4000, 2)) 
-lucas.mir = as.data.frame(lucas.mir)
-mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
-colnames(lucas.mir) = mir.n
+samples.na.gaps = apply(lucas.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples.negative = apply(lucas.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
+sum(samples.negative>0)
 ```
 
-Remove values out of range:
+    ## [1] 0
 
 ``` r
-lucas.mir.f = parallel::mclapply(lucas.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, NA, j))*1000) }, mc.cores=32)
-lucas.mir.f = as.data.frame(do.call(cbind, lucas.mir.f))
-#str(names(lucas.mir.f))
-#lucas.mir.f$id.scan_uuid_c = rownames(lucas.mir)
-lucas.mir.f$id.scan_uuid_c = lucas.abs$id.scan_uuid_c
+samples.extreme = apply(lucas.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) })
+sum(samples.extreme>0)
+```
+
+    ## [1] 53
+
+``` r
+## resample values
+lucas.mir = prospectr::resample(lucas.mir.spec, wav.mir, seq(600, 4000, 2)) 
+lucas.mir = round(as.data.frame(lucas.mir)*1000)
+mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
+colnames(lucas.mir) = mir.n
+lucas.mir$id.scan_uuid_c = lucas.abs$id.scan_uuid_c
 ```
 
 Plotting MIR spectra to see if there are still maybe negative values in
 the table:
 
 ``` r
-matplot(y=as.vector(t(lucas.mir.f[25,mir.n])), x=seq(600, 4000, 2),
+matplot(y=as.vector(t(lucas.mir[25,mir.n])), x=seq(600, 4000, 2),
         ylim = c(0,3000),
         type = 'l', 
         xlab = "Wavelength", 
@@ -622,54 +699,57 @@ matplot(y=as.vector(t(lucas.mir.f[25,mir.n])), x=seq(600, 4000, 2),
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-47-1.png)<!-- -->
 
 Export final MIR table:
 
 ``` r
-lucas.mir.f$id.layer_local_c = plyr::join(lucas.mir.f["id.scan_uuid_c"], lucas.vnir[c("id.scan_uuid_c","id.layer_local_c")], match="first")$id.layer_local_c
+lucas.mir$id.layer_local_c = plyr::join(lucas.mir["id.scan_uuid_c"], lucas.vnir[c("id.scan_uuid_c","id.layer_local_c")], match="first")$id.layer_local_c
 ```
 
     ## Joining by: id.scan_uuid_c
 
 ``` r
-#summary(is.na(lucas.mir.f$id.scan_uuid_c))
-lucas.mir.f$id.layer_uuid_c = plyr::join(lucas.mir.f["id.layer_local_c"], lucas.soil[,c("id.layer_local_c", "id.layer_uuid_c")])$id.layer_uuid_c
+#summary(is.na(lucas.mir$id.scan_uuid_c))
+lucas.mir$id.layer_uuid_c = plyr::join(lucas.mir["id.layer_local_c"], lucas.soil[,c("id.layer_local_c", "id.layer_uuid_c")])$id.layer_uuid_c
 ```
 
     ## Joining by: id.layer_local_c
 
 ``` r
-summary(is.na(lucas.mir.f$id.layer_uuid_c))
+summary(is.na(lucas.mir$id.layer_uuid_c))
 ```
 
-    ##    Mode   FALSE 
+    ##    Mode    TRUE 
     ## logical     605
 
 ``` r
-lucas.mir.f$model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory"
-lucas.mir.f$model.code_any_c = "Bruker_Vertex_70.HTS.XT"
-lucas.mir.f$method.light.source_any_c = ""
-lucas.mir.f$method.preparation_any_c = ""
-lucas.mir.f$scan.file_any_c = ""
-lucas.mir.f$scan.date.begin_iso.8601_yyyy.mm.dd = "2019-04-26"
-lucas.mir.f$scan.date.end_iso.8601_yyyy.mm.dd = "2019-06-13"
-lucas.mir.f$scan.license.title_ascii_txt = "CC-BY"
-lucas.mir.f$scan.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/"
-lucas.mir.f$scan.doi_idf_c = "10.3390/s20236729"
-lucas.mir.f$scan.contact.name_utf8_txt = "Jonathan Sanderman"
-lucas.mir.f$scan.contact.email_ietf_email = "jsanderman@woodwellclimate.org"
+lucas.mir$model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory"
+lucas.mir$model.code_any_c = "Bruker_Vertex_70.HTS.XT"
+lucas.mir$method.light.source_any_c = ""
+lucas.mir$method.preparation_any_c = ""
+lucas.mir$scan.file_any_c = ""
+lucas.mir$scan.date.begin_iso.8601_yyyy.mm.dd = "2019-04-26"
+lucas.mir$scan.date.end_iso.8601_yyyy.mm.dd = "2019-06-13"
+lucas.mir$scan.license.title_ascii_txt = "CC-BY"
+lucas.mir$scan.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/"
+lucas.mir$scan.doi_idf_c = "10.3390/s20236729"
+lucas.mir$scan.contact.name_utf8_txt = "Jonathan Sanderman"
+lucas.mir$scan.contact.email_ietf_email = "jsanderman@woodwellclimate.org"
+lucas.mir$scan.mir.nafreq_ossl_pct = samples.na.gaps
+lucas.mir$scan.mir.negfreq_ossl_pct = samples.negative
+lucas.mir$scan.mir.extfreq_ossl_pct = samples.extreme
 ```
 
 Save to RDS file:
 
 ``` r
-x.na = mir.name[which(!mir.name %in% names(lucas.mir.f))]
-if(length(x.na)>0){ for(i in x.na){ lucas.mir.f[,i] <- NA } }
-#str(lucas.mir.f[,mir.name[1:24]])
+x.na = mir.name[which(!mir.name %in% names(lucas.mir))]
+if(length(x.na)>0){ for(i in x.na){ lucas.mir[,i] <- NA } }
+#str(lucas.mir[,mir.name[1:24]])
 mir.rds = paste0(dir, "ossl_mir_v1.rds")
 if(!file.exists(mir.rds)){
-  saveRDS.gz(lucas.mir.f[,mir.name], mir.rds)
+  saveRDS.gz(lucas.mir[,mir.name], mir.rds)
 }
 ```
 
@@ -678,15 +758,15 @@ if(!file.exists(mir.rds)){
 Check if some points don’t have any spectral scans:
 
 ``` r
-mis.r = lucas.mir.f$id.layer_local_c %in% lucas.site$id.layer_local_c
+mis.r = lucas.mir$id.layer_local_c %in% lucas.site$id.layer_local_c
 summary(mis.r)
 ```
 
-    ##    Mode    TRUE 
+    ##    Mode   FALSE 
     ## logical     605
 
 ``` r
-#str(lucas.mir.f$id.layer_local_c[which(!lucas.mir.f$id.layer_local_c %in% lucas.site$id.layer_local_c)])
+#str(lucas.mir$id.layer_local_c[which(!lucas.mir$id.layer_local_c %in% lucas.site$id.layer_local_c)])
 ```
 
 ### Distribution of points

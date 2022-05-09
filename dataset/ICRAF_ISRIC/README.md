@@ -3,7 +3,7 @@ Dataset import: The ICRAF-ISRIC Soil and Spectral Library (ICRAF-ISRIC)
 Tomislav Hengl (<tom.hengl@opengeohub.org>), Wanderson Mendes de Sousa
 (<wanderson.mendes@zalf.de>) and Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>)
-04 December, 2021
+08 May, 2022
 
 
 
@@ -34,7 +34,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2021-12-04  
+Last update: 2022-05-08  
 Dataset:
 [ICRAF.ISRIC](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#icraf.isric)
 
@@ -82,7 +82,7 @@ icraf.df = vroom::vroom(paste(dir, "ICRAF_ISRIC_reference_data.csv", sep = ""))
     ## Columns: 64
     ## Delimiter: ","
     ## chr [ 7]: Batch and labid, Country name, Plotcode, N / S, E / W, Remarks, Remarks
-    ## dbl [53]: ICRAF sample codes.SAMPLENO, HORI, BTOP, BBOT, Dsed, Lat: degr, Lat: min, Lat: sec, Long: degr, Long: min, Long: sec, Sample no, pH (H2O...
+    ## dbl [53]: ICRAF sample codes.SAMPLENO, HORI, BTOP, BBOT, Dsed, Lat: degr, Lat: min, Lat: sec, Long: degr, Long: min, Long: sec, Sample no, pH (H2O), pH (KCl), CaCO3, ...
     ## lgl [ 4]: pH (CaCl2), CaSO4, COLE, SSA
     ## 
     ## Use `spec()` to retrieve the guessed column specification
@@ -255,17 +255,10 @@ if(!file.exists(soilsite.rds)){
 Mid-infrared (MIR) soil spectroscopy raw data:
 
 ``` r
-icraf.mir = vroom::vroom(paste(dir, "ICRAF_ISRIC_MIR_spectra.csv", sep = ""))
+if(!exists("icraf.mir")){
+  icraf.mir = vroom::vroom(paste(dir, "ICRAF_ISRIC_MIR_spectra.csv", sep = ""))
+}
 ```
-
-    ## Rows: 4,308
-    ## Columns: 3,579
-    ## Delimiter: ","
-    ## chr [   1]: SSN
-    ## dbl [3578]: m7498, m7496, m7494.1, m7492.2, m7490.3, m7488.3, m7486.4, m7484.5, m7482.5, m7480.6, m7478.7, m7476.8, m7474.8, m7472.9, m7471, m7469, m7...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
 
 Some duplicates (average values?).
 
@@ -302,36 +295,50 @@ dim(icraf.abs)
 
     ## [1] 4308 3580
 
+List any possible problems in spectral scans:
+
 ``` r
 wav.mir = as.numeric(gsub("m", "", sel.abs)) # Get wavelength only
 # Creating a matrix with only spectral values to resample it
 icraf.mir.spec = as.matrix(icraf.mir[,sel.abs])
 colnames(icraf.mir.spec) = wav.mir
 rownames(icraf.mir.spec) = icraf.mir$id.scan_uuid_c
-## remove values out of range
-icraf.mir = prospectr::resample(icraf.mir.spec, wav.mir, seq(600, 4000, 2), interpol = "spline") 
+samples.na.gaps = apply(icraf.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples.negative = apply(icraf.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
+sum(samples.negative>0)
+```
+
+    ## [1] 0
+
+``` r
+samples.extreme = apply(icraf.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) })
+sum(samples.extreme>0)
+```
+
+    ## [1] 2
+
+Resample values to standard wavelengths:
+
+``` r
+icraf.mir.f = prospectr::resample(icraf.mir.spec, wav.mir, seq(600, 4000, 2), interpol = "spline") 
 ## Wavelength by 2 cm-1
-icraf.mir = as.data.frame(icraf.mir)
+icraf.mir.f = round(as.data.frame(icraf.mir.f)*1000)
 mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
-colnames(icraf.mir) = mir.n
-dim(icraf.mir)
+colnames(icraf.mir.f) = mir.n
+dim(icraf.mir.f)
 ```
 
     ## [1] 4308 1701
 
 ``` r
-summary(icraf.mir$scan_mir.602_abs)
+summary(icraf.mir.f$scan_mir.602_abs)
 ```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##  0.6825  1.5428  1.6628  1.6458  1.7637  2.1997
-
-Cleaning values out of range:
+    ##     683    1543    1663    1646    1764    2200
 
 ``` r
-icraf.mir.f = parallel::mclapply(icraf.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, NA, j))*1000) }, mc.cores=32)
-icraf.mir.f = as.data.frame(do.call(cbind, icraf.mir.f))
-icraf.mir.f$id.scan_uuid_c = rownames(icraf.mir)
+icraf.mir.f$id.scan_uuid_c = rownames(icraf.mir.spec)
 ```
 
 Plotting MIR spectra to see if it is still negative values in the table:
@@ -346,7 +353,7 @@ matplot(y=as.vector(t(icraf.mir.f[250,mir.n])), x=seq(600, 4000, 2),
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 Export final MIR table:
 
@@ -382,6 +389,9 @@ icraf.mir.f$scan.license.address_idn_url = "https://creativecommons.org/licenses
 icraf.mir.f$scan.doi_idf_c = "10.34725/DVN/MFHA9C"
 icraf.mir.f$scan.contact.name_utf8_txt = "Keith Shepherd"
 icraf.mir.f$scan.contact.email_ietf_email = "afsis.info@africasoils.net"
+icraf.mir.f$scan.mir.nafreq_ossl_pct = samples.na.gaps
+icraf.mir.f$scan.mir.negfreq_ossl_pct = samples.negative
+icraf.mir.f$scan.mir.extfreq_ossl_pct = samples.extreme
 ```
 
 Save to RDS file:
@@ -389,36 +399,7 @@ Save to RDS file:
 ``` r
 x.na = mir.name[which(!mir.name %in% names(icraf.mir.f))]
 if(length(x.na)>0){ for(i in x.na){ icraf.mir.f[,i] <- NA } }
-str(icraf.mir.f[,mir.name[1:24]])
-```
-
-    ## 'data.frame':    4308 obs. of  24 variables:
-    ##  $ id.scan_uuid_c                     : chr  "155ec7d951a8bbb6edca2879e69f9cbc" "4a52861bd5a47d3f32e6b6a7f2b63e01" "594ef6c549138844cf79a0fece6de7d2" "7417caf4328373c2f6b2977817f508b6" ...
-    ##  $ id.scan_local_c                    : logi  NA NA NA NA NA NA ...
-    ##  $ id.layer_uuid_c                    : chr  "df8de22c558bad75c33e85c351df3f77" "20cd3644dfddd6b1d849b6c093582f47" "53151bcd2c3beb1afa4f477cfb27e3a3" "f6dfc5401cdefff4e53cdace613453b0" ...
-    ##  $ id.layer_local_c                   : chr  "FS15R_FS4747" "FS15R_FS4748" "FS15R_FS4068" "FS15R_FS4069" ...
-    ##  $ model.name_utf8_txt                : chr  "Bruker Vertex 70 with HTS-XT accessory" "Bruker Vertex 70 with HTS-XT accessory" "Bruker Vertex 70 with HTS-XT accessory" "Bruker Vertex 70 with HTS-XT accessory" ...
-    ##  $ model.code_any_c                   : chr  "Bruker_Vertex_70.HTS.XT" "Bruker_Vertex_70.HTS.XT" "Bruker_Vertex_70.HTS.XT" "Bruker_Vertex_70.HTS.XT" ...
-    ##  $ method.light.source_any_c          : chr  "" "" "" "" ...
-    ##  $ method.preparation_any_c           : chr  "" "" "" "" ...
-    ##  $ scan.file_any_c                    : chr  "" "" "" "" ...
-    ##  $ scan.date.begin_iso.8601_yyyy.mm.dd: Date, format: "2004-02-01" "2004-02-01" "2004-02-01" "2004-02-01" ...
-    ##  $ scan.date.end_iso.8601_yyyy.mm.dd  : Date, format: "2004-11-01" "2004-11-01" "2004-11-01" "2004-11-01" ...
-    ##  $ scan.license.title_ascii_txt       : chr  "CC-BY" "CC-BY" "CC-BY" "CC-BY" ...
-    ##  $ scan.license.address_idn_url       : chr  "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" ...
-    ##  $ scan.doi_idf_c                     : chr  "10.34725/DVN/MFHA9C" "10.34725/DVN/MFHA9C" "10.34725/DVN/MFHA9C" "10.34725/DVN/MFHA9C" ...
-    ##  $ scan.contact.name_utf8_txt         : chr  "Keith Shepherd" "Keith Shepherd" "Keith Shepherd" "Keith Shepherd" ...
-    ##  $ scan.contact.email_ietf_email      : chr  "afsis.info@africasoils.net" "afsis.info@africasoils.net" "afsis.info@africasoils.net" "afsis.info@africasoils.net" ...
-    ##  $ scan_mir.600_abs                   : num  1372 1303 1565 1605 1620 ...
-    ##  $ scan_mir.602_abs                   : num  1377 1294 1572 1615 1628 ...
-    ##  $ scan_mir.604_abs                   : num  1379 1294 1580 1625 1641 ...
-    ##  $ scan_mir.606_abs                   : num  1382 1298 1591 1637 1658 ...
-    ##  $ scan_mir.608_abs                   : num  1387 1301 1606 1653 1679 ...
-    ##  $ scan_mir.610_abs                   : num  1395 1301 1626 1674 1703 ...
-    ##  $ scan_mir.612_abs                   : num  1403 1303 1646 1695 1723 ...
-    ##  $ scan_mir.614_abs                   : num  1409 1304 1660 1710 1739 ...
-
-``` r
+#str(icraf.mir.f[,mir.name[1:24]])
 mir.rds = paste0(dir, "ossl_mir_v1.rds")
 if(!file.exists(mir.rds)){
   saveRDS.gz(icraf.mir.f[,mir.name], mir.rds)
@@ -439,53 +420,57 @@ icraf.vnir = vroom::vroom(paste(dir, "ICRAF_ISRIC_VNIR_spectra.csv", sep = ""))
     ## Columns: 217
     ## Delimiter: ","
     ## chr [  1]: Batch.Labid
-    ## dbl [216]: W350, W360, W370, W380, W390, W400, W410, W420, W430, W440, W450, W460, W470, W480, W490, W500, W510, W520, W530, W540, W550, W560, W570,...
+    ## dbl [216]: W350, W360, W370, W380, W390, W400, W410, W420, W430, W440, W450, W460, W470, W480, W490, W500, W510, W520, W530, W540, W550, W560, W570, W580, W590, W600, W...
     ## 
     ## Use `spec()` to retrieve the guessed column specification
     ## Pass a specification to the `col_types` argument to quiet this message
 
 ``` r
 icraf.vnir$id.layer_local_c = icraf.vnir$Batch.Labid
+#summary(icraf.vnir$W380)
 #str(which(!icraf.vnir$id.layer_local_c %in% icraf.soil$id.layer_local_c))
 #283 not matching!
 ```
 
-Clean up / remove negative values:
+Detect negative values and similar:
 
 ``` r
 sel.vnir = grep("W", names(icraf.vnir))
 ## 216
-icraf.vnir.f = parallel::mclapply(icraf.vnir[,sel.vnir], function(j){round(ifelse(j<0, NA, ifelse(j>1, NA, j))*100, 1)}, mc.cores=32)
-icraf.vnir.f = as.data.frame(do.call(cbind, icraf.vnir.f))
-dim(icraf.vnir.f)
+samples0.na.gaps = apply(icraf.vnir[,sel.vnir], 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples0.negative = apply(icraf.vnir[,sel.vnir], 1, FUN=function(j){ round(100*sum(j <= 0, na.rm = TRUE)/length(j), 3) })
+sum(samples0.negative>0, na.rm=TRUE)
 ```
 
-    ## [1] 4439  216
+    ## [1] 1
 
 ``` r
+samples0.extreme = apply(icraf.vnir[,sel.vnir], 1, FUN=function(j){ round(100*sum(j >= 1, na.rm = TRUE)/length(j), 3) })
+sum(samples0.extreme>0, na.rm=TRUE)
+```
+
+    ## [1] 0
+
+Resample to standard wavelengths:
+
+``` r
+icraf.vnir.spec = icraf.vnir[,sel.vnir]
 vnir.s = sapply(names(icraf.vnir)[sel.vnir], function(i){ strsplit(i, "W")[[1]][2] })
 vnir.n = paste0("scan_visnir.", vnir.s, "_pcnt")
-names(icraf.vnir.f) = vnir.n
-```
-
-Resample:
-
-``` r
-icraf.vnir.spec = icraf.vnir.f[,grep("scan_visnir.", names(icraf.vnir.f))]
-wav.nir = sapply(names(icraf.vnir.spec), function(i){strsplit(strsplit(i, "scan_visnir.")[[1]][2], "_pcnt")[[1]][1]})
-colnames(icraf.vnir.spec) = wav.nir
+colnames(icraf.vnir.spec) = vnir.s
 ## large processing time
-icraf.vnir.f = prospectr::resample(icraf.vnir.spec, wav.nir, seq(350, 2500, by=2), interpol = "spline") 
+icraf.vnir.f = prospectr::resample(icraf.vnir.spec, vnir.s, seq(350, 2500, by=2), interpol = "spline")
 ## Wavelength by 2 cm-1
-icraf.vnir.f = as.data.frame(icraf.vnir.f)
+icraf.vnir.f = round(as.data.frame(icraf.vnir.f)*100, 1)
 visnir.n = paste0("scan_visnir.", seq(350, 2500, by=2), "_pcnt")
 colnames(icraf.vnir.f) = visnir.n
+#summary(icraf.vnir.f$scan_visnir.396_pcnt)
 ```
 
 Plot and check individual curves:
 
 ``` r
-matplot(y=as.vector(t(icraf.vnir.f[100,vnir.n])), x=vnir.s,
+matplot(y=as.vector(t(icraf.vnir.f[120,vnir.n])), x=vnir.s,
         ylim = c(0,60),
         type = 'l', 
         xlab = "Wavelength", 
@@ -493,28 +478,20 @@ matplot(y=as.vector(t(icraf.vnir.f[100,vnir.n])), x=vnir.s,
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
 Adding basic columns:
 
 ``` r
 icraf.vnir.f$id.layer_local_c = icraf.vnir$id.layer_local_c
-icraf.vnir.f$id.scan_uuid_c = plyr::join(icraf.vnir.f[c("id.layer_local_c")], icraf.mir.f[c("id.layer_local_c", "id.scan_uuid_c")], match = "first")$id.scan_uuid_c
-```
-
-    ## Joining by: id.layer_local_c
-
-``` r
+icraf.vnir.f$id.scan_uuid_c = openssl::md5(make.unique(paste0("ICRAF.ISRIC", icraf.vnir.f$id.layer_local_c)))
 summary(is.na(icraf.vnir.f$id.scan_uuid_c))
 ```
 
-    ##    Mode   FALSE    TRUE 
-    ## logical    4154     285
+    ##    Mode   FALSE 
+    ## logical    4439
 
 ``` r
-## 285 missing IDs
-v.unique_id = openssl::md5(make.unique(paste0("ICRAF.ISRIC", icraf.vnir.f$id.layer_local_c)))
-icraf.vnir.f$id.scan_uuid_c = ifelse(is.na(icraf.vnir.f$id.scan_uuid_c), v.unique_id, icraf.vnir.f$id.scan_uuid_c)
 icraf.vnir.f$id.layer_uuid_c = plyr::join(icraf.vnir.f["id.layer_local_c"], icraf.soil[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
 ```
 
@@ -541,6 +518,9 @@ icraf.vnir.f$scan.license.address_idn_url = "https://creativecommons.org/license
 icraf.vnir.f$scan.doi_idf_c = "10.34725/DVN/MFHA9C"
 icraf.vnir.f$scan.contact.name_utf8_txt = "Keith Shepherd"
 icraf.vnir.f$scan.contact.email_ietf_email = "afsis.info@africasoils.net"
+icraf.vnir.f$scan.visnir.nafreq_ossl_pct = samples0.na.gaps
+icraf.vnir.f$scan.visnir.negfreq_ossl_pct = samples0.negative
+icraf.vnir.f$scan.visnir.extfreq_ossl_pct = samples0.extreme
 ```
 
 Save final table:
@@ -548,36 +528,7 @@ Save final table:
 ``` r
 x.na = visnir.name[which(!visnir.name %in% names(icraf.vnir.f))]
 if(length(x.na)>0){ for(i in x.na){ icraf.vnir.f[,i] <- NA } }
-str(icraf.vnir.f[,visnir.name[1:24]])
-```
-
-    ## 'data.frame':    4439 obs. of  24 variables:
-    ##  $ id.scan_uuid_c                     : chr  "bf2ea7ea2964e7d0bd42443e095d1b56" "2507c34c14815cb6ec303e5bf9156072" "77ea06418e6901dcedb71bc1be0b9bee" "d48040524124537e5c07d0f7c8c2a91a" ...
-    ##  $ id.scan_local_c                    : logi  NA NA NA NA NA NA ...
-    ##  $ id.layer_uuid_c                    : chr  "24fb402f3a586bf94e801efd44cb9241" "66c328f1d7053069881d5116244facc2" "bdaebe82df81bbf98b67aa9d65499eb9" "8c4aee0cd181b70dcb51356fcd87ea36" ...
-    ##  $ id.layer_local_c                   : chr  "FS15R_FS4076" "FS15R_FS4077" "FS15R_FS4078" "FS15R_FS4079" ...
-    ##  $ model.name_utf8_txt                : chr  "ASD FieldSpec Pro FR" "ASD FieldSpec Pro FR" "ASD FieldSpec Pro FR" "ASD FieldSpec Pro FR" ...
-    ##  $ model.code_any_c                   : chr  "ASD_FieldSpec_FR" "ASD_FieldSpec_FR" "ASD_FieldSpec_FR" "ASD_FieldSpec_FR" ...
-    ##  $ method.light.source_any_c          : chr  "" "" "" "" ...
-    ##  $ method.preparation_any_c           : chr  "" "" "" "" ...
-    ##  $ scan.file_any_c                    : logi  NA NA NA NA NA NA ...
-    ##  $ scan.date.begin_iso.8601_yyyy.mm.dd: Date, format: "2004-02-01" "2004-02-01" "2004-02-01" "2004-02-01" ...
-    ##  $ scan.date.end_iso.8601_yyyy.mm.dd  : Date, format: "2004-11-01" "2004-11-01" "2004-11-01" "2004-11-01" ...
-    ##  $ scan.license.title_ascii_txt       : chr  "CC-BY" "CC-BY" "CC-BY" "CC-BY" ...
-    ##  $ scan.license.address_idn_url       : chr  "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" ...
-    ##  $ scan.doi_idf_c                     : chr  "10.34725/DVN/MFHA9C" "10.34725/DVN/MFHA9C" "10.34725/DVN/MFHA9C" "10.34725/DVN/MFHA9C" ...
-    ##  $ scan.contact.name_utf8_txt         : chr  "Keith Shepherd" "Keith Shepherd" "Keith Shepherd" "Keith Shepherd" ...
-    ##  $ scan.contact.email_ietf_email      : chr  "afsis.info@africasoils.net" "afsis.info@africasoils.net" "afsis.info@africasoils.net" "afsis.info@africasoils.net" ...
-    ##  $ scan_visnir.350_pcnt               : num  8.7 9.2 8.9 9.5 9.1 9.1 9.5 6.9 6.4 6.2 ...
-    ##  $ scan_visnir.352_pcnt               : num  8.3 8.55 8.2 9.47 8.27 ...
-    ##  $ scan_visnir.354_pcnt               : num  7.95 8.02 7.67 9.39 7.62 ...
-    ##  $ scan_visnir.356_pcnt               : num  7.65 7.61 7.29 9.26 7.14 ...
-    ##  $ scan_visnir.358_pcnt               : num  7.4 7.31 7.04 9.09 6.81 ...
-    ##  $ scan_visnir.360_pcnt               : num  7.2 7.1 6.9 8.9 6.6 7.8 8.1 5.4 5.3 5.1 ...
-    ##  $ scan_visnir.362_pcnt               : num  7.04 6.97 6.85 8.7 6.5 ...
-    ##  $ scan_visnir.364_pcnt               : num  6.92 6.9 6.86 8.49 6.47 ...
-
-``` r
+#str(icraf.vnir.f[,visnir.name[1:24]])
 visnir.rds = paste0(dir, "ossl_visnir_v1.rds")
 #icraf.vnir.f = icraf.vnir.f[!is.na(icraf.vnir.f$id.layer_local_c),]
 if(!file.exists(visnir.rds)){

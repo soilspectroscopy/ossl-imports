@@ -1,5 +1,5 @@
 "","in.name","out.name","unlist.fun.lst."
-"1","tc","c.tot_usda.4h2_wpct","x/10"
+"1","tc","oc_usda.calc_wpct","x/10"
 "2","tn","n.tot_usda.4h2_wpct","x/10"
 "3","ph_h2o","ph.h2o_usda.4c1_index","x*1"
 "4","ph_kcl","ph.kcl_usda.4c1_index","x*1"

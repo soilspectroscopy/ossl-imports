@@ -2,7 +2,7 @@ Dataset import: TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL
 ================
 Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>)
-14 December, 2021
+08 May, 2022
 
 
 
@@ -31,7 +31,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2021-12-14  
+Last update: 2022-05-08  
 Dataset:
 [AFSIS2.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis2.ssl)
 
@@ -61,6 +61,8 @@ dir = "/mnt/soilspec4gg/ossl/dataset/AFSIS2/"
 ## Data import
 
 ### Soil site and laboratory data import:
+
+Read from multiple csv files, hopefully all consistent:
 
 ``` r
 afsis2.xy = plyr::rbind.fill(lapply(list.files(dir, pattern=glob2rx("*samples.csv"), full.names = TRUE), vroom::vroom))
@@ -266,48 +268,20 @@ Mid-infrared (MIR) soil spectroscopy raw data (only limited number of
 samples come with reference):
 
 ``` r
-mir.afsis2.lst = list.files(dir, pattern=glob2rx("*_ZnSe_*.csv$"), full.names = TRUE, recursive = TRUE)
-afsis2.mir = plyr::rbind.fill(lapply(mir.afsis2.lst, vroom::vroom))
-```
-
-    ## Rows: 3,069
-    ## Columns: 1,711
-    ## Delimiter: ","
-    ## chr [   1]: SSN
-    ## dbl [1710]: X3994.4, X3992.4, X3990.4, X3988.3, X3986.3, X3984.2, X3982.2, X3980.2, X3978.1, X3976.1, X3974.0, X3972.0, X3969.9, X3967.9, X3965.9, X3...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 1,490
-    ## Columns: 1,709
-    ## Delimiter: ","
-    ## chr [   1]: SSN
-    ## dbl [1707]: X3996.5, X3994.4, X3992.4, X3990.4, X3988.3, X3986.3, X3984.2, X3982.2, X3980.2, X3978.1, X3976.1, X3974.0, X3972.0, X3969.9, X3967.9, X3...
-    ## lgl [   1]: X499.8
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 26,710
-    ## Columns: 1,713
-    ## Delimiter: ","
-    ## chr [   1]: SSN
-    ## dbl [1712]: X3996.5, X3994.4, X3992.4, X3990.4, X3988.3, X3986.3, X3984.2, X3982.2, X3980.2, X3978.1, X3976.1, X3974.0, X3972.0, X3969.9, X3967.9, X3...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-``` r
+if(!exists("afsis2.mir")){
+  mir.afsis2.lst = list.files(dir, pattern=glob2rx("*_ZnSe_*.csv$"), full.names = TRUE, recursive = TRUE)
+  afsis2.mir = plyr::rbind.fill(lapply(mir.afsis2.lst, vroom::vroom))
+  ## subset to scans with laboratory data
+  afsis2.mir = afsis2.mir[which(afsis2.mir$SSN %in% afsis2t.df$SSN),]
+}
 dim(afsis2.mir)
 ```
 
-    ## [1] 31269  1715
+    ## [1]  781 1717
 
 ``` r
-## 31269  1715
-## subset to scans with laboratory data
-afsis2.mir = afsis2.mir[which(afsis2.mir$SSN %in% afsis2t.df$SSN),]
+## 781 1701
+## only 781 sample with callibration data
 ```
 
 Add the [Universal Unique
@@ -329,6 +303,8 @@ dim(afsis2.abs)
 
     ## [1]  781 1717
 
+Check values:
+
 ``` r
 wav.mir = as.numeric(gsub("X", "", sel.abs)) # Get wavelength only
 #summary(wav.mir)
@@ -336,20 +312,26 @@ wav.mir = as.numeric(gsub("X", "", sel.abs)) # Get wavelength only
 afsis2.mir.spec = as.matrix(afsis2.abs[,sel.abs])
 colnames(afsis2.mir.spec) = wav.mir
 rownames(afsis2.mir.spec) = afsis2.abs$id.scan_uuid_c
-## remove values out of range
-afsis2.mir = prospectr::resample(afsis2.mir.spec, wav.mir, seq(600, 4000, 2)) 
-afsis2.mir = as.data.frame(afsis2.mir)
-mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
-colnames(afsis2.mir) = mir.n
-#summary(afsis2.mir$scan_mir.602_abs)
+samples.na.gaps = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples.negative = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
+sum(samples.negative>0)
 ```
 
-Remove values out of range:
+    ## [1] 0
 
 ``` r
-afsis2.mir.f = parallel::mclapply(afsis2.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, 3, j))*1000) }, mc.cores=32)
-afsis2.mir.f = as.data.frame(do.call(cbind, afsis2.mir.f))
-#str(names(afsis2.mir.f))
+samples.extreme = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) })
+sum(samples.extreme>0)
+```
+
+    ## [1] 64
+
+``` r
+afsis2.mir.f = prospectr::resample(afsis2.mir.spec, wav.mir, seq(600, 4000, 2)) 
+afsis2.mir.f = round(as.data.frame(afsis2.mir.f)*1000)
+mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
+colnames(afsis2.mir.f) = mir.n
+#summary(afsis2.mir.f$scan_mir.602_abs)
 afsis2.mir.f$id.scan_uuid_c = rownames(afsis2.mir)
 ```
 
@@ -365,7 +347,7 @@ matplot(y=as.vector(t(afsis2.mir.f[250,mir.n])), x=seq(600, 4000, 2),
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
 
 Export final MIR table:
 
@@ -391,7 +373,7 @@ afsis2.mir.f$id.layer_uuid_c = plyr::join(afsis2.mir.f["id.layer_local_c"], afsi
 summary(is.na(afsis2.mir.f$id.layer_uuid_c))
 ```
 
-    ##    Mode   FALSE 
+    ##    Mode    TRUE 
     ## logical     781
 
 ``` r
@@ -412,6 +394,9 @@ afsis2.mir.f$scan.doi_idf_c = plyr::join(afsis2.mir.f["id.layer_local_c"], afsis
 ``` r
 afsis2.mir.f$scan.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)"
 afsis2.mir.f$scan.contact.email_ietf_email = "L.A.WINOWIECKI@cgiar.org"
+afsis2.mir.f$scan.mir.nafreq_ossl_pct = samples.na.gaps
+afsis2.mir.f$scan.mir.negfreq_ossl_pct = samples.negative
+afsis2.mir.f$scan.mir.extfreq_ossl_pct = samples.extreme
 ```
 
 Save to RDS file:
@@ -423,10 +408,10 @@ str(afsis2.mir.f[,mir.name[1:24]])
 ```
 
     ## 'data.frame':    781 obs. of  24 variables:
-    ##  $ id.scan_uuid_c                     : chr  "f624677938a287dabe2ad8e8018dd7ac" "0c9923d2acb084006badb5035e36526f" "c81bc07e4cee41368c9e9363867e2006" "9a2c5c9f916f1d519a7f17e9e871af8c" ...
-    ##  $ id.scan_local_c                    : chr  "GHBADISTHlNPETRE" "GHBADIST6aESf5nD" "GHBADIST7GirZaKg" "GHBASYIIlKEdOhl" ...
-    ##  $ id.layer_uuid_c                    : chr  "aba7b06b448a31e3bf71fe27924f48cf" "27252b34a22b64d4b21667644dd50118" "8c90fb79bb55ac78ff6d76b36c5e0878" "a4e6f91d993263e3a5fbe7c114555688" ...
-    ##  $ id.layer_local_c                   : chr  "GHBADISTHlNPETRE" "GHBADIST6aESf5nD" "GHBADIST7GirZaKg" "GHBASYIIlKEdOhl" ...
+    ##  $ id.scan_uuid_c                     : chr  "46" "64" "67" "75" ...
+    ##  $ id.scan_local_c                    : chr  NA NA NA NA ...
+    ##  $ id.layer_uuid_c                    : chr  NA NA NA NA ...
+    ##  $ id.layer_local_c                   : chr  NA NA NA NA ...
     ##  $ model.name_utf8_txt                : chr  "Bruker Alpha 1_FT-MIR_Zn Se" "Bruker Alpha 1_FT-MIR_Zn Se" "Bruker Alpha 1_FT-MIR_Zn Se" "Bruker Alpha 1_FT-MIR_Zn Se" ...
     ##  $ model.code_any_c                   : chr  "Bruker_Alpha1_FT.MIR.Zn.Se" "Bruker_Alpha1_FT.MIR.Zn.Se" "Bruker_Alpha1_FT.MIR.Zn.Se" "Bruker_Alpha1_FT.MIR.Zn.Se" ...
     ##  $ method.light.source_any_c          : chr  "" "" "" "" ...
@@ -436,17 +421,17 @@ str(afsis2.mir.f[,mir.name[1:24]])
     ##  $ scan.date.end_iso.8601_yyyy.mm.dd  : Date, format: "2019-12-31" "2019-12-31" "2019-12-31" "2019-12-31" ...
     ##  $ scan.license.title_ascii_txt       : chr  "CC0" "CC0" "CC0" "CC0" ...
     ##  $ scan.license.address_idn_url       : chr  "https://creativecommons.org/publicdomain/zero/1.0/" "https://creativecommons.org/publicdomain/zero/1.0/" "https://creativecommons.org/publicdomain/zero/1.0/" "https://creativecommons.org/publicdomain/zero/1.0/" ...
-    ##  $ scan.doi_idf_c                     : chr  "10.34725/DVN/SPRSFN" "10.34725/DVN/SPRSFN" "10.34725/DVN/SPRSFN" "10.34725/DVN/SPRSFN" ...
+    ##  $ scan.doi_idf_c                     : chr  NA NA NA NA ...
     ##  $ scan.contact.name_utf8_txt         : chr  "Winowiecki, Leigh Ann (ICRAF)" "Winowiecki, Leigh Ann (ICRAF)" "Winowiecki, Leigh Ann (ICRAF)" "Winowiecki, Leigh Ann (ICRAF)" ...
     ##  $ scan.contact.email_ietf_email      : chr  "L.A.WINOWIECKI@cgiar.org" "L.A.WINOWIECKI@cgiar.org" "L.A.WINOWIECKI@cgiar.org" "L.A.WINOWIECKI@cgiar.org" ...
+    ##  $ scan.mir.nafreq_ossl_pct           : num  0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 ...
+    ##  $ scan.mir.negfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ scan.mir.extfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
     ##  $ scan_mir.600_abs                   : num  2130 2104 2147 2190 2285 ...
     ##  $ scan_mir.602_abs                   : num  2109 2093 2126 2204 2285 ...
     ##  $ scan_mir.604_abs                   : num  2088 2082 2109 2218 2285 ...
     ##  $ scan_mir.606_abs                   : num  2070 2069 2099 2228 2283 ...
     ##  $ scan_mir.608_abs                   : num  2053 2053 2096 2231 2279 ...
-    ##  $ scan_mir.610_abs                   : num  2041 2034 2099 2227 2275 ...
-    ##  $ scan_mir.612_abs                   : num  2032 2014 2104 2217 2270 ...
-    ##  $ scan_mir.614_abs                   : num  2025 1995 2106 2203 2264 ...
 
 ``` r
 mir.rds = paste0(dir, "ossl_mir_v1.rds")
@@ -471,7 +456,7 @@ mis.r = afsis2.mir.f$id.layer_uuid_c %in% afsis2.site$id.layer_uuid_c
 summary(mis.r)
 ```
 
-    ##    Mode    TRUE 
+    ##    Mode   FALSE 
     ## logical     781
 
 ### Distribution of points
@@ -482,6 +467,18 @@ for the AfSIS-2 points (only Tanzania has provided coordinates).
 ``` r
 afsis2.map = NULL
 library(maptools)
+```
+
+    ## Checking rgeos availability: TRUE
+
+    ## 
+    ## Attaching package: 'maptools'
+
+    ## The following object is masked from 'package:Hmisc':
+    ## 
+    ##     label
+
+``` r
 data(wrld_simpl)
 afr = wrld_simpl[wrld_simpl$REGION==2,]
 mapWorld = borders(afr, colour = 'gray50', fill = 'gray50')

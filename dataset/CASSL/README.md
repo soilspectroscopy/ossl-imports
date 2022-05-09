@@ -2,7 +2,7 @@ Dataset import: The Central African soil spectral library
 ================
 Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>)
-04 December, 2021
+08 May, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2021-12-04  
+Last update: 2022-05-08  
 Dataset:
 [CAF.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#caf.ssl)
 
@@ -72,7 +72,7 @@ in.name = c("tc", "tn", "ph_h2o", "ph_kcl", "ph_cacl2", "clay_0.0.002",
             "silt_0.002.0.05", "sand_0.05.2", "al_icp", "ca_icp", "mg_icp", "k_icp", "na_icp", "fe_icp")
 #in.name[which(!in.name %in% names(casslt.df))]
 cassl.soil = as.data.frame(cassl.df[,in.name])
-out.name = c("c.tot_usda.4h2_wpct", "n.tot_usda.4h2_wpct", "ph.h2o_usda.4c1_index", "ph.kcl_usda.4c1_index", "ph.cacl2_usda.4c1_index",
+out.name = c("oc_usda.calc_wpct", "n.tot_usda.4h2_wpct", "ph.h2o_usda.4c1_index", "ph.kcl_usda.4c1_index", "ph.cacl2_usda.4c1_index",
              "clay.tot_usda.3a1_wpct", "silt.tot_usda.3a1_wpct", "sand.tot_usda.3a1_wpct",
              "al.kcl_usda.4b3_cmolkg", "ca.ext_usda.4b1_cmolkg", "mg.ext_usda.4b1_cmolkg", "k.ext_usda.4b1_cmolkg", 
              "na.ext_usda.4b1_cmolkg", "fe.kcl_usda.4b3_mgkg")
@@ -93,12 +93,16 @@ fun.lst[[which(in.name=="al_icp")]] = "x/90"
 write.csv(data.frame(in.name, out.name, unlist(fun.lst)), "./cassl_soilab_transvalues.csv")
 cassl.soil.f = transvalues(cassl.soil, out.name, in.name, fun.lst)
 cassl.soil.f$id.layer_local_c = cassl.df$sample_id
+## Total C indicated but almost all of the samples are highly acidic so TC = SOC
+## We can be conservative and say TC = TOC only where pH was measured and pH < 7.0.
+cassl.soil.f$oc_usda.calc_wpct = ifelse(cassl.soil.f$ph.h2o_usda.4c1_index > 7, NA, cassl.soil.f$oc_usda.calc_wpct)
+cassl.soil.f$c.tot_usda.4h2_wpct = ifelse(cassl.soil.f$ph.h2o_usda.4c1_index < 7, NA, cassl.soil.f$oc_usda.calc_wpct)
 ```
 
 Exporting the table:
 
 ``` r
-cassl.soil.f$id.layer_uuid_c = openssl::md5(make.unique(paste0(cassl.soil.f$id.layer_local_c)))
+cassl.soil.f$id.layer_uuid_c = openssl::md5(make.unique(paste0("CASSL", cassl.soil.f$id.layer_local_c)))
 cassl.soil.f$sample.doi_idf_c = "10.5281/zenodo.4320395"
 cassl.soil.f$sample.contact.name_utf8_txt = "Laura Summerauer"
 cassl.soil.f$sample.contact.email_ietf_email = "laura.summerauer@usys.ethz.ch"
@@ -160,24 +164,13 @@ Mid-infrared (MIR) soil spectroscopy raw data
 (<https://doi.org/10.5281/zenodo.4351254>):
 
 ``` r
-cassl.mir = vroom::vroom(paste0(dir, "/spectra_data/cssl_spectra.csv"))
-```
-
-    ## Rows: 1,578
-    ## Columns: 3,709
-    ## Delimiter: ","
-    ## chr [   1]: sample_id
-    ## dbl [3702]: 7498, 7496, 7494.1, 7492.2, 7490.2, 7488.3, 7486.4, 7484.5, 7482.5, 7480.6, 7478.7, 7476.7, 7474.8, 7472.9, 7471, 7469, 7467.1, 7465.2, 74...
-    ## lgl [   6]: 7505.7, 7503.7, 7501.8, 7499.9, 597.8, 595.9
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-``` r
+if(!exists("cassl.mir")){
+  cassl.mir = vroom::vroom(paste0(dir, "/spectra_data/cssl_spectra.csv"))
+}
 dim(cassl.mir)
 ```
 
-    ## [1] 1578 3709
+    ## [1] 1578 3710
 
 Add the [Universal Unique
 Identifier](https://cran.r-project.org/web/packages/uuid/) (UUI):
@@ -187,7 +180,7 @@ cassl.mir$id.scan_uuid_c = openssl::md5(make.unique(paste0("CAF.SSL", cassl.mir$
 ```
 
 Resampling the MIR spectra from the original window size to 2 cm-1 in
-`cassl.abs`. This operation can be time-consuming:
+`cassl.abs`:
 
 ``` r
 sel.abs = names(cassl.mir)[-which(names(cassl.mir) %in% c("sample_id","id.scan_uuid_c"))]
@@ -215,19 +208,25 @@ wav.mir = as.numeric(sel.abs) # Get wavelength only
 cassl.mir.spec = as.matrix(cassl.abs[,sel.abs])
 colnames(cassl.mir.spec) = wav.mir
 rownames(cassl.mir.spec) = cassl.abs$id.scan_uuid_c
-## remove values out of range
-cassl.mir = prospectr::resample(cassl.mir.spec, wav.mir, seq(600, 4000, 2)) 
-cassl.mir = as.data.frame(cassl.mir)
-mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
-colnames(cassl.mir) = mir.n
+samples.na.gaps = apply(cassl.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples.negative = apply(cassl.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
+sum(samples.negative>0)
 ```
 
-Remove values out of range:
+    ## [1] 1
 
 ``` r
-cassl.mir.f = parallel::mclapply(cassl.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, NA, j))*1000) }, mc.cores=80)
-cassl.mir.f = as.data.frame(do.call(cbind, cassl.mir.f))
-#str(names(cassl.mir.f))
+samples.extreme = apply(cassl.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) })
+sum(samples.extreme>0)
+```
+
+    ## [1] 0
+
+``` r
+cassl.mir.f = prospectr::resample(cassl.mir.spec, wav.mir, seq(600, 4000, 2)) 
+cassl.mir.f = round(as.data.frame(cassl.mir.f)*1000)
+mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
+colnames(cassl.mir.f) = mir.n
 cassl.mir.f$id.scan_uuid_c = rownames(cassl.mir)
 ```
 
@@ -243,7 +242,7 @@ matplot(y=as.vector(t(cassl.mir.f[250,mir.n])), x=seq(600, 4000, 2),
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
 
 Export final MIR table:
 
@@ -263,7 +262,7 @@ cassl.mir.f$id.layer_uuid_c = plyr::join(cassl.mir.f["id.layer_local_c"], cassl.
 summary(is.na(cassl.mir.f$id.layer_uuid_c))
 ```
 
-    ##    Mode   FALSE 
+    ##    Mode    TRUE 
     ## logical    1578
 
 ``` r
@@ -279,6 +278,9 @@ cassl.mir.f$scan.license.address_idn_url = "https://creativecommons.org/licenses
 cassl.mir.f$scan.doi_idf_c = "10.5281/zenodo.4320395"
 cassl.mir.f$scan.contact.name_utf8_txt = "Laura Summerauer"
 cassl.mir.f$scan.contact.email_ietf_email = "laura.summerauer@usys.ethz.ch"
+cassl.mir.f$scan.mir.nafreq_ossl_pct = samples.na.gaps
+cassl.mir.f$scan.mir.negfreq_ossl_pct = samples.negative
+cassl.mir.f$scan.mir.extfreq_ossl_pct = samples.extreme
 ```
 
 Save to RDS file:
@@ -304,7 +306,14 @@ mis.r = cassl.mir.f$id.layer_uuid_c %in% cassl.site$id.layer_uuid_c
 summary(mis.r)
 ```
 
-    ##    Mode    TRUE 
+    ##    Mode   FALSE 
+    ## logical    1578
+
+``` r
+summary(duplicated(cassl.mir.f$id.scan_uuid_c))
+```
+
+    ##    Mode   FALSE 
     ## logical    1578
 
 ``` r

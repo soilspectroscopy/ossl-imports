@@ -77,6 +77,8 @@ source("../../R-code/functions/SSL_functions.R")
 
 ### Soil site and laboratory data import:
 
+Read from multiple csv files, hopefully all consistent:
+
 ```{r}
 afsis2.xy = plyr::rbind.fill(lapply(list.files(dir, pattern=glob2rx("*samples.csv"), full.names = TRUE), vroom::vroom))
 dim(afsis2.xy)
@@ -201,12 +203,15 @@ if(!file.exists(soilsite.rds)){
 Mid-infrared (MIR) soil spectroscopy raw data (only limited number of samples come with reference):
 
 ```{r}
-mir.afsis2.lst = list.files(dir, pattern=glob2rx("*_ZnSe_*.csv$"), full.names = TRUE, recursive = TRUE)
-afsis2.mir = plyr::rbind.fill(lapply(mir.afsis2.lst, vroom::vroom))
+if(!exists("afsis2.mir")){
+  mir.afsis2.lst = list.files(dir, pattern=glob2rx("*_ZnSe_*.csv$"), full.names = TRUE, recursive = TRUE)
+  afsis2.mir = plyr::rbind.fill(lapply(mir.afsis2.lst, vroom::vroom))
+  ## subset to scans with laboratory data
+  afsis2.mir = afsis2.mir[which(afsis2.mir$SSN %in% afsis2t.df$SSN),]
+}
 dim(afsis2.mir)
-## 31269  1715
-## subset to scans with laboratory data
-afsis2.mir = afsis2.mir[which(afsis2.mir$SSN %in% afsis2t.df$SSN),]
+## 781 1701
+## only 781 sample with callibration data
 ```
 
 Add the [Universal Unique
@@ -226,6 +231,7 @@ afsis2.abs = afsis2.mir[,c("id.scan_uuid_c", "SSN", "id.scan_local_c", sel.abs)]
 dim(afsis2.abs)
 ```
 
+Check values:
 
 ```{r}
 wav.mir = as.numeric(gsub("X", "", sel.abs)) # Get wavelength only
@@ -234,20 +240,19 @@ wav.mir = as.numeric(gsub("X", "", sel.abs)) # Get wavelength only
 afsis2.mir.spec = as.matrix(afsis2.abs[,sel.abs])
 colnames(afsis2.mir.spec) = wav.mir
 rownames(afsis2.mir.spec) = afsis2.abs$id.scan_uuid_c
-## remove values out of range
-afsis2.mir = prospectr::resample(afsis2.mir.spec, wav.mir, seq(600, 4000, 2)) 
-afsis2.mir = as.data.frame(afsis2.mir)
-mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
-colnames(afsis2.mir) = mir.n
-#summary(afsis2.mir$scan_mir.602_abs)
+samples.na.gaps = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples.negative = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
+sum(samples.negative>0)
+samples.extreme = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) })
+sum(samples.extreme>0)
 ```
 
-Remove values out of range:
-
 ```{r}
-afsis2.mir.f = parallel::mclapply(afsis2.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, 3, j))*1000) }, mc.cores=32)
-afsis2.mir.f = as.data.frame(do.call(cbind, afsis2.mir.f))
-#str(names(afsis2.mir.f))
+afsis2.mir.f = prospectr::resample(afsis2.mir.spec, wav.mir, seq(600, 4000, 2)) 
+afsis2.mir.f = round(as.data.frame(afsis2.mir.f)*1000)
+mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
+colnames(afsis2.mir.f) = mir.n
+#summary(afsis2.mir.f$scan_mir.602_abs)
 afsis2.mir.f$id.scan_uuid_c = rownames(afsis2.mir)
 ```
 
@@ -281,6 +286,9 @@ afsis2.mir.f$scan.license.address_idn_url = "https://creativecommons.org/publicd
 afsis2.mir.f$scan.doi_idf_c = plyr::join(afsis2.mir.f["id.layer_local_c"], afsis2.soil[c("id.layer_local_c","sample.doi_idf_c")], match="first")$sample.doi_idf_c
 afsis2.mir.f$scan.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)"
 afsis2.mir.f$scan.contact.email_ietf_email = "L.A.WINOWIECKI@cgiar.org"
+afsis2.mir.f$scan.mir.nafreq_ossl_pct = samples.na.gaps
+afsis2.mir.f$scan.mir.negfreq_ossl_pct = samples.negative
+afsis2.mir.f$scan.mir.extfreq_ossl_pct = samples.extreme
 ```
 
 Save to RDS file:
@@ -288,7 +296,7 @@ Save to RDS file:
 ```{r}
 x.na = mir.name[which(!mir.name %in% names(afsis2.mir.f))]
 if(length(x.na)>0){ for(i in x.na){ afsis2.mir.f[,i] <- NA } }
-str(afsis2.mir.f[,mir.name[1:24]])
+#str(afsis2.mir.f[,mir.name[1:24]])
 mir.rds = paste0(dir, "ossl_mir_v1.rds")
 if(!file.exists(mir.rds)){
   saveRDS.gz(afsis2.mir.f[,mir.name], mir.rds)

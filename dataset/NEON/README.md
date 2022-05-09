@@ -3,7 +3,7 @@ Spectral Library
 ================
 Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>)
-04 December, 2021
+08 May, 2022
 
 
 
@@ -34,7 +34,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2021-12-04  
+Last update: 2022-05-08  
 Dataset:
 [NEON.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#neon.ssl)
 
@@ -49,6 +49,7 @@ Directory/folder path:
 
 ``` r
 dir = "/mnt/soilspec4gg/ossl/dataset/NEON/"
+#load.pigz(paste0(dir, "NEONSSL.RData"))
 ```
 
 ## Data import
@@ -212,8 +213,8 @@ neon.mir = vroom::vroom(paste0(dir, "NEON_Woodwell.csv"))
     ## Rows: 333
     ## Columns: 3,111
     ## Delimiter: ","
-    ## chr [  16]: biogeoID, uid, domainID, siteID, pitNamedLocation, pitID, horizonID, horizonName, biogeoSampleType, setDate, collectDate, laboratoryName, ...
-    ## dbl [3091]: WHRCID, kssl_smp_id, biogeoHorizonProportion, biogeoTopDepth, biogeoBottomDepth, biogeoCenterDepth, carbonTot, nitrogenTot, sulfurTot, est...
+    ## chr [  16]: biogeoID, uid, domainID, siteID, pitNamedLocation, pitID, horizonID, horizonName, biogeoSampleType, setDate, collectDate, laboratoryName, labProjID, remarks, ...
+    ## dbl [3091]: WHRCID, kssl_smp_id, biogeoHorizonProportion, biogeoTopDepth, biogeoBottomDepth, biogeoCenterDepth, carbonTot, nitrogenTot, sulfurTot, estimatedOC, finalOC, a...
     ## lgl [   4]: feKcl, bSatx, resist, clayFineContent
     ## 
     ## Use `spec()` to retrieve the guessed column specification
@@ -222,28 +223,11 @@ neon.mir = vroom::vroom(paste0(dir, "NEON_Woodwell.csv"))
 ``` r
 ## For some reasons there are only 304 rows but import leads to 333
 neon.soil = neon.mir[1:304,1:94]
-neon.mir2 = vroom::vroom(paste0(dir, "NEON_KSSL.csv"))[1:304,95:ncol(neon.mir2)]
-```
-
-    ## Rows: 333
-    ## Columns: 2,896
-    ## Delimiter: ","
-    ## chr [  16]: biogeoID, uid, domainID, siteID, pitNamedLocation, pitID, horizonID, horizonName, biogeoSampleType, setDate, collectDate, laboratoryName, ...
-    ## dbl [2876]: WHRCID, kssl_smp_id, biogeoHorizonProportion, biogeoTopDepth, biogeoBottomDepth, biogeoCenterDepth, carbonTot, nitrogenTot, sulfurTot, est...
-    ## lgl [   4]: feKcl, bSatx, resist, clayFineContent
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-``` r
-names(neon.mir2) = paste0("X", names(neon.mir2))
-dim(neon.mir2)
-```
-
-    ## [1]  304 2144
-
-``` r
-## different wavelengths
+## Already in KSSL!
+#neon.mir2 = vroom::vroom(paste0(dir, "NEON_KSSL.csv"))[1:304,95:ncol(neon.mir2)]
+#names(neon.mir2) = paste0("X", names(neon.mir2))
+#dim(neon.mir2)
+## different wavelengths?
 #summary(!names(neon.mir)[95:100] %in% paste0("X", names(neon.mir2)))
 neon.mir = neon.mir[1:304,95:ncol(neon.mir)]
 dim(neon.mir)
@@ -252,34 +236,42 @@ dim(neon.mir)
     ## [1]  304 3017
 
 Resampling the MIR spectra from the original window size to 2 cm-1 in
-`neon.abs`. This operation can be time-consuming:
+`neon.abs`. Detect any problems:
 
 ``` r
 wav.mir = as.numeric(gsub("X", "", names(neon.mir)))
-wav2.mir = as.numeric(gsub("X", "", names(neon.mir2)))
+#wav2.mir = as.numeric(gsub("X", "", names(neon.mir2)))
 #summary(wav2.mir); summary(wav2.mir)
 # Creating a matrix with only spectral values to resample it
 neon.mir.spec = as.matrix(neon.mir)
-neon2.mir.spec = as.matrix(neon.mir2)
+#neon2.mir.spec = as.matrix(neon.mir2)
 colnames(neon.mir.spec) = wav.mir
-colnames(neon2.mir.spec) = wav2.mir
+#colnames(neon2.mir.spec) = wav2.mir
 ## remove values out of range
 #na.lst = rowSums(neon.mir)
 #str(which(is.na(na.lst)))
-neon.mir = prospectr::resample(neon.mir.spec, wav.mir, seq(600, 4000, 2))
-neon2.mir = prospectr::resample(neon2.mir.spec, wav2.mir, seq(600, 4000, 2))
-neonA.mir = plyr::rbind.fill(as.data.frame(neon.mir), as.data.frame(neon2.mir))
-mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
-colnames(neonA.mir) = mir.n
+samples.na.gaps = apply(neon.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
+samples.negative = apply(neon.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
+sum(samples.negative>0)
 ```
 
-Remove values out of range:
+    ## [1] 0
 
 ``` r
-neon.mir.f = parallel::mclapply(neonA.mir, function(j){ round(ifelse(j<0, NA, ifelse(j>3, NA, j))*1000) }, mc.cores=32)
-neon.mir.f = as.data.frame(do.call(cbind, neon.mir.f))
-#str(names(neon.mir.f))
-neon.mir.f$id.layer_local_c = rep(neon.soil$horizonID, 2)
+samples.extreme = apply(neon.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) })
+sum(samples.extreme>0)
+```
+
+    ## [1] 12
+
+``` r
+neon.mir.f = prospectr::resample(neon.mir.spec, wav.mir, seq(600, 4000, 2))
+#neon2.mir = prospectr::resample(neon2.mir.spec, wav2.mir, seq(600, 4000, 2))
+#neonA.mir = plyr::rbind.fill(as.data.frame(neon.mir), as.data.frame(neon2.mir))
+neon.mir.f = round(as.data.frame(neon.mir.f)*1000)
+mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
+colnames(neon.mir.f) = mir.n
+neon.mir.f$id.layer_local_c = neon.soil$horizonID #rep(neon.soil$horizonID, 2)
 neon.mir.f$id.layer_uuid_c = plyr::join(neon.mir.f["id.layer_local_c"], neon.soil.f[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
 ```
 
@@ -290,10 +282,10 @@ summary(is.na(neon.mir.f$id.layer_uuid_c))
 ```
 
     ##    Mode   FALSE 
-    ## logical     608
+    ## logical     304
 
 ``` r
-neon.mir.f$id.scan_local_c = c(paste0("WCR.", neon.soil$kssl_smp_id), paste0("KSSL.", neon.soil$kssl_smp_id))
+neon.mir.f$id.scan_local_c = paste0("WCR.", neon.soil$kssl_smp_id) #c(paste0("WCR.", neon.soil$kssl_smp_id), paste0("KSSL.", neon.soil$kssl_smp_id))
 ```
 
 Plotting MIR spectra to see if there are still maybe negative values in
@@ -303,17 +295,17 @@ the table:
 matplot(y=as.vector(t(neon.mir.f[100,mir.n])), x=seq(600, 4000, 2),
         ylim = c(0,3000),
         type = 'l', 
-        xlab = "Wavenumber", 
+        xlab = "Wavelength", 
         ylab = "Absorbance"
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 Export final MIR table:
 
 ``` r
-neon.mir.f$id.scan_uuid_c = openssl::md5(make.unique(paste0(neon.mir.f$id.scan_local_c)))
+neon.mir.f$id.scan_uuid_c = openssl::md5(make.unique(paste0("NEON", neon.mir.f$id.scan_local_c)))
 neon.mir.f$model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory"
 neon.mir.f$model.code_any_c = "Bruker_Vertex_70.HTS.XT"
 neon.mir.f$method.light.source_any_c = ""
@@ -326,6 +318,9 @@ neon.mir.f$scan.license.address_idn_url = "https://creativecommons.org/licenses/
 neon.mir.f$scan.doi_idf_c = "10.3390/s20236729"
 neon.mir.f$scan.contact.name_utf8_txt = "Jonathan Sanderman"
 neon.mir.f$scan.contact.email_ietf_email = "jsanderman@woodwellclimate.org"
+neon.mir.f$scan.mir.nafreq_ossl_pct = samples.na.gaps
+neon.mir.f$scan.mir.negfreq_ossl_pct = samples.negative
+neon.mir.f$scan.mir.extfreq_ossl_pct = samples.extreme
 ```
 
 Save to RDS file:
@@ -349,7 +344,7 @@ summary(mis.r)
 ```
 
     ##    Mode    TRUE 
-    ## logical     608
+    ## logical     304
 
 ``` r
 ## All OK
@@ -370,7 +365,7 @@ neon.map
 
 ![](README_files/figure-gfm/neon.pnts_sites-1.png)<!-- -->
 
-Fig. 1: The NEON Megapit Soil Archive locations.
+Fig. 1: The NEON soil archive locations of sites across the USA.
 
 ``` r
 #save.image.pigz(file=paste0(dir, "NEONSSL.RData"), n.cores=32)

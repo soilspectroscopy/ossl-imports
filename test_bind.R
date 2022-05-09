@@ -39,11 +39,11 @@ for(j in c("n.tot_usda.4h2_wpct")){
 for(j in c("ec.w_usda.4f1_dsm")){
   soil.df[,j] = ifelse(soil.df[,j]>50|soil.df[,j]<0, NA, soil.df[,j])
 }
-dim(soil.df)
-# 120550     59
 summary(is.na(soil.df$id.layer_uuid_c))
 ## OK!
 soil.df = dplyr::distinct(soil.df)
+dim(soil.df)
+# 118145     59
 
 ## Sampling locations ----
 site.lst = list.files("/mnt/soilspec4gg/ossl/dataset", "ossl_soilsite_v1.rds", full.names = TRUE, recursive = TRUE)
@@ -53,13 +53,13 @@ i$observation.date.end_iso.8601_yyyy.mm.dd <- paste(i$observation.date.end_iso.8
 site.df = plyr::rbind.fill(site.lst.df)
 summary(as.factor(site.df$dataset.code_ascii_c))
 #AFSIS1.SSL  AFSIS2.SSL     CAF.SSL ICRAF.ISRIC    KSSL.SSL   LUCAS.SSL    NEON.SSL
-#      4536         820        1852        4239      117218       43927         304
+#      2131         820        1852        4239      117218       43927         304
 #head(site.df[site.df$dataset.code_ascii_c=="KSSL.SSL",1:10])
 #head(site.df[site.df$dataset.code_ascii_c=="AFSIS2.SSL",1:10])
 ## remove total duplicates
 site.df = dplyr::distinct(site.df)
 dim(site.df)
-# 124709     38
+# 122304     38
 site_yrs = site.df[!is.na(site.df$observation.date.begin_iso.8601_yyyy.mm.dd),c("observation.date.begin_iso.8601_yyyy.mm.dd", "dataset.code_ascii_c")]
 site_yrs$year = as.numeric(substr(x=site_yrs$observation.date.begin_iso.8601_yyyy.mm.dd, 1, 4))
 site_yrs$year = ifelse(site_yrs$year <1960, NA, ifelse(site_yrs$year>2024, NA, site_yrs$year))
@@ -75,7 +75,7 @@ site.df$location.error_any_m = ifelse(is.na(site.df$location.error_any_m) & !is.
 site.df$location.method_any_c = ifelse(is.na(site.df$location.method_any_c) & !is.na(site.df$longitude_wgs84_dd), "GPS", site.df$location.method_any_c)
 summary(as.factor(site.df$dataset.code_ascii_c))
 #AFSIS1.SSL  AFSIS2.SSL     CAF.SSL ICRAF.ISRIC    KSSL.SSL   LUCAS.SSL    NEON.SSL
-#      4536         820        1852        4239       69031       43927         304
+#      2131         820        1852        4239       69031       43927         304
 summary(is.na(site.df$id.layer_uuid_c))
 ## some are missing ID
 ## 4808
@@ -96,6 +96,8 @@ visnir.df = plyr::rbind.fill(lapply(visnir.lst, readRDS.gz))
 dim(visnir.df)
 ## 135294   1091
 summary(is.na(visnir.df$id.scan_uuid_c))
+## OK!
+summary(duplicated(visnir.df$id.scan_uuid_c))
 ## OK!
 summary(is.na(visnir.df$id.layer_local_c))
 ## 34,423
@@ -119,11 +121,13 @@ mir.lst = list.files("/mnt/soilspec4gg/ossl/dataset", "ossl_mir_v1.rds", full.na
 ## 6
 mir.df = plyr::rbind.fill(lapply(mir.lst, readRDS.gz))
 dim(mir.df)
-## 95263   1716
+## 95690  1720
 summary(is.na(mir.df$id.scan_uuid_c))
 ## OK!
+summary(duplicated(mir.df$id.scan_uuid_c))
+## OK!
 summary(is.na(mir.df$id.layer_local_c))
-## 18
+## 6685 missing local layers ID
 summary(as.factor(mir.df$model.code_any_c))
 ## Bruker_Tensor_27.HTS.XT Bruker_Vertex_70.HTS.XT
 ##  18250                   77013
@@ -145,12 +149,12 @@ id.vnir = intersect(soil.df$id.layer_uuid_c, visnir.df$id.layer_uuid_c)
 id.mir = intersect(soil.df$id.layer_uuid_c, mir.df$id.layer_uuid_c)
 id.s = intersect(soil.df$id.layer_uuid_c, site.df$id.layer_uuid_c)
 length(id.s)
-# 119884
+# 115644
 dim(mir.df[mir.df$id.layer_uuid_c %in% id.mir,])
-# 74572  1718
+# 72832  1720
 dim(visnir.df[visnir.df$id.layer_uuid_c %in% id.vnir,])
-# 100586   1092
-## Rule 2: fill in important mising fields such as location accuracy / attribution
+# 100586   1095
+## Rule 2: fill in important missing fields such as location accuracy / attribution
 ## Rule 3: check that the data can be bind together to produce a regression matrix
 ## Rule 4: fix all wrong emails etc
 soil.df$sample.contact.email_ietf_email = ifelse(soil.df$sample.contact.email_ietf_email=="esdac@jrc.ec.europa.eu", "ec-esdac@jrc.ec.europa.eu", soil.df$sample.contact.email_ietf_email)
@@ -159,6 +163,8 @@ site.df$dataset.contact_ietf_email = ifelse(site.df$dataset.contact_ietf_email==
 summary(as.factor(site.df$dataset.contact_ietf_email))
 #visnir.df$scan.contact.email_ietf_email = ifelse(visnir.df$scan.contact.email_ietf_email=="esdac@jrc.ec.europa.eu", "ec-esdac@jrc.ec.europa.eu", visnir.df$scan.contact.email_ietf_email)
 summary(as.factor(mir.df$scan.contact.email_ietf_email))
+summary(duplicated(visnir.df$id.scan_uuid_c))
+## OK!
 
 saveRDS.gz(soil.df[soil.df$id.layer_uuid_c %in% id.s,], "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_v1.rds")
 saveRDS.gz(site.df[site.df$id.layer_uuid_c %in% id.s,], "/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_v1.rds")
@@ -179,11 +185,12 @@ tif.lst = list.files("/data/WORLDCLIM", ".tif", full.names=TRUE)
 ov.tmp = parallel::mclapply(1:length(tif.lst), function(j){ terra::extract(terra::rast(tif.lst[j]), terra::vect(site.xy)) }, mc.cores = 32)
 ov.tmp = dplyr::bind_cols(lapply(ov.tmp, function(i){i[,2]}))
 names(ov.tmp) = tools::file_path_sans_ext(basename(tif.lst))
-## remove covariates with no variation
+## remove covariates with no variation?
 c.na = sapply(ov.tmp, function(i){sum(is.na(i))})
 c.sd = sapply(ov.tmp, function(i){var(i, na.rm=TRUE)})
 rm.c = which(c.na>200 | c.sd == 0)
 #rm.c
+## 23 layers suspicious
 ## clm_snow.prob missing values for 300-400 points
 ov.tmp$id.location_olc_c = site.xy$id.location_olc_c
 ov.tmp$ID = ID$ID
@@ -210,7 +217,7 @@ rm.ossl = plyr::join_all(list(soil.df[soil.df$id.layer_uuid_c %in% id.s,],
                          ov.tmp))
 #rm.ossl = rm.ossl[!is.na(rm.ossl$dataset.code_ascii_c),]
 dim(rm.ossl)
-## 152146   2962
+## 147492   2962
 summary(!is.na(rm.ossl$scan_mir.602_abs))
 summary(!is.na(rm.ossl$scan_visnir.452_pcnt))
 ## replace missing block ID's
@@ -219,4 +226,24 @@ rm.ossl$location.address_utf8_txt = ifelse(is.na(rm.ossl$location.address_utf8_t
 rm.ossl$ID = ifelse(is.na(rm.ossl$ID), rm.ossl$location.address_utf8_txt, rm.ossl$ID)
 saveRDS.gz(rm.ossl, "/mnt/soilspec4gg/ossl/ossl_import/rm.ossl_v1.rds")
 #ossl.x=rm.ossl[sample.int(nrow(rm.ossl), 3e4),]
+
+## Golden subset conditions
+## 1. No spatial clustering
+## 2. No erratic values
+sel.hq.mir  <- mir.df$id.scan_uuid_c[which(mir.df$scan.mir.negfreq_ossl_pct == 0 & mir.df$scan.mir.extfreq_ossl_pct == 0)]
+str(sel.hq.mir)
+## 94821
+sel.hq.visnir  <- visnir.df$id.scan_uuid_c[which(visnir.df$scan.visnir.negfreq_ossl_pct == 0 & visnir.df$scan.visnir.extfreq_ossl_pct == 0 & (visnir.df$id.layer_local_c %in% soil.df$id.layer_local_c))]
+str(sel.hq.visnir)
+## 100507
+sel.hq.loc = rm.ossl$id.location_olc_c[!is.na(rm.ossl$location.error_any_m) & rm.ossl$location.error_any_m < 100 & rm.ossl$scan.mir.negfreq_ossl_pct & rm.ossl$id.layer_uuid_c ]
+
+prof1 = landmap::sample.grid(site.xy, c(1, 1), n=4)
+l0 <- list("sp.points", site.xy, pch=1, col="red")
+l1 <- list("sp.points", prof1$subset, pch="+", col="black", cex=1.2)
+spplot(prof1$grid, scales=list(draw=TRUE),
+       col.regions="grey", sp.layout=list(l0, l1))
+## Subsampling ratio in percent:
+round(length(prof1$subset)/length(site.xy)*100, 1)
+##
 
