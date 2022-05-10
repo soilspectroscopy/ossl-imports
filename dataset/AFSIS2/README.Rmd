@@ -253,7 +253,7 @@ afsis2.mir.f = round(as.data.frame(afsis2.mir.f)*1000)
 mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
 colnames(afsis2.mir.f) = mir.n
 #summary(afsis2.mir.f$scan_mir.602_abs)
-afsis2.mir.f$id.scan_uuid_c = rownames(afsis2.mir)
+afsis2.mir.f$id.scan_uuid_c = afsis2.abs$id.scan_uuid_c
 ```
 
 Plotting MIR spectra to see if there are still maybe negative values in the table:
@@ -309,6 +309,7 @@ if(!file.exists(mir.rds)){
 Check if some points don't have any spectral scans:
 
 ```{r}
+str(afsis2.mir.f$id.scan_uuid_c)
 summary(is.na(afsis2.mir.f$id.scan_uuid_c))
 mis.r = afsis2.mir.f$id.layer_uuid_c %in% afsis2.site$id.layer_uuid_c
 summary(mis.r)

@@ -45,3 +45,5 @@ vignettes/*.pdf
 *.gpkg-wal
 
 *.gpkg-shm
+
+*.RData

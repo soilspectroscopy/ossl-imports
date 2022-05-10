@@ -26,7 +26,7 @@ body {
 <body>
 
 <h1 id="dataset-import-tansis-nisis-and-ghansis-afsis-ii-ssl">Dataset import: TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL</h1>
-<p>Tomislav Hengl (<a href="mailto:tom.hengl@opengeohub.org">tom.hengl@opengeohub.org</a>) and Jonathan Sanderman (<a href="mailto:jsanderman@woodwellclimate.org">jsanderman@woodwellclimate.org</a>) 08 May, 2022</p>
+<p>Tomislav Hengl (<a href="mailto:tom.hengl@opengeohub.org">tom.hengl@opengeohub.org</a>) and Jonathan Sanderman (<a href="mailto:jsanderman@woodwellclimate.org">jsanderman@woodwellclimate.org</a>) 10 May, 2022</p>
 <ul>
 <li><a href="#tansis-nisis-and-ghansis-inputs">TanSIS, NiSIS and GhanSIS inputs</a></li>
 <li><a href="#data-import">Data import</a>
@@ -48,7 +48,7 @@ body {
 <h2 id="tansis-nisis-and-ghansis-inputs">TanSIS, NiSIS and GhanSIS inputs</h2>
 <p>Part of: <a href="https://github.com/soilspectroscopy">https://github.com/soilspectroscopy</a><br />
 Project: <a href="https://soilspectroscopy.org">Soil Spectroscopy for Global Good</a><br />
-Last update: 2022-05-08<br />
+Last update: 2022-05-10<br />
 Dataset: <a href="https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis2.ssl">AFSIS2.SSL</a></p>
 <p>Mid-Infrared Spectra (MIRS) from AfSIS2 Soil and Plant Spectroscopy Laboratory, which are the national Soil Information Systems: TanSIS (Tanzania), NiSIS (Nigeria) and GhanSIS (Ghana).</p>
 <p>The three datasets are available from <a href="https://doi.org/10.34725/DVN/XUDGJY">https://doi.org/10.34725/DVN/XUDGJY</a>, <a href="https://doi.org/10.34725/DVN/WLAKR2">https://doi.org/10.34725/DVN/WLAKR2</a> and <a href="https://doi.org/10.34725/DVN/SPRSFN">https://doi.org/10.34725/DVN/SPRSFN</a>. Documentation of the datasets is available in <a href="#ref-hengl2021african">Hengl et al.</a> (<a href="#ref-hengl2021african">2021</a>). Data has been analyzed at the ICRAF Soil-Plant Spectral Diagnostics Laboratory, Nairobi, and the Rothamsted Research. Coordinates for points are not provided and soil reference data is available only for a limited subset of points. Coordinates for TanSIS points are available with a different coding system via <a href="https://registry.opendata.aws/afsis/">https://registry.opendata.aws/afsis/</a>. From the 31,269 soil scans (“ZnSe”) only 820 (2.6%) have reference data.</p>
@@ -251,7 +251,7 @@ Dataset: <a href="https://soilspectroscopy.github.io/ossl-manual/soil-spectrosco
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>mir.n <span class="ot">=</span> <span class="fu">paste0</span>(<span class="st">&quot;scan_mir.&quot;</span>, <span class="fu">seq</span>(<span class="dv">600</span>, <span class="dv">4000</span>, <span class="dv">2</span>), <span class="st">&quot;_abs&quot;</span>)</span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(afsis2.mir.f) <span class="ot">=</span> mir.n</span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co">#summary(afsis2.mir.f$scan_mir.602_abs)</span></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>afsis2.mir.f<span class="sc">$</span>id.scan_uuid_c <span class="ot">=</span> <span class="fu">rownames</span>(afsis2.mir)</span></code></pre></div>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>afsis2.mir.f<span class="sc">$</span>id.scan_uuid_c <span class="ot">=</span> afsis2.abs<span class="sc">$</span>id.scan_uuid_c</span></code></pre></div>
 <p>Plotting MIR spectra to see if there are still maybe negative values in the table:</p>
 <div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">matplot</span>(<span class="at">y=</span><span class="fu">as.vector</span>(<span class="fu">t</span>(afsis2.mir.f[<span class="dv">250</span>,mir.n])), <span class="at">x=</span><span class="fu">seq</span>(<span class="dv">600</span>, <span class="dv">4000</span>, <span class="dv">2</span>),</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">3000</span>),</span>
@@ -268,7 +268,7 @@ Dataset: <a href="https://soilspectroscopy.github.io/ossl-manual/soil-spectrosco
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>afsis2.mir.f<span class="sc">$</span>id.layer_uuid_c <span class="ot">=</span> plyr<span class="sc">::</span><span class="fu">join</span>(afsis2.mir.f[<span class="st">&quot;id.layer_local_c&quot;</span>], afsis2.site[<span class="fu">c</span>(<span class="st">&quot;id.layer_local_c&quot;</span>,<span class="st">&quot;id.layer_uuid_c&quot;</span>)], <span class="at">match=</span><span class="st">&quot;first&quot;</span>)<span class="sc">$</span>id.layer_uuid_c</span></code></pre></div>
 <pre><code>## Joining by: id.layer_local_c</code></pre>
 <div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">is.na</span>(afsis2.mir.f<span class="sc">$</span>id.layer_uuid_c))</span></code></pre></div>
-<pre><code>##    Mode    TRUE 
+<pre><code>##    Mode   FALSE 
 ## logical     781</code></pre>
 <div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>afsis2.mir.f<span class="sc">$</span>model.name_utf8_txt <span class="ot">=</span> <span class="st">&quot;Bruker Alpha 1_FT-MIR_Zn Se&quot;</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>afsis2.mir.f<span class="sc">$</span>model.code_any_c <span class="ot">=</span> <span class="st">&quot;Bruker_Alpha1_FT.MIR.Zn.Se&quot;</span></span>
@@ -289,44 +289,21 @@ Dataset: <a href="https://soilspectroscopy.github.io/ossl-manual/soil-spectrosco
 <p>Save to RDS file:</p>
 <div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>x.na <span class="ot">=</span> mir.name[<span class="fu">which</span>(<span class="sc">!</span>mir.name <span class="sc">%in%</span> <span class="fu">names</span>(afsis2.mir.f))]</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(x.na)<span class="sc">&gt;</span><span class="dv">0</span>){ <span class="cf">for</span>(i <span class="cf">in</span> x.na){ afsis2.mir.f[,i] <span class="ot">&lt;-</span> <span class="cn">NA</span> } }</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(afsis2.mir.f[,mir.name[<span class="dv">1</span><span class="sc">:</span><span class="dv">24</span>]])</span></code></pre></div>
-<pre><code>## &#39;data.frame&#39;:    781 obs. of  24 variables:
-##  $ id.scan_uuid_c                     : chr  &quot;46&quot; &quot;64&quot; &quot;67&quot; &quot;75&quot; ...
-##  $ id.scan_local_c                    : chr  NA NA NA NA ...
-##  $ id.layer_uuid_c                    : chr  NA NA NA NA ...
-##  $ id.layer_local_c                   : chr  NA NA NA NA ...
-##  $ model.name_utf8_txt                : chr  &quot;Bruker Alpha 1_FT-MIR_Zn Se&quot; &quot;Bruker Alpha 1_FT-MIR_Zn Se&quot; &quot;Bruker Alpha 1_FT-MIR_Zn Se&quot; &quot;Bruker Alpha 1_FT-MIR_Zn Se&quot; ...
-##  $ model.code_any_c                   : chr  &quot;Bruker_Alpha1_FT.MIR.Zn.Se&quot; &quot;Bruker_Alpha1_FT.MIR.Zn.Se&quot; &quot;Bruker_Alpha1_FT.MIR.Zn.Se&quot; &quot;Bruker_Alpha1_FT.MIR.Zn.Se&quot; ...
-##  $ method.light.source_any_c          : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
-##  $ method.preparation_any_c           : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
-##  $ scan.file_any_c                    : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
-##  $ scan.date.begin_iso.8601_yyyy.mm.dd: Date, format: &quot;2019-01-01&quot; &quot;2019-01-01&quot; &quot;2019-01-01&quot; &quot;2019-01-01&quot; ...
-##  $ scan.date.end_iso.8601_yyyy.mm.dd  : Date, format: &quot;2019-12-31&quot; &quot;2019-12-31&quot; &quot;2019-12-31&quot; &quot;2019-12-31&quot; ...
-##  $ scan.license.title_ascii_txt       : chr  &quot;CC0&quot; &quot;CC0&quot; &quot;CC0&quot; &quot;CC0&quot; ...
-##  $ scan.license.address_idn_url       : chr  &quot;https://creativecommons.org/publicdomain/zero/1.0/&quot; &quot;https://creativecommons.org/publicdomain/zero/1.0/&quot; &quot;https://creativecommons.org/publicdomain/zero/1.0/&quot; &quot;https://creativecommons.org/publicdomain/zero/1.0/&quot; ...
-##  $ scan.doi_idf_c                     : chr  NA NA NA NA ...
-##  $ scan.contact.name_utf8_txt         : chr  &quot;Winowiecki, Leigh Ann (ICRAF)&quot; &quot;Winowiecki, Leigh Ann (ICRAF)&quot; &quot;Winowiecki, Leigh Ann (ICRAF)&quot; &quot;Winowiecki, Leigh Ann (ICRAF)&quot; ...
-##  $ scan.contact.email_ietf_email      : chr  &quot;L.A.WINOWIECKI@cgiar.org&quot; &quot;L.A.WINOWIECKI@cgiar.org&quot; &quot;L.A.WINOWIECKI@cgiar.org&quot; &quot;L.A.WINOWIECKI@cgiar.org&quot; ...
-##  $ scan.mir.nafreq_ossl_pct           : num  0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 ...
-##  $ scan.mir.negfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ scan.mir.extfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
-##  $ scan_mir.600_abs                   : num  2130 2104 2147 2190 2285 ...
-##  $ scan_mir.602_abs                   : num  2109 2093 2126 2204 2285 ...
-##  $ scan_mir.604_abs                   : num  2088 2082 2109 2218 2285 ...
-##  $ scan_mir.606_abs                   : num  2070 2069 2099 2228 2283 ...
-##  $ scan_mir.608_abs                   : num  2053 2053 2096 2231 2279 ...</code></pre>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>mir.rds <span class="ot">=</span> <span class="fu">paste0</span>(dir, <span class="st">&quot;ossl_mir_v1.rds&quot;</span>)</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">file.exists</span>(mir.rds)){</span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS.gz</span>(afsis2.mir.f[,mir.name], mir.rds)</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co">#str(afsis2.mir.f[,mir.name[1:24]])</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>mir.rds <span class="ot">=</span> <span class="fu">paste0</span>(dir, <span class="st">&quot;ossl_mir_v1.rds&quot;</span>)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">file.exists</span>(mir.rds)){</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS.gz</span>(afsis2.mir.f[,mir.name], mir.rds)</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <h3 id="quality-control">Quality control</h3>
 <p>Check if some points don’t have any spectral scans:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(afsis2.mir.f<span class="sc">$</span>id.scan_uuid_c)</span></code></pre></div>
+<pre><code>##  &#39;hash&#39; chr [1:781] &quot;f624677938a287dabe2ad8e8018dd7ac&quot; &quot;0c9923d2acb084006badb5035e36526f&quot; &quot;c81bc07e4cee41368c9e9363867e2006&quot; ...</code></pre>
 <div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">is.na</span>(afsis2.mir.f<span class="sc">$</span>id.scan_uuid_c))</span></code></pre></div>
 <pre><code>##    Mode   FALSE 
 ## logical     781</code></pre>
 <div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>mis.r <span class="ot">=</span> afsis2.mir.f<span class="sc">$</span>id.layer_uuid_c <span class="sc">%in%</span> afsis2.site<span class="sc">$</span>id.layer_uuid_c</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mis.r)</span></code></pre></div>
-<pre><code>##    Mode   FALSE 
+<pre><code>##    Mode    TRUE 
 ## logical     781</code></pre>
 <h3 id="distribution-of-points">Distribution of points</h3>
 <p>We can plot an world map showing distribution of the sampling locations for the AfSIS-2 points (only Tanzania has provided coordinates).</p>

@@ -40,7 +40,8 @@ for(j in c("ec.w_usda.4f1_dsm")){
   soil.df[,j] = ifelse(soil.df[,j]>50|soil.df[,j]<0, NA, soil.df[,j])
 }
 summary(is.na(soil.df$id.layer_uuid_c))
-## OK!
+summary(duplicated(soil.df$id.layer_uuid_c))
+## OK all unique!
 soil.df = dplyr::distinct(soil.df)
 dim(soil.df)
 # 118145     59
@@ -60,6 +61,9 @@ summary(as.factor(site.df$dataset.code_ascii_c))
 site.df = dplyr::distinct(site.df)
 dim(site.df)
 # 122304     38
+summary(is.na(site.df$id.location_olc_c))
+## 38,977 missing locations - AfSIS-I scans
+#head(site.df[which(is.na(site.df$id.location_olc_c))[1:10],])
 site_yrs = site.df[!is.na(site.df$observation.date.begin_iso.8601_yyyy.mm.dd),c("observation.date.begin_iso.8601_yyyy.mm.dd", "dataset.code_ascii_c")]
 site_yrs$year = as.numeric(substr(x=site_yrs$observation.date.begin_iso.8601_yyyy.mm.dd, 1, 4))
 site_yrs$year = ifelse(site_yrs$year <1960, NA, ifelse(site_yrs$year>2024, NA, site_yrs$year))
@@ -128,10 +132,13 @@ summary(duplicated(mir.df$id.scan_uuid_c))
 ## OK!
 summary(is.na(mir.df$id.layer_local_c))
 ## 6685 missing local layers ID
+summary(is.na(mir.df$id.layer_uuid_c))
+## 22,858 missing uuid
+#head(mir.df[which(is.na(mir.df$id.layer_uuid_c))[1:20],1:20])
 summary(as.factor(mir.df$model.code_any_c))
 ## Bruker_Tensor_27.HTS.XT Bruker_Vertex_70.HTS.XT
 ##  18250                   77013
-mir.pnts = site.df[site.df$id.layer_uuid_c %in% mir.df$id.layer_uuid_c,c("longitude_wgs84_dd", "latitude_wgs84_dd", "id.location_olc_c")]
+mir.pnts = site.df[site.df$id.layer_uuid_c %in% mir.df$id.layer_uuid_c, c("longitude_wgs84_dd", "latitude_wgs84_dd", "id.location_olc_c")]
 mir.pnts = mir.pnts[!is.na(mir.pnts$longitude_wgs84_dd),]
 mir.pnts = SpatialPointsDataFrame(mir.pnts[,1:2], data = mir.pnts["id.location_olc_c"], proj4string = CRS("EPSG:4326"))
 ## World map
@@ -151,7 +158,7 @@ id.s = intersect(soil.df$id.layer_uuid_c, site.df$id.layer_uuid_c)
 length(id.s)
 # 115644
 dim(mir.df[mir.df$id.layer_uuid_c %in% id.mir,])
-# 72832  1720
+# 66316  1720
 dim(visnir.df[visnir.df$id.layer_uuid_c %in% id.vnir,])
 # 100586   1095
 ## Rule 2: fill in important missing fields such as location accuracy / attribution
@@ -181,8 +188,8 @@ site.p = spTransform(site.xy, ov_ADMIN@proj4string)
 ID = sp::over(site.p, ov_ADMIN)
 #summary(as.factor(ID$ID))
 tif.lst = list.files("/data/WORLDCLIM", ".tif", full.names=TRUE)
-## 86
-ov.tmp = parallel::mclapply(1:length(tif.lst), function(j){ terra::extract(terra::rast(tif.lst[j]), terra::vect(site.xy)) }, mc.cores = 32)
+## 122
+ov.tmp = parallel::mclapply(1:length(tif.lst), function(j){ terra::extract(terra::rast(tif.lst[j]), terra::vect(site.xy)) }, mc.cores = 16)
 ov.tmp = dplyr::bind_cols(lapply(ov.tmp, function(i){i[,2]}))
 names(ov.tmp) = tools::file_path_sans_ext(basename(tif.lst))
 ## remove covariates with no variation?
@@ -190,12 +197,15 @@ c.na = sapply(ov.tmp, function(i){sum(is.na(i))})
 c.sd = sapply(ov.tmp, function(i){var(i, na.rm=TRUE)})
 rm.c = which(c.na>200 | c.sd == 0)
 #rm.c
+## summary(ov.tmp$lcv_global.seasonal.s1_earth.big.data.winter.vv.rmse_m_250m_s0..0cm_2019.12..2020.11_epsg4326_v1)
 ## 23 layers suspicious
 ## clm_snow.prob missing values for 300-400 points
 ov.tmp$id.location_olc_c = site.xy$id.location_olc_c
 ov.tmp$ID = ID$ID
 #summary(as.factor(ov.tmp$ID))
 ## high clustering of points?
+saveRDS.gz(ov.tmp, "/mnt/soilspec4gg/ossl/ossl_import/ov.tmp.rds")
+#ov.tmp = readRDS.gz("/mnt/soilspec4gg/ossl/ossl_import/ov.tmp.rds")
 
 ## Final regression matrix ----
 gc()
@@ -207,19 +217,32 @@ gc()
 ## create 1 regression matrix with all data
 visnir.df$vnirmodel.code_any_c = paste(visnir.df$model.code_any_c)
 mir.df$mirmodel.code_any_c = paste(mir.df$model.code_any_c)
-sel.mir.name = c("id.layer_uuid_c", "mirmodel.code_any_c", paste0("scan_mir.", seq(600, 4000, by=2), "_abs"))
+sel.mir.name = c("id.layer_uuid_c", "id.scan_uuid_c", "mirmodel.code_any_c", paste0("scan_mir.", seq(600, 4000, by=2), "_abs"))
 sel.vnir.name = c("id.layer_uuid_c", "vnirmodel.code_any_c", paste0("scan_visnir.", seq(350, 2500, by=2), "_pcnt"))
 ## takes minutes...
 rm.ossl = plyr::join_all(list(soil.df[soil.df$id.layer_uuid_c %in% id.s,],
-                         site.df[site.df$id.layer_uuid_c %in% id.s,],
-                         visnir.df[visnir.df$id.layer_uuid_c %in% id.vnir, sel.vnir.name],
+                         site.df[site.df$id.layer_uuid_c %in% id.s,-which(names(site.df)=="id.layer_local_c")],
                          mir.df[mir.df$id.layer_uuid_c %in% id.mir, sel.mir.name],
+                         visnir.df[visnir.df$id.layer_uuid_c %in% id.vnir, sel.vnir.name],
                          ov.tmp))
+#Joining by: id.layer_uuid_c
+#Joining by: id.layer_uuid_c
+#Joining by: id.layer_uuid_c
+#Joining by: id.location_olc_c
 #rm.ossl = rm.ossl[!is.na(rm.ossl$dataset.code_ascii_c),]
+## some lab data without scans
+keep.lst = !(is.na(rm.ossl$scan_mir.602_abs) & is.na(rm.ossl$scan_visnir.552_pcnt))
+rm.ossl = rm.ossl[keep.lst,]
 dim(rm.ossl)
-## 147492   2962
+## 140731   2999
+summary(is.na(rm.ossl$id.layer_uuid_c))
+summary(duplicated(rm.ossl$id.scan_uuid_c))
+## 76,641 duplicates because some only have VISNIR
+View(rm.ossl[which(duplicated(rm.ossl$id.scan_uuid_c))[1:40],1:40])
+summary(duplicated(rm.ossl$id.layer_uuid_c))
+## 31,848
 summary(!is.na(rm.ossl$scan_mir.602_abs))
-summary(!is.na(rm.ossl$scan_visnir.452_pcnt))
+summary(!is.na(rm.ossl$scan_visnir.552_pcnt))
 ## replace missing block ID's
 summary(is.na(rm.ossl$ID))
 rm.ossl$location.address_utf8_txt = ifelse(is.na(rm.ossl$location.address_utf8_txt), "Unknown", rm.ossl$location.address_utf8_txt)
@@ -230,20 +253,41 @@ saveRDS.gz(rm.ossl, "/mnt/soilspec4gg/ossl/ossl_import/rm.ossl_v1.rds")
 ## Golden subset conditions
 ## 1. No spatial clustering
 ## 2. No erratic values
-sel.hq.mir  <- mir.df$id.scan_uuid_c[which(mir.df$scan.mir.negfreq_ossl_pct == 0 & mir.df$scan.mir.extfreq_ossl_pct == 0)]
+sel.hq.mir  <- mir.df$id.layer_uuid_c[-which(mir.df$scan.mir.negfreq_ossl_pct == 0 & mir.df$scan.mir.extfreq_ossl_pct == 0)]
 str(sel.hq.mir)
-## 94821
-sel.hq.visnir  <- visnir.df$id.scan_uuid_c[which(visnir.df$scan.visnir.negfreq_ossl_pct == 0 & visnir.df$scan.visnir.extfreq_ossl_pct == 0 & (visnir.df$id.layer_local_c %in% soil.df$id.layer_local_c))]
+## 737
+sel.hq.visnir  <- visnir.df$id.layer_uuid_c[-which(visnir.df$scan.visnir.negfreq_ossl_pct == 0 & visnir.df$scan.visnir.extfreq_ossl_pct == 0)]
 str(sel.hq.visnir)
-## 100507
-sel.hq.loc = rm.ossl$id.location_olc_c[!is.na(rm.ossl$location.error_any_m) & rm.ossl$location.error_any_m < 100 & rm.ossl$scan.mir.negfreq_ossl_pct & rm.ossl$id.layer_uuid_c ]
-
-prof1 = landmap::sample.grid(site.xy, c(1, 1), n=4)
-l0 <- list("sp.points", site.xy, pch=1, col="red")
-l1 <- list("sp.points", prof1$subset, pch="+", col="black", cex=1.2)
-spplot(prof1$grid, scales=list(draw=TRUE),
-       col.regions="grey", sp.layout=list(l0, l1))
+## 171
+sel.check = which(!is.na(rm.ossl$latitude_wgs84_dd) & !is.na(rm.ossl$location.error_any_m) & rm.ossl$location.error_any_m < 1100 & (!rm.ossl$id.layer_uuid_c %in% union(sel.hq.mir, sel.hq.visnir)))
+## 44,081
+sel.hq.loc = unique(rm.ossl$id.location_olc_c[sel.check])
+sel.hq.loc = sel.hq.loc[!is.na(sel.hq.loc)]
+str(sel.hq.loc)
+## 46965 locations
+#summary(as.factor(sel.hq.loc))
+## remove spatial clustering?
+prof1 = landmap::sample.grid(site.p[which(site.p$id.location_olc_c %in% sel.hq.loc),], c(3e4, 3e4), n=1)
+#l0 <- list("sp.points", site.p[site.p$id.location_olc_c %in% sel.hq.loc,], pch=1, col="red")
+#l1 <- list("sp.points", prof1$subset, pch="+", col="black", cex=1.2)
+#length(prof1$subset)
+## 2613 locations
+#spplot(prof1$grid, scales=list(draw=TRUE),
+#       col.regions="grey", sp.layout=list(l0, l1))
+## World map ----
+if(!file.exists("img/subset.pnts_sites.png")){
+  library(sf)
+  gs_pnts_sf <- st_as_sf(prof1$subset[1])
+  plot_gh(gs_pnts_sf, out.pdf="img/subset.pnts_sites.pdf", fill.col="cyan1")
+  system("pdftoppm img/subset.pnts_sites.pdf img/subset.pnts_sites -png -f 1 -singlefile")
+  system("convert -crop 1280x575+36+114 img/subset.pnts_sites.png img/subset.pnts_sites.png")
+}
 ## Subsampling ratio in percent:
-round(length(prof1$subset)/length(site.xy)*100, 1)
-##
-
+round(length(prof1$subset)/length(site.p)*100, 1)
+## save image
+## golden dataset:
+gs.sel = which(rm.ossl$id.location_olc_c %in% sel.hq.loc[sel.hq.loc %in% prof1$subset$id.location_olc_c])
+str(gs.sel)
+## 21,030
+saveRDS.gz(rm.ossl[gs.sel,], "./subset/rm.ossl_hq.rds")
+#save.image.pigz(file="test_bind.RData", n.cores=32)

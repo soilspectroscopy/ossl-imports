@@ -2,7 +2,7 @@ Dataset import: TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL
 ================
 Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>)
-08 May, 2022
+10 May, 2022
 
 
 
@@ -31,7 +31,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-05-08  
+Last update: 2022-05-10  
 Dataset:
 [AFSIS2.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis2.ssl)
 
@@ -332,7 +332,7 @@ afsis2.mir.f = round(as.data.frame(afsis2.mir.f)*1000)
 mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
 colnames(afsis2.mir.f) = mir.n
 #summary(afsis2.mir.f$scan_mir.602_abs)
-afsis2.mir.f$id.scan_uuid_c = rownames(afsis2.mir)
+afsis2.mir.f$id.scan_uuid_c = afsis2.abs$id.scan_uuid_c
 ```
 
 Plotting MIR spectra to see if there are still maybe negative values in
@@ -347,7 +347,7 @@ matplot(y=as.vector(t(afsis2.mir.f[250,mir.n])), x=seq(600, 4000, 2),
         )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 Export final MIR table:
 
@@ -373,7 +373,7 @@ afsis2.mir.f$id.layer_uuid_c = plyr::join(afsis2.mir.f["id.layer_local_c"], afsi
 summary(is.na(afsis2.mir.f$id.layer_uuid_c))
 ```
 
-    ##    Mode    TRUE 
+    ##    Mode   FALSE 
     ## logical     781
 
 ``` r
@@ -404,36 +404,7 @@ Save to RDS file:
 ``` r
 x.na = mir.name[which(!mir.name %in% names(afsis2.mir.f))]
 if(length(x.na)>0){ for(i in x.na){ afsis2.mir.f[,i] <- NA } }
-str(afsis2.mir.f[,mir.name[1:24]])
-```
-
-    ## 'data.frame':    781 obs. of  24 variables:
-    ##  $ id.scan_uuid_c                     : chr  "46" "64" "67" "75" ...
-    ##  $ id.scan_local_c                    : chr  NA NA NA NA ...
-    ##  $ id.layer_uuid_c                    : chr  NA NA NA NA ...
-    ##  $ id.layer_local_c                   : chr  NA NA NA NA ...
-    ##  $ model.name_utf8_txt                : chr  "Bruker Alpha 1_FT-MIR_Zn Se" "Bruker Alpha 1_FT-MIR_Zn Se" "Bruker Alpha 1_FT-MIR_Zn Se" "Bruker Alpha 1_FT-MIR_Zn Se" ...
-    ##  $ model.code_any_c                   : chr  "Bruker_Alpha1_FT.MIR.Zn.Se" "Bruker_Alpha1_FT.MIR.Zn.Se" "Bruker_Alpha1_FT.MIR.Zn.Se" "Bruker_Alpha1_FT.MIR.Zn.Se" ...
-    ##  $ method.light.source_any_c          : chr  "" "" "" "" ...
-    ##  $ method.preparation_any_c           : chr  "" "" "" "" ...
-    ##  $ scan.file_any_c                    : chr  "" "" "" "" ...
-    ##  $ scan.date.begin_iso.8601_yyyy.mm.dd: Date, format: "2019-01-01" "2019-01-01" "2019-01-01" "2019-01-01" ...
-    ##  $ scan.date.end_iso.8601_yyyy.mm.dd  : Date, format: "2019-12-31" "2019-12-31" "2019-12-31" "2019-12-31" ...
-    ##  $ scan.license.title_ascii_txt       : chr  "CC0" "CC0" "CC0" "CC0" ...
-    ##  $ scan.license.address_idn_url       : chr  "https://creativecommons.org/publicdomain/zero/1.0/" "https://creativecommons.org/publicdomain/zero/1.0/" "https://creativecommons.org/publicdomain/zero/1.0/" "https://creativecommons.org/publicdomain/zero/1.0/" ...
-    ##  $ scan.doi_idf_c                     : chr  NA NA NA NA ...
-    ##  $ scan.contact.name_utf8_txt         : chr  "Winowiecki, Leigh Ann (ICRAF)" "Winowiecki, Leigh Ann (ICRAF)" "Winowiecki, Leigh Ann (ICRAF)" "Winowiecki, Leigh Ann (ICRAF)" ...
-    ##  $ scan.contact.email_ietf_email      : chr  "L.A.WINOWIECKI@cgiar.org" "L.A.WINOWIECKI@cgiar.org" "L.A.WINOWIECKI@cgiar.org" "L.A.WINOWIECKI@cgiar.org" ...
-    ##  $ scan.mir.nafreq_ossl_pct           : num  0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 0.233 ...
-    ##  $ scan.mir.negfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ scan.mir.extfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ scan_mir.600_abs                   : num  2130 2104 2147 2190 2285 ...
-    ##  $ scan_mir.602_abs                   : num  2109 2093 2126 2204 2285 ...
-    ##  $ scan_mir.604_abs                   : num  2088 2082 2109 2218 2285 ...
-    ##  $ scan_mir.606_abs                   : num  2070 2069 2099 2228 2283 ...
-    ##  $ scan_mir.608_abs                   : num  2053 2053 2096 2231 2279 ...
-
-``` r
+#str(afsis2.mir.f[,mir.name[1:24]])
 mir.rds = paste0(dir, "ossl_mir_v1.rds")
 if(!file.exists(mir.rds)){
   saveRDS.gz(afsis2.mir.f[,mir.name], mir.rds)
@@ -443,6 +414,12 @@ if(!file.exists(mir.rds)){
 ### Quality control
 
 Check if some points don’t have any spectral scans:
+
+``` r
+str(afsis2.mir.f$id.scan_uuid_c)
+```
+
+    ##  'hash' chr [1:781] "f624677938a287dabe2ad8e8018dd7ac" "0c9923d2acb084006badb5035e36526f" "c81bc07e4cee41368c9e9363867e2006" ...
 
 ``` r
 summary(is.na(afsis2.mir.f$id.scan_uuid_c))
@@ -456,7 +433,7 @@ mis.r = afsis2.mir.f$id.layer_uuid_c %in% afsis2.site$id.layer_uuid_c
 summary(mis.r)
 ```
 
-    ##    Mode   FALSE 
+    ##    Mode    TRUE 
     ## logical     781
 
 ### Distribution of points
