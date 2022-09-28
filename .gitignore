@@ -14,7 +14,6 @@
 # Edited files
 *.R~
 
-
 # Output files from R CMD build
 /*.tar.gz
 
@@ -47,3 +46,5 @@ vignettes/*.pdf
 *.gpkg-shm
 
 *.RData
+
+ossl-import.Rproj
