@@ -2,7 +2,7 @@ Dataset import: Schiedung et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-28 September, 2022
+30 September, 2022
 
 
 
@@ -10,6 +10,11 @@ Sanderman (<jsanderman@woodwellclimate.org>)
     inputs](#the-schiedung-et-al-2022-soil-spectral-library-inputs)
 -   [Data import](#data-import)
     -   [Soil site information](#soil-site-information)
+    -   [Soil lab information](#soil-lab-information)
+    -   [Mid-infrared spectroscopy
+        data](#mid-infrared-spectroscopy-data)
+    -   [Quality control](#quality-control)
+    -   [Rendering report](#rendering-report)
 -   [References](#references)
 
 [<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
@@ -25,7 +30,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-09-28  
+Last update: 2022-09-30  
 Dataset:
 [SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html)
 
@@ -54,15 +59,6 @@ schiedung.desc <- read_xlsx(paste0(dir, "/Var_names_ID_DRIFT_all.xlsx"), sheet =
 # Reading site information
 schiedung.info <- read_xlsx(paste0(dir, "/ID_DRIFT_all.xlsx"), sheet = 1)
 # names(schiedung.info)
-
-# Reading spectra data, two sheets because of different spectral range
-# excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx")) 
-
-schiedung.spec1 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 1)
-# schiedung.spec1 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment
-
-schiedung.spec2 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 2)
-# schiedung.spec2 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment
 ```
 
 ### Soil site information
@@ -132,7 +128,216 @@ schiedung.soilsite <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
                 pedon.taxa_usda_c)
 ```
 
-Plotting map:
+Exporting soilsite data
+
+``` r
+soilsite.rds = paste0(dir, "/ossl_soilsite_v1.rds")
+saveRDS(schiedung.soilsite, soilsite.rds)
+```
+
+### Soil lab information
+
+``` r
+# names(schiedung.info)
+
+in.names <- c("BD_bulk", "BD_fine",
+              "TN", "TC", "SOC",
+              "pH_CaCl2_site", "EC_CaCl2_site", "eff_CEC_site",
+              "clay_site", "silt_site", "sand_site")
+
+out.names <- c("bd.core_iso.11272.2017_gcm3", "bd.od_usda.3b2_gcm3",
+               "n.tot_iso.13878.1998_wpct", "c.tot_iso.10694.1995_wpct", "oc_iso.10694.1995_wpct",
+               "ph.cacl2_usda.4c1_index", "ec.w_usda.4f1_dsm", "ecec_usda.4b4_cmolkg",
+               "clay.tot_iso.11277.2020_wpct", "silt.tot_iso.11277.2020_wpct", "sand.tot_iso.11277.2020_wpct")
+
+schiedung.soillab <- schiedung.info %>% # Spectra ID is the merge of EUP, sample_point, and increment
+  dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>%
+  tidyr::separate(increment, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>%
+  dplyr::mutate(layer.upper.depth_usda_cm = as.numeric(layer.upper.depth_usda_cm),
+                layer.lower.depth_usda_cm = as.numeric(layer.lower.depth_usda_cm)) %>%
+  dplyr::rename_with(~out.names, all_of(in.names)) %>%
+  dplyr::select(id.layer_local_c, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, all_of(out.names)) %>%
+  dplyr::mutate_at(vars(-id.layer_local_c), as.numeric) %>%
+  dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1)
+```
+
+Exporting soillab data
+
+``` r
+soillab.rds = paste0(dir, "/ossl_soillab_v1.rds")
+saveRDS(schiedung.soillab, soillab.rds)
+```
+
+### Mid-infrared spectroscopy data
+
+Mid-infrared (MIR) soil spectroscopy raw data
+(<https://doi.org/10.5281/zenodo.6024831>). Samples have different
+spectral range, therefore two spectral sets were formatted and binded
+together.
+
+Spec1:
+
+``` r
+# excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx")) 
+
+schiedung.spec1 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 1)
+# schiedung.spec1 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment
+
+# First column names
+names(schiedung.spec1[,1:10])
+```
+
+    ##  [1] "ID"                 "filename"           "3996.4059999999999" "3994.4780000000001" "3992.549"          
+    ##  [6] "3990.62"            "3988.6909999999998" "3986.7629999999999" "3984.8339999999998" "3982.9050000000002"
+
+``` r
+# Removing filename column
+schiedung.spec1 <- schiedung.spec1 %>%
+  dplyr::select(-filename)
+
+# Checking spectral range and resolution
+spectra <- schiedung.spec1 %>%
+  dplyr::select(-all_of(c("ID")))
+
+old.spectral.range <- as.numeric(names(spectra))
+cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n")
+```
+
+    ## Spectral range between 248.811 and 3996.406 cm-1
+
+``` r
+cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n")
+```
+
+    ## Spectral resolution is -1.928 cm-1
+
+``` r
+# Resampling to 600-4000 interval
+new.spectral.range <- seq(4000, 600, by = -2)
+
+new.spectra <- spectra %>%
+  prospectr::resample(wav = old.spectral.range, new.wav = new.spectral.range, interpol = "spline") %>%
+  tibble::as_tibble()
+
+# Checking new range
+cat("New spectral range between ", range(as.numeric(names(new.spectra))), "cm-1 \n")
+```
+
+    ## New spectral range between  600 4000 cm-1
+
+``` r
+# Preparing final spec 1
+soilmir1 <- schiedung.spec1 %>%
+  dplyr::select(all_of(c("ID"))) %>%
+  dplyr::bind_cols(new.spectra) %>%
+  dplyr::select(all_of(c("ID")), all_of(rev(as.character(new.spectral.range))))
+```
+
+Spec2:
+
+``` r
+# excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx")) 
+
+schiedung.spec2 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 2)
+# schiedung.spec2 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment
+
+# First column names
+names(schiedung.spec2[,1:10])
+```
+
+    ##  [1] "ID"                 "filename"           "3996.4059999999999" "3994.4780000000001" "3992.549"          
+    ##  [6] "3990.62"            "3988.6909999999998" "3986.7629999999999" "3984.8339999999998" "3982.9050000000002"
+
+``` r
+# Removing filename column
+schiedung.spec2 <- schiedung.spec2 %>%
+  dplyr::select(-filename)
+
+# Checking spectral range and resolution
+spectra <- schiedung.spec2 %>%
+  dplyr::select(-all_of(c("ID")))
+
+old.spectral.range <- as.numeric(names(spectra))
+cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n")
+```
+
+    ## Spectral range between 399.2549 and 3996.406 cm-1
+
+``` r
+cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n")
+```
+
+    ## Spectral resolution is -1.928 cm-1
+
+``` r
+# Resampling to 600-4000 interval
+new.spectral.range <- seq(4000, 600, by = -2)
+
+new.spectra <- spectra %>%
+  prospectr::resample(wav = old.spectral.range, new.wav = new.spectral.range, interpol = "spline") %>%
+  tibble::as_tibble()
+
+# Checking new range
+cat("New spectral range between ", range(as.numeric(names(new.spectra))), "cm-1 \n")
+```
+
+    ## New spectral range between  600 4000 cm-1
+
+``` r
+# Preparing final spec 1
+soilmir2 <- schiedung.spec2 %>%
+  dplyr::select(all_of(c("ID"))) %>%
+  dplyr::bind_cols(new.spectra) %>%
+  dplyr::select(all_of(c("ID")), all_of(rev(as.character(new.spectral.range))))
+```
+
+Binding together and exporting:
+
+``` r
+schiedung.mir <- bind_rows(soilmir1, soilmir2) %>%
+  dplyr::rename(id.layer_local_c = ID) %>%
+  dplyr::mutate(id.layer_local_c = gsub("0-12", "0-15", id.layer_local_c)) %>%
+  dplyr::mutate(id.layer_local_c = gsub("16-28", "15-30", id.layer_local_c)) %>%
+  dplyr::mutate(id.layer_local_c = gsub("32-44", "30-45", id.layer_local_c)) %>%
+  dplyr::mutate(id.layer_local_c = gsub("48-60", "45-60", id.layer_local_c)) %>%
+  dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1)
+
+soilmir.rds = paste0(dir, "/ossl_mir_v1.rds")
+saveRDS(schiedung.mir, soilmir.rds)
+```
+
+### Quality control
+
+Checking IDs:
+
+``` r
+# Checking if soil site ids are unique
+table(duplicated(schiedung.soilsite$id.layer_uuid_c))
+```
+
+    ## 
+    ## FALSE 
+    ##   289
+
+``` r
+# Checking if soilab ids are compatible
+table(schiedung.soilsite$id.layer_uuid_c %in% schiedung.soillab$id.layer_uuid_c)
+```
+
+    ## 
+    ## TRUE 
+    ##  289
+
+``` r
+# Checking if mir ids are compatible. In this case there 30 samples missing spectra
+table(schiedung.soilsite$id.layer_local_c %in% schiedung.mir$id.layer_local_c)
+```
+
+    ## 
+    ## FALSE  TRUE 
+    ##    30   259
+
+Plotting sites map:
 
 ``` r
 data("World")
@@ -152,177 +357,77 @@ tm_shape(World) +
   tm_dots()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+![](README_files/figure-gfm/map-1.png)<!-- -->
 
-Exporting soilsite data
+Soil analytical data summary:
 
 ``` r
-soilsite.rds = paste0(dir, "/ossl_soilsite_v1.rds")
-saveRDS(schiedung.soilsite, soilsite.rds)
+schiedung.soillab %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
 ```
 
-<!-- ### Soil lab information -->
-<!-- Harmonization function: -->
-<!-- ```{r} -->
-<!-- names(schiedung.info) -->
-<!-- in.names = c("BD_bulk", "BD_fine", -->
-<!--              "TN", "TC", "SOC", "pH_CaCl2_site", -->
-<!--              "eff_CEC_site", "clay_site", "silt_site", "sand_site") -->
-<!-- out.name = c("bd.core_iso.11272.2017_gcm3", "bd.od_usda.3b2_gcm3", -->
-<!--              "n.tot_iso.13878.1998_wpct", "c.tot_iso.10694.1995_wpct", -->
-<!--              "ph.cacl2_usda.4c1_index", "ph.h2o_usda.4c1_index", "ec.w_usda.4f1_dsm", "gyp_usda.4e2_wpct", -->
-<!--              "caco3_usda.4e1_wpct", "ca.ext_usda.4b1_cmolkg", "k.ext_usda.4b1_cmolkg", -->
-<!--              "mg.ext_usda.4b1_cmolkg", "na.ext_usda.4b1_cmolkg", "cec.ext_usda.4b1_cmolkg", -->
-<!--              "sum.bases_4b4b2a_cmolkg", "ecec_usda.4b4_cmolkg", "al.kcl_usda.4b3_cmolkg", -->
-<!--              "fe.kcl_usda.4b3_mgkg", "c.tot_usda.4h2_wpct", "n.tot_usda.4h2_wpct", -->
-<!--              "s.tot_usda.4h2_wpct", "oc_usda.calc_wpct", "bd.od_usda.3b2_gcm3", -->
-<!--              "sand.tot_usda.3a1_wpct", "silt.tot_usda.3a1_wpct", "clay.tot_usda.3a1_wpct") -->
-<!-- schiedung.soillab <- schiedung.info %>% # Spectra ID is the merge of EUP, sample_point, and increment -->
-<!--   dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>% -->
-<!--   tidyr::separate(increment, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>% -->
-<!--   dplyr::mutate(layer.upper.depth_usda_cm = as.numeric(layer.upper.depth_usda_cm), -->
-<!--                 layer.lower.depth_usda_cm = as.numeric(layer.lower.depth_usda_cm)) %>% -->
-<!--   dplyr::select(id.layer_local_c, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm) %>% -->
-<!-- ## compare values -->
-<!-- summary(neon.soillab$carbonTot) -->
-<!-- summary(neon.soillab$bulkDensExclCoarseFrag) ## some very high BD? -->
-<!-- summary(neon.soillab$clayTotal) -->
-<!-- summary(neon.soillab$sandTotal) -->
-<!-- fun.lst = as.list(rep("x*1", length(in.name))) -->
-<!-- fun.lst[[which(in.name=="carbonTot")]] = "x/10" -->
-<!-- fun.lst[[which(in.name=="nitrogenTot")]] = "x/10" -->
-<!-- fun.lst[[which(in.name=="sulfurTot")]] = "x/10" -->
-<!-- fun.lst[[which(in.name=="finalOC")]] = "x/10" -->
-<!-- fun.lst[[which(in.name=="gypsumConc")]] = "x/10" -->
-<!-- fun.lst[[which(in.name=="caco3Conc")]] = "x/10" -->
-<!-- ## save translation rules: -->
-<!-- #View(data.frame(in.name, out.name, unlist(fun.lst))) -->
-<!-- write.csv(data.frame(in.name, out.name, unlist(fun.lst)), "./neon_soilab_transvalues.csv") -->
-<!-- neon.soil.f = transvalues(neon.soillab, out.name, in.name, fun.lst) -->
-<!-- neon.soil.f$wpg2_usda.3a2_wpct = rowSums(neon.soil[,c("coarseFrag2To5", "coarseFrag5To20")], na.rm=TRUE) -->
-<!-- ``` -->
-<!-- Exporting the table: -->
-<!-- ```{r} -->
-<!-- neon.soil.f$id.layer_local_c = neon.soil$id.layer_local_c -->
-<!-- neon.soil.f$id.layer_uuid_c = neon.soil$id.layer_uuid_c -->
-<!-- neon.soil.f$sample.doi_idf_c = "10.3390/s20236729" -->
-<!-- neon.soil.f$sample.contact.name_utf8_txt = "Jonathan Sanderman" -->
-<!-- neon.soil.f$sample.contact.email_ietf_email = "jsanderman@woodwellclimate.org" -->
-<!-- x.na = soilab.name[which(!soilab.name %in% names(neon.soil.f))] -->
-<!-- if(length(x.na)>0){ for(i in x.na){ neon.soil.f[,i] <- NA } } -->
-<!-- soilab.rds = paste0(dir, "ossl_soillab_v1.rds") -->
-<!-- if(!file.exists(soilab.rds)){ -->
-<!--   saveRDS.gz(neon.soil.f[,soilab.name], soilab.rds) -->
-<!-- } -->
-<!-- ``` -->
-<!-- ### Mid-infrared spectroscopy data -->
-<!-- Mid-infrared (MIR) soil spectroscopy raw data (<https://doi.org/10.5281/zenodo.4351254>): -->
-<!-- ```{r} -->
-<!-- ## 2 repetitions / different wavelengths -->
-<!-- neon.mir = vroom::vroom(paste0(dir, "NEON_Woodwell.csv")) -->
-<!-- ## For some reasons there are only 304 rows but import leads to 333 -->
-<!-- neon.soil = neon.mir[1:304,1:94] -->
-<!-- ## Already in KSSL! -->
-<!-- #neon.mir2 = vroom::vroom(paste0(dir, "NEON_KSSL.csv"))[1:304,95:ncol(neon.mir2)] -->
-<!-- #names(neon.mir2) = paste0("X", names(neon.mir2)) -->
-<!-- #dim(neon.mir2) -->
-<!-- ## different wavelengths? -->
-<!-- #summary(!names(neon.mir)[95:100] %in% paste0("X", names(neon.mir2))) -->
-<!-- neon.mir = neon.mir[1:304,95:ncol(neon.mir)] -->
-<!-- dim(neon.mir) -->
-<!-- ``` -->
-<!-- Resampling the MIR spectra from the original window size to 2 cm-1 in `neon.abs`.  -->
-<!-- Detect any problems: -->
-<!-- ```{r} -->
-<!-- wav.mir = as.numeric(gsub("X", "", names(neon.mir))) -->
-<!-- #wav2.mir = as.numeric(gsub("X", "", names(neon.mir2))) -->
-<!-- #summary(wav2.mir); summary(wav2.mir) -->
-<!-- # Creating a matrix with only spectral values to resample it -->
-<!-- neon.mir.spec = as.matrix(neon.mir) -->
-<!-- #neon2.mir.spec = as.matrix(neon.mir2) -->
-<!-- colnames(neon.mir.spec) = wav.mir -->
-<!-- #colnames(neon2.mir.spec) = wav2.mir -->
-<!-- ## remove values out of range -->
-<!-- #na.lst = rowSums(neon.mir) -->
-<!-- #str(which(is.na(na.lst))) -->
-<!-- samples.na.gaps = apply(neon.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)})  -->
-<!-- samples.negative = apply(neon.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) }) -->
-<!-- sum(samples.negative>0) -->
-<!-- samples.extreme = apply(neon.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) }) -->
-<!-- sum(samples.extreme>0) -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- neon.mir.f = prospectr::resample(neon.mir.spec, wav.mir, seq(600, 4000, 2)) -->
-<!-- #neon2.mir = prospectr::resample(neon2.mir.spec, wav2.mir, seq(600, 4000, 2)) -->
-<!-- #neonA.mir = plyr::rbind.fill(as.data.frame(neon.mir), as.data.frame(neon2.mir)) -->
-<!-- neon.mir.f = round(as.data.frame(neon.mir.f)*1000) -->
-<!-- mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs") -->
-<!-- colnames(neon.mir.f) = mir.n -->
-<!-- neon.mir.f$id.layer_local_c = neon.soil$horizonID #rep(neon.soil$horizonID, 2) -->
-<!-- neon.mir.f$id.layer_uuid_c = plyr::join(neon.mir.f["id.layer_local_c"], neon.soil.f[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c -->
-<!-- summary(is.na(neon.mir.f$id.layer_uuid_c)) -->
-<!-- neon.mir.f$id.scan_local_c = paste0("WCR.", neon.soil$kssl_smp_id) #c(paste0("WCR.", neon.soil$kssl_smp_id), paste0("KSSL.", neon.soil$kssl_smp_id)) -->
-<!-- ``` -->
-<!-- Plotting MIR spectra to see if there are still maybe negative values in the table: -->
-<!-- ```{r} -->
-<!-- matplot(y=as.vector(t(neon.mir.f[100,mir.n])), x=seq(600, 4000, 2), -->
-<!--         ylim = c(0,3000), -->
-<!--         type = 'l',  -->
-<!--         xlab = "Wavelength",  -->
-<!--         ylab = "Absorbance" -->
-<!--         ) -->
-<!-- ``` -->
-<!-- Export final MIR table: -->
-<!-- ```{r} -->
-<!-- neon.mir.f$id.scan_uuid_c = openssl::md5(make.unique(paste0("NEON", neon.mir.f$id.scan_local_c))) -->
-<!-- neon.mir.f$model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory" -->
-<!-- neon.mir.f$model.code_any_c = "Bruker_Vertex_70.HTS.XT" -->
-<!-- neon.mir.f$method.light.source_any_c = "" -->
-<!-- neon.mir.f$method.preparation_any_c = "" -->
-<!-- neon.mir.f$scan.file_any_c = "" -->
-<!-- neon.mir.f$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2019-01-01") -->
-<!-- neon.mir.f$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2020-08-01") -->
-<!-- neon.mir.f$scan.license.title_ascii_txt = "CC-BY" -->
-<!-- neon.mir.f$scan.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/" -->
-<!-- neon.mir.f$scan.doi_idf_c = "10.3390/s20236729" -->
-<!-- neon.mir.f$scan.contact.name_utf8_txt = "Jonathan Sanderman" -->
-<!-- neon.mir.f$scan.contact.email_ietf_email = "jsanderman@woodwellclimate.org" -->
-<!-- neon.mir.f$scan.mir.nafreq_ossl_pct = samples.na.gaps -->
-<!-- neon.mir.f$scan.mir.negfreq_ossl_pct = samples.negative -->
-<!-- neon.mir.f$scan.mir.extfreq_ossl_pct = samples.extreme -->
-<!-- ``` -->
-<!-- Save to RDS file: -->
-<!-- ```{r} -->
-<!-- x.na = mir.name[which(!mir.name %in% names(neon.mir.f))] -->
-<!-- if(length(x.na)>0){ for(i in x.na){ neon.mir.f[,i] <- NA } } -->
-<!-- mir.rds = paste0(dir, "ossl_mir_v1.rds") -->
-<!-- if(!file.exists(mir.rds)){ -->
-<!--   saveRDS.gz(neon.mir.f[,mir.name], mir.rds) -->
-<!-- } -->
-<!-- ``` -->
-<!-- ### Quality control -->
-<!-- Check if some points don't have any spectral scans: -->
-<!-- ```{r} -->
-<!-- mis.r = neon.mir.f$id.layer_uuid_c %in% neon.site$id.layer_uuid_c -->
-<!-- summary(mis.r) -->
-<!-- ## All OK -->
-<!-- ``` -->
-<!-- ### Distribution of points -->
-<!-- We can plot an world map showing distribution of the sampling locations -->
-<!-- for the NEON points. -->
-<!-- ```{r, neon.pnts_sites} -->
-<!-- neon.map = NULL -->
-<!-- mapWorld = borders('state', colour = 'gray50', fill = 'gray50') -->
-<!-- neon.map = ggplot() + mapWorld -->
-<!-- neon.map = neon.map + geom_point(aes(x=neon.site$longitude_wgs84_dd, y=neon.site$latitude_wgs84_dd), color = 'blue', shape = 18, size=.9) -->
-<!-- neon.map -->
-<!-- ``` -->
-<!-- Fig.  1: The NEON soil archive locations of sites across the USA. -->
+    ## Warning: Couldn't find skimmers for class: hash, md5; No user-defined `sfl` provided. Falling back to `character`.
+
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 289        |
+| Number of columns                                | 15         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| character                                        | 2          |
+| numeric                                          | 13         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
+
+Data summary
+
+**Variable type: character**
+
+| skim\_variable     | n\_missing | min | max | empty | n\_unique | whitespace |
+|:-------------------|-----------:|----:|----:|------:|----------:|-----------:|
+| id.layer\_uuid\_c  |          0 |  32 |  32 |     0 |       289 |          0 |
+| id.layer\_local\_c |          0 |   8 |  10 |     0 |       289 |          0 |
+
+**Variable type: numeric**
+
+| skim\_variable                 | n\_missing |  mean |    sd |    p0 |   p25 |   p50 |   p75 |  p100 |
+|:-------------------------------|-----------:|------:|------:|------:|------:|------:|------:|------:|
+| layer.upper.depth\_usda\_cm    |          0 | 18.48 | 16.14 |  0.00 |  0.00 | 15.00 | 30.00 | 45.00 |
+| layer.lower.depth\_usda\_cm    |          0 | 33.48 | 16.14 | 15.00 | 15.00 | 30.00 | 45.00 | 60.00 |
+| bd.core\_iso.11272.2017\_gcm3  |          0 |  1.34 |  0.26 |  0.38 |  1.23 |  1.39 |  1.52 |  1.93 |
+| bd.od\_usda.3b2\_gcm3          |          0 |  1.27 |  0.25 |  0.38 |  1.17 |  1.33 |  1.44 |  1.72 |
+| n.tot\_iso.13878.1998\_wpct    |         23 |  0.10 |  0.09 |  0.02 |  0.04 |  0.07 |  0.14 |  0.68 |
+| c.tot\_iso.10694.1995\_wpct    |          0 |  1.79 |  1.97 |  0.00 |  0.53 |  1.24 |  2.38 | 15.68 |
+| oc\_iso.10694.1995\_wpct       |          0 |  1.56 |  1.87 |  0.07 |  0.31 |  0.90 |  2.13 | 11.84 |
+| ph.cacl2\_usda.4c1\_index      |         13 |  5.24 |  0.91 |  3.65 |  4.53 |  5.18 |  5.87 |  7.07 |
+| ec.w\_usda.4f1\_dsm            |         13 |  2.32 |  0.03 |  2.25 |  2.31 |  2.32 |  2.34 |  2.41 |
+| ecec\_usda.4b4\_cmolkg         |         49 | 11.34 |  7.96 |  1.99 |  4.47 |  9.70 | 17.67 | 30.72 |
+| clay.tot\_iso.11277.2020\_wpct |         13 | 14.18 | 11.32 |  2.00 |  5.00 |  8.00 | 25.00 | 40.00 |
+| silt.tot\_iso.11277.2020\_wpct |         13 | 30.47 | 18.68 |  3.00 | 15.00 | 28.00 | 50.00 | 66.00 |
+| sand.tot\_iso.11277.2020\_wpct |         13 | 54.16 | 29.64 | 12.00 | 23.75 | 65.00 | 81.00 | 95.00 |
+
+Spectral visualization:
 
 ``` r
-# getwd()
-#save.image.pigz(file=paste0(dir, "NEONSSL.RData"), n.cores=32)
-# rmarkdown::render("dataset/Schiedung/README.Rmd")
+schiedung.mir %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_uuid_c", "id.layer_local_c")), names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1) +
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) +
+  labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
+  theme_light()
+```
+
+![](README_files/figure-gfm/spec-1.png)<!-- -->
+
+### Rendering report
+
+Exporting to md/html for GitHub.
+
+``` r
 rmarkdown::render("README.Rmd")
 ```
 
