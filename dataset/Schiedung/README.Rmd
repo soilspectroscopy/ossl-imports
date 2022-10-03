@@ -34,7 +34,7 @@ fig_nums <- captioner(prefix = "Fig.")
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  
 Last update: `r Sys.Date()`  
-Dataset: [SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html)
+Dataset: [SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#schiedung.ssl)
 
 ```{r, include=FALSE}
 options(warn=0)
