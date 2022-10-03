@@ -2,7 +2,7 @@ Dataset import: Schiedung et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-30 September, 2022
+03 October, 2022
 
 
 
@@ -30,9 +30,9 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-09-30  
+Last update: 2022-10-03  
 Dataset:
-[SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html)
+[SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#schiedung.ssl)
 
 Mid-Infrared Spectra (MIRS) from Schiedung et al. (2022) Soil Spectral
 Library explained in detail in [Schiedung, Bellè, Malhotra, &
