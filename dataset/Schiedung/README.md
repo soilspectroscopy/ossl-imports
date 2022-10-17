@@ -2,7 +2,7 @@ Dataset import: Schiedung et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-03 October, 2022
+17 October, 2022
 
 
 
@@ -30,7 +30,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-10-03  
+Last update: 2022-10-17  
 Dataset:
 [SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#schiedung.ssl)
 
@@ -187,8 +187,8 @@ schiedung.spec1 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 
 names(schiedung.spec1[,1:10])
 ```
 
-    ##  [1] "ID"                 "filename"           "3996.4059999999999" "3994.4780000000001" "3992.549"          
-    ##  [6] "3990.62"            "3988.6909999999998" "3986.7629999999999" "3984.8339999999998" "3982.9050000000002"
+    ##  [1] "ID"                 "filename"           "3996.4059999999999" "3994.4780000000001" "3992.549"           "3990.62"           
+    ##  [7] "3988.6909999999998" "3986.7629999999999" "3984.8339999999998" "3982.9050000000002"
 
 ``` r
 # Removing filename column
@@ -245,8 +245,8 @@ schiedung.spec2 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 
 names(schiedung.spec2[,1:10])
 ```
 
-    ##  [1] "ID"                 "filename"           "3996.4059999999999" "3994.4780000000001" "3992.549"          
-    ##  [6] "3990.62"            "3988.6909999999998" "3986.7629999999999" "3984.8339999999998" "3982.9050000000002"
+    ##  [1] "ID"                 "filename"           "3996.4059999999999" "3994.4780000000001" "3992.549"           "3990.62"           
+    ##  [7] "3988.6909999999998" "3986.7629999999999" "3984.8339999999998" "3982.9050000000002"
 
 ``` r
 # Removing filename column
@@ -301,6 +301,9 @@ schiedung.mir <- bind_rows(soilmir1, soilmir2) %>%
   dplyr::mutate(id.layer_local_c = gsub("32-44", "30-45", id.layer_local_c)) %>%
   dplyr::mutate(id.layer_local_c = gsub("48-60", "45-60", id.layer_local_c)) %>%
   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1)
+
+schiedung.mir <- schiedung.mir %>%
+  rename_with(~paste0("scan_mir.", new.spectral.range, "_abs"), as.character(new.spectral.range))
 
 soilmir.rds = paste0(dir, "/ossl_mir_v1.rds")
 saveRDS(schiedung.mir, soilmir.rds)
@@ -413,6 +416,7 @@ Spectral visualization:
 ``` r
 schiedung.mir %>%
   tidyr::pivot_longer(-all_of(c("id.layer_uuid_c", "id.layer_local_c")), names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
   geom_line(alpha = 0.1) +

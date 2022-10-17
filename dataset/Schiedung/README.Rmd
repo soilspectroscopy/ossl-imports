@@ -276,6 +276,9 @@ schiedung.mir <- bind_rows(soilmir1, soilmir2) %>%
   dplyr::mutate(id.layer_local_c = gsub("48-60", "45-60", id.layer_local_c)) %>%
   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1)
 
+schiedung.mir <- schiedung.mir %>%
+  rename_with(~paste0("scan_mir.", new.spectral.range, "_abs"), as.character(new.spectral.range))
+
 soilmir.rds = paste0(dir, "/ossl_mir_v1.rds")
 saveRDS(schiedung.mir, soilmir.rds)
 ```
@@ -324,6 +327,7 @@ Spectral visualization:
 ```{r spec}
 schiedung.mir %>%
   tidyr::pivot_longer(-all_of(c("id.layer_uuid_c", "id.layer_local_c")), names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
   geom_line(alpha = 0.1) +
