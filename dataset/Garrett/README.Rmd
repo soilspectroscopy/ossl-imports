@@ -69,7 +69,7 @@ The dataset is publicly shared at Figshare <https://doi.org/10.6084/m9.figshare.
 list.files(dir)
 
 # Checking FR380_sitedescription
-excel_sheets(paste0(dir, "/FR380_sitedescription.xlsx"))
+# excel_sheets(paste0(dir, "/FR380_sitedescription.xlsx"))
 garrett.sitedescription <- readxl::read_xlsx(paste0(dir, "/FR380_sitedescription.xlsx"), sheet = "FR380_site description")
 names(garrett.sitedescription)
 
@@ -79,25 +79,24 @@ garrett.soilprofile <- readxl::read_xlsx(paste0(dir, "/FR380_soilprofile.xlsx"),
 names(garrett.soilprofile)
 
 # Checking FR380_physical
-excel_sheets(paste0(dir, "/FR380_physical.xlsx"))
+# excel_sheets(paste0(dir, "/FR380_physical.xlsx"))
 garrett.physical <- readxl::read_xlsx(paste0(dir, "/FR380_physical.xlsx"), sheet = "FR380_Physical")
 # View(read_xlsx(paste0(dir, "/FR380_physical.xlsx"), sheet = "Data dictionary"))
 names(garrett.physical)
 
 # Checking FR380_chemical
-excel_sheets(paste0(dir, "/FR380_chemical.xlsx"))
+# excel_sheets(paste0(dir, "/FR380_chemical.xlsx"))
 garrett.chemical <- readxl::read_xlsx(paste0(dir, "/FR380_chemical.xlsx"), sheet = "FR380_Chemical", skip = 1)
 # View(read_xlsx(paste0(dir, "/FR380_chemical.xlsx"), sheet = "Data dictionary"))
 names(garrett.chemical)
 
 # Checking FR380_particlesize
-excel_sheets(paste0(dir, "/FR380_particlesize.xlsx"))
+# excel_sheets(paste0(dir, "/FR380_particlesize.xlsx"))
 garrett.particlesize <- readxl::read_xlsx(paste0(dir, "/FR380_particlesize.xlsx"), sheet = "FR380_Particle size", skip = 0)
 # View(read_xlsx(paste0(dir, "/FR380_particlesize.xlsx"), sheet = "Data dictionary"))
 names(garrett.particlesize)
 
 # Spectral measurements
-
 scans.csv <- list.files(paste0(dir, "/FR380_MIR spectra_csv"), full.names = TRUE)
 scans.names <- list.files(paste0(dir, "/FR380_MIR spectra_csv"), full.names = FALSE)
 
@@ -239,191 +238,176 @@ soilsite.rds = paste0(dir, "/ossl_soilsite_v1.rds")
 saveRDS(garrett.soilsite, soilsite.rds)
 ```
 
-<!-- ### Soil lab information -->
+### Soil lab information
 
-<!-- ```{r, warning=FALSE} -->
-<!-- # names(garrett.info) -->
+```{r, warning=FALSE}
+# names(garrett.chemical)
 
-<!-- in.names <- c("BD_bulk", "BD_fine", -->
-<!--               "TN", "TC", "SOC", -->
-<!--               "pH_CaCl2_site", "EC_CaCl2_site", "eff_CEC_site", -->
-<!--               "clay_site", "silt_site", "sand_site") -->
+in.names.chemical <- c("LCR_Total Carbon (%)", "LCR_Total Nitrogen (%)", "Scion_pH [H2O]",
+                       "Scion_Mehlich 3 Al (mg/kg)", "Scion_Mehlich 3 Na (mg/kg)", "Scion_Mehlich 3 Mg (mg/kg)",
+                       "Scion_Mehlich 3 P (mg/kg)", "Scion_Mehlich 3 K (mg/kg)", "Scion_Mehlich 3 Ca (mg/kg)")
 
-<!-- out.names <- c("bd.core_iso.11272.2017_gcm3", "bd.od_usda.3b2_gcm3", -->
-<!--                "n.tot_iso.13878.1998_wpct", "c.tot_iso.10694.1995_wpct", "oc_iso.10694.1995_wpct", -->
-<!--                "ph.cacl2_usda.4c1_index", "ec.w_usda.4f1_dsm", "ecec_usda.4b4_cmolkg", -->
-<!--                "clay.tot_iso.11277.2020_wpct", "silt.tot_iso.11277.2020_wpct", "sand.tot_iso.11277.2020_wpct") -->
+out.names.chemical <- c("c.tot_usda.4h2_wpct", "n.tot_usda.4h2_wpct", "ph.h2o_usda.4c1_index",
+                        "al.kcl_usda.4b3_cmolkg", "na.ext_usda.4b1_cmolkg", "mg.ext_usda.4b1_cmolkg",
+                        "p.ext_usda.4d6_mgkg", "k.ext_usda.4b1_cmolkg", "ca.ext_usda.4b1_cmolkg")
 
-<!-- garrett.soillab <- garrett.info %>% # Spectra ID is the merge of EUP, sample_point, and increment -->
-<!--   dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>% -->
-<!--   tidyr::separate(increment, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>% -->
-<!--   dplyr::mutate(layer.upper.depth_usda_cm = as.numeric(layer.upper.depth_usda_cm), -->
-<!--                 layer.lower.depth_usda_cm = as.numeric(layer.lower.depth_usda_cm)) %>% -->
-<!--   dplyr::rename_with(~out.names, all_of(in.names)) %>% -->
-<!--   dplyr::select(id.layer_local_c, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, all_of(out.names)) %>% -->
-<!--   dplyr::mutate_at(vars(-id.layer_local_c), as.numeric) %>% -->
-<!--   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1) -->
-<!-- ``` -->
+garrett.soil.chemical <- garrett.chemical %>%
+  dplyr::rename(id.layer_local_c = `Scion_Sample ID`) %>%
+  dplyr::relocate(id.layer_local_c, .before = 1) %>%
+  dplyr::rename_with(~out.names.chemical, all_of(in.names.chemical)) %>%
+  dplyr::select(id.layer_local_c, all_of(out.names.chemical)) %>%
+  dplyr::mutate_at(vars(-id.layer_local_c), as.numeric) %>% # mg.kg to cmolc.kg =  = atomic_mass/valence/100=g*1000=mg
+  dplyr::mutate(al.kcl_usda.4b3_cmolkg = al.kcl_usda.4b3_cmolkg/(26.982/3/100*1000),
+                na.ext_usda.4b1_cmolkg = na.ext_usda.4b1_cmolkg/(22.990/1/100*1000),
+                mg.ext_usda.4b1_cmolkg = mg.ext_usda.4b1_cmolkg/(24.305/2/100*1000),
+                k.ext_usda.4b1_cmolkg = k.ext_usda.4b1_cmolkg/(39.098/1/100*1000),
+                ca.ext_usda.4b1_cmolkg = ca.ext_usda.4b1_cmolkg/(40.078/2/100*1000)) %>%
+  dplyr::mutate(sum_of_bases = ca.ext_usda.4b1_cmolkg+mg.ext_usda.4b1_cmolkg+k.ext_usda.4b1_cmolkg+na.ext_usda.4b1_cmolkg,
+                cec.ext_usda.4b1_cmolkg = sum_of_bases+al.kcl_usda.4b3_cmolkg) %>%
+  dplyr::mutate(alsat_usda.4b4_wpct = al.kcl_usda.4b3_cmolkg/cec.ext_usda.4b1_cmolkg*100,
+                bsat_usda.4b4_wpct = sum_of_bases/cec.ext_usda.4b1_cmolkg*100) %>%
+  dplyr::select(-sum_of_bases)
 
-<!-- Exporting soillab data -->
+# names(garrett.particlesize)
 
-<!-- ```{r} -->
-<!-- soillab.rds = paste0(dir, "/ossl_soillab_v1.rds") -->
-<!-- saveRDS(garrett.soillab, soillab.rds) -->
-<!-- ``` -->
+garrett.soil.psd <- garrett.particlesize %>%
+  dplyr::rename("sand.tot_usda.3a1_wpct" = "Sand (%)", "silt.tot_usda.3a1_wpct" = "Silt (%)", "clay.tot_usda.3a1_wpct" = "Clay (%)") %>%
+  dplyr::select(`LCR_Soil profile ID`, `LCR_Lab letter`,
+         sand.tot_usda.3a1_wpct, silt.tot_usda.3a1_wpct, clay.tot_usda.3a1_wpct) %>%
+  dplyr::left_join(garrett.ids, by = c("LCR_Soil profile ID", "LCR_Lab letter")) %>%
+  dplyr::select(id.layer_local_c, sand.tot_usda.3a1_wpct, silt.tot_usda.3a1_wpct, clay.tot_usda.3a1_wpct)
 
-<!-- ### Mid-infrared spectroscopy data -->
+# names(garrett.physical)
 
-<!-- Mid-infrared (MIR) soil spectroscopy raw data (<https://doi.org/10.5281/zenodo.6024831>). Samples have different spectral range, therefore two spectral sets were formatted and binded together. -->
+garrett.soil.physical <- garrett.physical %>%
+  dplyr::filter(`Sample plots 'Disturbed' or 'Undisturbed'` == "Undisturbed") %>%
+  dplyr::rename("bd.od_usda.3b2_gcm3" = "Bulk density (g/cm3)",
+                "wr.33kbar_usda.3c1_wpct" = "Water content at 10 kPa (%w/w)",
+                "wr.1500kbar_usda.3c1_wpct" = "Water content at 1500 kPa (%w/w)") %>%
+  dplyr::mutate(`LCR_Horizon number` = str_sub(`LCR_Horizon number`, 1, 1)) %>%
+  dplyr::select(`LCR_Soil profile ID`, `LCR_Horizon number`,
+                bd.od_usda.3b2_gcm3, wr.33kbar_usda.3c1_wpct, wr.1500kbar_usda.3c1_wpct) %>%
+  dplyr::left_join(garrett.ids, by = c("LCR_Soil profile ID", "LCR_Horizon number")) %>%
+  dplyr::select(id.layer_local_c, bd.od_usda.3b2_gcm3, wr.33kbar_usda.3c1_wpct, wr.1500kbar_usda.3c1_wpct) %>%
+  dplyr::mutate_at(vars(-c('id.layer_local_c')), as.numeric) %>%
+  filter(!is.na(id.layer_local_c))
 
-<!-- Spec1: -->
+garrett.soillab <- garrett.ids %>%
+  dplyr::select(id.layer_local_c) %>%
+  dplyr::left_join(garrett.soil.psd, by = "id.layer_local_c") %>%
+  dplyr::left_join(garrett.soil.physical, by = "id.layer_local_c") %>%
+  dplyr::left_join(garrett.soil.chemical, by = "id.layer_local_c") %>%
+  dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .after = 1)
 
-<!-- ```{r} -->
-<!-- # excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))  -->
+```
 
-<!-- garrett.spec1 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 1) -->
-<!-- # garrett.spec1 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment -->
+Exporting soillab data
 
-<!-- # First column names -->
-<!-- names(garrett.spec1[,1:10]) -->
+```{r}
+soillab.rds = paste0(dir, "/ossl_soillab_v1.rds")
+saveRDS(garrett.soillab, soillab.rds)
+```
 
-<!-- # Removing filename column -->
-<!-- garrett.spec1 <- garrett.spec1 %>% -->
-<!--   dplyr::select(-filename) -->
+### Mid-infrared spectroscopy data
 
-<!-- # Checking spectral range and resolution -->
-<!-- spectra <- garrett.spec1 %>% -->
-<!--   dplyr::select(-all_of(c("ID"))) -->
+Mid-infrared (MIR) soil spectroscopy raw data (<https://doi.org/10.6084/m9.figshare.20506587.v2>).
 
-<!-- old.spectral.range <- as.numeric(names(spectra)) -->
-<!-- cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n") -->
-<!-- cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n") -->
+```{r}
+# garrett.ids
+# mir.allspectra
 
-<!-- # Resampling to 600-4000 interval -->
-<!-- new.spectral.range <- seq(4000, 600, by = -2) -->
+# head(mir.allspectra[, 1:10])
 
-<!-- new.spectra <- spectra %>% -->
-<!--   prospectr::resample(wav = old.spectral.range, new.wav = new.spectral.range, interpol = "spline") %>% -->
-<!--   tibble::as_tibble() -->
+# Removing source column (it comes from csv importing when mapping listed files. number is row/object id)
+garrett.mir <- mir.allspectra %>%
+  dplyr::select(-source) %>%
+  dplyr::rename(scan.file_any_c = id) %>%
+  dplyr::mutate(id.scan_local_c = scan.file_any_c, .after = scan.file_any_c) %>%
+  tidyr::separate(id.scan_local_c, into = c("id.scan_local_c", "table_code"), sep = "_") %>%
+  dplyr::select(-table_code) %>%
+  dplyr::mutate(id.layer_local_c = str_sub(id.scan_local_c, 1, -3), .before = 1)
 
-<!-- # Checking new range -->
-<!-- cat("New spectral range between ", range(as.numeric(names(new.spectra))), "cm-1 \n") -->
+# head(garrett.mir[, 1:10])
 
-<!-- # Preparing final spec 1 -->
-<!-- soilmir1 <- garrett.spec1 %>% -->
-<!--   dplyr::select(all_of(c("ID"))) %>% -->
-<!--   dplyr::bind_cols(new.spectra) %>% -->
-<!--   dplyr::select(all_of(c("ID")), all_of(rev(as.character(new.spectral.range)))) -->
-<!-- ``` -->
+# Checking spectral range and resolution
+spectra <- garrett.mir %>%
+  dplyr::select(-contains(c("id.", "scan.")))
 
-<!-- Spec2: -->
+old.spectral.range <- as.numeric(names(spectra))
+cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n")
+cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n")
 
-<!-- ```{r} -->
-<!-- # excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))  -->
+# Preparing final MIR spectra
+new.spectra.names <- paste0("scan_mir.", old.spectral.range, "_abs")
 
-<!-- garrett.spec2 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 2) -->
-<!-- # garrett.spec2 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment -->
+garrett.mir <- garrett.mir %>%
+  dplyr::rename_with(~new.spectra.names, .cols = as.character(old.spectral.range))
 
-<!-- # First column names -->
-<!-- names(garrett.spec2[,1:10]) -->
+# head(garrett.mir[, 1:10])
+```
 
-<!-- # Removing filename column -->
-<!-- garrett.spec2 <- garrett.spec2 %>% -->
-<!--   dplyr::select(-filename) -->
+Binding together and exporting:
 
-<!-- # Checking spectral range and resolution -->
-<!-- spectra <- garrett.spec2 %>% -->
-<!--   dplyr::select(-all_of(c("ID"))) -->
+```{r}
+soilmir.rds = paste0(dir, "/ossl_mir_v1.rds")
+saveRDS(garrett.mir, soilmir.rds)
+```
 
-<!-- old.spectral.range <- as.numeric(names(spectra)) -->
-<!-- cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n") -->
-<!-- cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n") -->
+### Quality control
 
-<!-- # Resampling to 600-4000 interval -->
-<!-- new.spectral.range <- seq(4000, 600, by = -2) -->
+Checking IDs:
 
-<!-- new.spectra <- spectra %>% -->
-<!--   prospectr::resample(wav = old.spectral.range, new.wav = new.spectral.range, interpol = "spline") %>% -->
-<!--   tibble::as_tibble() -->
+```{r}
+# Checking if soil site ids are unique
+table(duplicated(garrett.soilsite$id.layer_uuid_c))
 
-<!-- # Checking new range -->
-<!-- cat("New spectral range between ", range(as.numeric(names(new.spectra))), "cm-1 \n") -->
+# Checking if soilab ids are compatible
+table(garrett.soilsite$id.layer_uuid_c %in% garrett.soillab$id.layer_uuid_c)
 
-<!-- # Preparing final spec 1 -->
-<!-- soilmir2 <- garrett.spec2 %>% -->
-<!--   dplyr::select(all_of(c("ID"))) %>% -->
-<!--   dplyr::bind_cols(new.spectra) %>% -->
-<!--   dplyr::select(all_of(c("ID")), all_of(rev(as.character(new.spectral.range)))) -->
-<!-- ``` -->
+# Checking if mir ids are compatible. In this case there 30 samples missing spectra
+table(garrett.soilsite$id.layer_local_c %in% garrett.mir$id.layer_local_c)
+```
 
-<!-- Binding together and exporting: -->
+Plotting sites map:
 
-<!-- ```{r} -->
-<!-- garrett.mir <- bind_rows(soilmir1, soilmir2) %>% -->
-<!--   dplyr::rename(id.layer_local_c = ID) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("0-12", "0-15", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("16-28", "15-30", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("32-44", "30-45", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("48-60", "45-60", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1) -->
+```{r map}
+data("World")
 
-<!-- soilmir.rds = paste0(dir, "/ossl_mir_v1.rds") -->
-<!-- saveRDS(garrett.mir, soilmir.rds) -->
-<!-- ``` -->
+points <- garrett.soilsite %>%
+   sf::st_as_sf(coords = c('longitude_wgs84_dd', 'latitude_wgs84_dd'), crs = 4326)
 
-<!-- ### Quality control -->
+tmap::tmap_mode("plot")
 
-<!-- Checking IDs: -->
+tmap::tm_shape(World) +
+  tmap::tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+  tmap::tm_shape(points) +
+  tmap::tm_dots()
+```
 
-<!-- ```{r} -->
-<!-- # Checking if soil site ids are unique -->
-<!-- table(duplicated(garrett.soilsite$id.layer_uuid_c)) -->
+Soil analytical data summary:
 
-<!-- # Checking if soilab ids are compatible -->
-<!-- table(garrett.soilsite$id.layer_uuid_c %in% garrett.soillab$id.layer_uuid_c) -->
+```{r}
+garrett.soillab %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
 
-<!-- # Checking if mir ids are compatible. In this case there 30 samples missing spectra -->
-<!-- table(garrett.soilsite$id.layer_local_c %in% garrett.mir$id.layer_local_c) -->
-<!-- ``` -->
+Spectral visualization:
 
-<!-- Plotting sites map: -->
+```{r spec}
+garrett.mir %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c", "scan.file_any_c", "id.scan_local_c")),
+                      names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.scan_local_c)) +
+  geom_line(alpha = 0.1) +
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) +
+  labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
+  theme_light()
+```
 
-<!-- ```{r map} -->
-<!-- data("World") -->
-
-<!-- points <- garrett.soilsite %>% -->
-<!--    st_as_sf(coords = c('longitude_wgs84_dd', 'latitude_wgs84_dd'), crs = 4326) -->
-
-<!-- tmap_mode("plot") -->
-
-<!-- tm_shape(World) + -->
-<!--   tm_polygons('#f0f0f0f0', border.alpha = 0.2) + -->
-<!--   tm_shape(points) + -->
-<!--   tm_dots() -->
-<!-- ``` -->
-
-<!-- Soil analytical data summary: -->
-
-<!-- ```{r} -->
-<!-- garrett.soillab %>% -->
-<!--   skimr::skim() %>% -->
-<!--   dplyr::select(-numeric.hist, -complete_rate) -->
-<!-- ``` -->
-
-<!-- Spectral visualization: -->
-
-<!-- ```{r spec} -->
-<!-- garrett.mir %>% -->
-<!--   tidyr::pivot_longer(-all_of(c("id.layer_uuid_c", "id.layer_local_c")), names_to = "wavenumber", values_to = "absorbance") %>% -->
-<!--   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>% -->
-<!--   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) + -->
-<!--   geom_line(alpha = 0.1) + -->
-<!--   scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) + -->
-<!--   labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") + -->
-<!--   theme_light() -->
-<!-- ``` -->
-
-<!-- ### Rendering report -->
+### Rendering report
 
 Exporting to md/html for GitHub.
 

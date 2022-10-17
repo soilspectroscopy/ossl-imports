@@ -2,7 +2,7 @@ Dataset import: Garrett et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-05 October, 2022
+17 October, 2022
 
 
 
@@ -10,6 +10,11 @@ Sanderman (<jsanderman@woodwellclimate.org>)
     Library](#the-garrett-et-al-2022-soil-spectral-library)
 -   [Data import](#data-import)
     -   [Soil site information](#soil-site-information)
+    -   [Soil lab information](#soil-lab-information)
+    -   [Mid-infrared spectroscopy
+        data](#mid-infrared-spectroscopy-data)
+    -   [Quality control](#quality-control)
+    -   [Rendering report](#rendering-report)
 -   [References](#references)
 
 [<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
@@ -25,7 +30,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-10-05  
+Last update: 2022-10-17  
 Dataset:
 [GARRETT.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#garrett.ssl)
 
@@ -48,21 +53,14 @@ The dataset is publicly shared at Figshare
 list.files(dir)
 ```
 
-    ##  [1] "FR380_chemical.xlsx"        "FR380_MIR spectra"         
-    ##  [3] "FR380_MIR spectra_csv"      "FR380_MIR spectra_csv.zip" 
-    ##  [5] "FR380_MIR spectra.zip"      "FR380_particlesize.xlsx"   
-    ##  [7] "FR380_physical.xlsx"        "FR380_sitedescription.xlsx"
-    ##  [9] "FR380_Soil Profile.zip"     "FR380_soilprofile.xlsx"    
-    ## [11] "ossl_soilsite_v1.rds"       "SoilProfile"
+    ##  [1] "FR380_chemical.xlsx"        "FR380_MIR spectra"          "FR380_MIR spectra_csv"      "FR380_MIR spectra_csv.zip" 
+    ##  [5] "FR380_MIR spectra.zip"      "FR380_particlesize.xlsx"    "FR380_physical.xlsx"        "FR380_sitedescription.xlsx"
+    ##  [9] "FR380_Soil Profile.zip"     "FR380_soilprofile.xlsx"     "ossl_mir_v1.rds"            "ossl_soillab_v1.rds"       
+    ## [13] "ossl_soilsite_v1.rds"       "SoilProfile"
 
 ``` r
 # Checking FR380_sitedescription
-excel_sheets(paste0(dir, "/FR380_sitedescription.xlsx"))
-```
-
-    ## [1] "FR380_site description"
-
-``` r
+# excel_sheets(paste0(dir, "/FR380_sitedescription.xlsx"))
 garrett.sitedescription <- readxl::read_xlsx(paste0(dir, "/FR380_sitedescription.xlsx"), sheet = "FR380_site description")
 names(garrett.sitedescription)
 ```
@@ -107,111 +105,58 @@ garrett.soilprofile <- readxl::read_xlsx(paste0(dir, "/FR380_soilprofile.xlsx"),
 names(garrett.soilprofile)
 ```
 
-    ##  [1] "Trial ID"                                      
-    ##  [2] "LCR_Soil profile ID"                           
-    ##  [3] "LCR_Horizon number"                            
-    ##  [4] "Horizon notation"                              
-    ##  [5] "Horizon top (cm)"                              
-    ##  [6] "Horizon base (cm)"                             
-    ##  [7] "Soil water description"                        
-    ##  [8] "Colour code"                                   
-    ##  [9] "Colour description"                            
-    ## [10] "Mottles 1 abundance (%)"                       
-    ## [11] "Mottles 1 abundance description"               
-    ## [12] "Mottles 1 size (mm)"                           
-    ## [13] "Mottles 1 size class"                          
-    ## [14] "Mottles 1 contrast"                            
-    ## [15] "Mottles 1 colour code"                         
-    ## [16] "Mottles 2 abundance (%)"                       
-    ## [17] "Mottles 2 abundance description"               
-    ## [18] "Mottles 2 size (mm)"                           
-    ## [19] "Mottles 2 size class"                          
-    ## [20] "Mottles 2 contrast"                            
-    ## [21] "Mottles 2 colour code"                         
-    ## [22] "Texture class"                                 
-    ## [23] "Texture sand class"                            
-    ## [24] "Texture organic matter"                        
-    ## [25] "Gravel <200mm abundance (%)"                   
-    ## [26] "Gravel <200mm abundance class"                 
-    ## [27] "Gravel <200mm abundance size (mm)"             
-    ## [28] "Gravel <200mm abundance size class"            
-    ## [29] "Gravel <200mm weathering"                      
-    ## [30] "Gravel <200mm rounding"                        
-    ## [31] "Gravel <200mm rock"                            
-    ## [32] "Boulders >200mm abundance (%)"                 
-    ## [33] "Boulders >200mm abundance class"               
-    ## [34] "Boulders >200mm size (mm)"                     
-    ## [35] "Boulders >200mm size class"                    
-    ## [36] "Boulders >200mm weathering"                    
-    ## [37] "Boulders >200mm roundness"                     
-    ## [38] "Boulders >200mm rock"                          
-    ## [39] "Parent material - determination"               
-    ## [40] "Parent material - partile size"                
-    ## [41] "Parent material - orgin"                       
-    ## [42] "Parent material - alteration"                  
-    ## [43] "Parent material - induration"                  
-    ## [44] "Soil strength"                                 
-    ## [45] "Ped strength"                                  
-    ## [46] "Failure"                                       
-    ## [47] "Fluidity"                                      
-    ## [48] "Penetration resistence description"            
-    ## [49] "Packing description"                           
-    ## [50] "Particle packing description"                  
-    ## [51] "Sensitivity"                                   
-    ## [52] "Induration description"                        
-    ## [53] "Plasticity"                                    
-    ## [54] "Stickyness"                                    
-    ## [55] "Pedality type"                                 
-    ## [56] "Apedal materials"                              
-    ## [57] "Pedality degree"                               
-    ## [58] "Primary macrofabric - Abundance description"   
-    ## [59] "Primary macrofabric - Size description"        
-    ## [60] "Primary macrofabric - Shape"                   
-    ## [61] "Link"                                          
-    ## [62] "Secondary macrofabric - Abundance description" 
-    ## [63] "Secondary macrofabric - Size description"      
-    ## [64] "Secondary macrofabric - Shape"                 
-    ## [65] "Voids abundance (%)"                           
-    ## [66] "Voids size (mm)"                               
-    ## [67] "Voids ture"                                    
-    ## [68] "Concentration abundance (%)"                   
-    ## [69] "Concentration abundance description"           
-    ## [70] "Concentration size (mm)"                       
-    ## [71] "Concentration colour code"                     
-    ## [72] "Concentration type"                            
-    ## [73] "Pan type"                                      
-    ## [74] "Surface features - coats kind"                 
-    ## [75] "Surface features - coats location"             
-    ## [76] "Surface features - coats abundance (%)"        
-    ## [77] "Surface features - coats abundance description"
-    ## [78] "Surface features - coats continuity"           
-    ## [79] "Surface features - coats distinction"          
-    ## [80] "Surface features - coat thickness (mm)"        
-    ## [81] "Surface features - coats thickness description"
-    ## [82] "Surface features - coats roughness"            
-    ## [83] "Surface features - coats colour code"          
-    ## [84] "Surface features - coats colour description"   
-    ## [85] "Root 1 abundance description"                  
-    ## [86] "Root 1 size (mm)"                              
-    ## [87] "Root 1 size description"                       
-    ## [88] "Root 1 location"                               
-    ## [89] "Root 1 type"                                   
-    ## [90] "Root 2 abundance description"                  
-    ## [91] "Root 2 size (mm)"                              
-    ## [92] "Root 2 size description"                       
-    ## [93] "Root 2 location"                               
-    ## [94] "Root 2 type"                                   
-    ## [95] "Horizon boundary distinction"                  
-    ## [96] "Horizon boundary shape"
+    ##  [1] "Trial ID"                                       "LCR_Soil profile ID"                           
+    ##  [3] "LCR_Horizon number"                             "Horizon notation"                              
+    ##  [5] "Horizon top (cm)"                               "Horizon base (cm)"                             
+    ##  [7] "Soil water description"                         "Colour code"                                   
+    ##  [9] "Colour description"                             "Mottles 1 abundance (%)"                       
+    ## [11] "Mottles 1 abundance description"                "Mottles 1 size (mm)"                           
+    ## [13] "Mottles 1 size class"                           "Mottles 1 contrast"                            
+    ## [15] "Mottles 1 colour code"                          "Mottles 2 abundance (%)"                       
+    ## [17] "Mottles 2 abundance description"                "Mottles 2 size (mm)"                           
+    ## [19] "Mottles 2 size class"                           "Mottles 2 contrast"                            
+    ## [21] "Mottles 2 colour code"                          "Texture class"                                 
+    ## [23] "Texture sand class"                             "Texture organic matter"                        
+    ## [25] "Gravel <200mm abundance (%)"                    "Gravel <200mm abundance class"                 
+    ## [27] "Gravel <200mm abundance size (mm)"              "Gravel <200mm abundance size class"            
+    ## [29] "Gravel <200mm weathering"                       "Gravel <200mm rounding"                        
+    ## [31] "Gravel <200mm rock"                             "Boulders >200mm abundance (%)"                 
+    ## [33] "Boulders >200mm abundance class"                "Boulders >200mm size (mm)"                     
+    ## [35] "Boulders >200mm size class"                     "Boulders >200mm weathering"                    
+    ## [37] "Boulders >200mm roundness"                      "Boulders >200mm rock"                          
+    ## [39] "Parent material - determination"                "Parent material - partile size"                
+    ## [41] "Parent material - orgin"                        "Parent material - alteration"                  
+    ## [43] "Parent material - induration"                   "Soil strength"                                 
+    ## [45] "Ped strength"                                   "Failure"                                       
+    ## [47] "Fluidity"                                       "Penetration resistence description"            
+    ## [49] "Packing description"                            "Particle packing description"                  
+    ## [51] "Sensitivity"                                    "Induration description"                        
+    ## [53] "Plasticity"                                     "Stickyness"                                    
+    ## [55] "Pedality type"                                  "Apedal materials"                              
+    ## [57] "Pedality degree"                                "Primary macrofabric - Abundance description"   
+    ## [59] "Primary macrofabric - Size description"         "Primary macrofabric - Shape"                   
+    ## [61] "Link"                                           "Secondary macrofabric - Abundance description" 
+    ## [63] "Secondary macrofabric - Size description"       "Secondary macrofabric - Shape"                 
+    ## [65] "Voids abundance (%)"                            "Voids size (mm)"                               
+    ## [67] "Voids ture"                                     "Concentration abundance (%)"                   
+    ## [69] "Concentration abundance description"            "Concentration size (mm)"                       
+    ## [71] "Concentration colour code"                      "Concentration type"                            
+    ## [73] "Pan type"                                       "Surface features - coats kind"                 
+    ## [75] "Surface features - coats location"              "Surface features - coats abundance (%)"        
+    ## [77] "Surface features - coats abundance description" "Surface features - coats continuity"           
+    ## [79] "Surface features - coats distinction"           "Surface features - coat thickness (mm)"        
+    ## [81] "Surface features - coats thickness description" "Surface features - coats roughness"            
+    ## [83] "Surface features - coats colour code"           "Surface features - coats colour description"   
+    ## [85] "Root 1 abundance description"                   "Root 1 size (mm)"                              
+    ## [87] "Root 1 size description"                        "Root 1 location"                               
+    ## [89] "Root 1 type"                                    "Root 2 abundance description"                  
+    ## [91] "Root 2 size (mm)"                               "Root 2 size description"                       
+    ## [93] "Root 2 location"                                "Root 2 type"                                   
+    ## [95] "Horizon boundary distinction"                   "Horizon boundary shape"
 
 ``` r
 # Checking FR380_physical
-excel_sheets(paste0(dir, "/FR380_physical.xlsx"))
-```
-
-    ## [1] "FR380_Physical"  "Data dictionary"
-
-``` r
+# excel_sheets(paste0(dir, "/FR380_physical.xlsx"))
 garrett.physical <- readxl::read_xlsx(paste0(dir, "/FR380_physical.xlsx"), sheet = "FR380_Physical")
 # View(read_xlsx(paste0(dir, "/FR380_physical.xlsx"), sheet = "Data dictionary"))
 names(garrett.physical)
@@ -256,108 +201,49 @@ names(garrett.physical)
 
 ``` r
 # Checking FR380_chemical
-excel_sheets(paste0(dir, "/FR380_chemical.xlsx"))
-```
-
-    ## [1] "FR380_Chemical"  "Data dictionary"
-
-``` r
+# excel_sheets(paste0(dir, "/FR380_chemical.xlsx"))
 garrett.chemical <- readxl::read_xlsx(paste0(dir, "/FR380_chemical.xlsx"), sheet = "FR380_Chemical", skip = 1)
 # View(read_xlsx(paste0(dir, "/FR380_chemical.xlsx"), sheet = "Data dictionary"))
 names(garrett.chemical)
 ```
 
-    ##  [1] "Trial ID"                              
-    ##  [2] "Sampling Date"                         
-    ##  [3] "Sample Method"                         
-    ##  [4] "Horizon top (cm)"                      
-    ##  [5] "Horizon base (cm)"                     
-    ##  [6] "0-10cm sample disturbed or undistrubed"
-    ##  [7] "Comment"                               
-    ##  [8] "LCR_Sample ID"                         
-    ##  [9] "LCR_Soil profile ID"                   
-    ## [10] "LCR_Lab letter"                        
-    ## [11] "LCR_Horizon number"                    
-    ## [12] "LCR_pH [H2O]"                          
-    ## [13] "LCR_Total Carbon (%)"                  
-    ## [14] "LCR_Total Nitrogen (%)"                
-    ## [15] "LCR_Carbon/Nitrogen"                   
-    ## [16] "LCR_P Olsen Available (ug/g)"          
-    ## [17] "LCR_P Bray Available (ug/g)"           
-    ## [18] "LCR_P inorganic (mg%)"                 
-    ## [19] "LCR_P organic (mg%)"                   
-    ## [20] "LCR_P Total (mg%)"                     
-    ## [21] "LCR_P retention (%)"                   
-    ## [22] "LCR_CEC (me.%)"                        
-    ## [23] "LCR_Sum bases (me.%)"                  
-    ## [24] "LCR_Base saturation (%)"               
-    ## [25] "LCR_Exchange Ca (me.%)"                
-    ## [26] "LCR_Exchange Mg (me.%)"                
-    ## [27] "LCR_Exchange K (me.%)"                 
-    ## [28] "LCR_Exchange Na (me.%)"                
-    ## [29] "Scion_Sample ID"                       
-    ## [30] "Scion_pH [H2O]"                        
-    ## [31] "Scion_Bray P (mg/kg) seq 1"            
-    ## [32] "Scion_Bray P (mg/kg) seq 2"            
-    ## [33] "Scion_Bray P (mg/kg) seq 3"            
-    ## [34] "Scion_Mehlich 3 B (mg/kg)"             
-    ## [35] "Scion_Mehlich 3 Al (mg/kg)"            
-    ## [36] "Scion_Mehlich 3 Na (mg/kg)"            
-    ## [37] "Scion_Mehlich 3 Mg (mg/kg)"            
-    ## [38] "Scion_Mehlich 3 P (mg/kg)"             
-    ## [39] "Scion_Mehlich 3 K (mg/kg)"             
-    ## [40] "Scion_Mehlich 3 Ca (mg/kg)"            
-    ## [41] "Scion_Mehlich 3 Mn (mg/kg)"            
-    ## [42] "Scion_Mehlich 3 Fe (mg/kg)"            
-    ## [43] "Scion_Mehlich 3 Cu (mg/kg)"            
-    ## [44] "Scion_Mehlich 3 Zn (mg/kg)"            
-    ## [45] "Lab 3_Sulphate S (mg/kg)"              
-    ## [46] "Lab 4_Total B (mg/kg)"                 
-    ## [47] "Lab 4_Total Na (mg/kg)"                
-    ## [48] "Lab 4_Total Mg (mg/kg)"                
-    ## [49] "Lab 4_Total Al (mg/kg)"                
-    ## [50] "Lab 4_Total P (mg/kg)"                 
-    ## [51] "Lab 4_Total S (mg/kg)"                 
-    ## [52] "Lab 4_Total K (mg/kg)"                 
-    ## [53] "Lab 4_Total Ca (mg/kg)"                
-    ## [54] "Lab 4_Total V (mg/kg)"                 
-    ## [55] "Lab 4_Total Cr (mg/kg)"                
-    ## [56] "Lab 4_Total Mn (mg/kg)"                
-    ## [57] "Lab 4_Total Fe (mg/kg"                 
-    ## [58] "Lab 4_Total Co (mg/kg)"                
-    ## [59] "Lab 4_Total Ni (mg/kg)"                
-    ## [60] "Lab 4_Total Cu (mg/kg)"                
-    ## [61] "Lab 4_Total Zn (mg/kg)"                
-    ## [62] "Lab 4_Total As (mg/kg)"                
-    ## [63] "Lab 4_Total Se (mg/kg)"                
-    ## [64] "Lab 4_Total Sr (mg/kg)"                
-    ## [65] "Lab 4_Total Cd (mg/kg)"                
-    ## [66] "Lab 4_Total Ba (mg/kg)"                
-    ## [67] "Lab 4_Total Tl (mg/kg)"                
-    ## [68] "Lab 4_Total Pb (mg/kg)"                
-    ## [69] "Lab 4_Total U (mg/kg)"
+    ##  [1] "Trial ID"                               "Sampling Date"                          "Sample Method"                         
+    ##  [4] "Horizon top (cm)"                       "Horizon base (cm)"                      "0-10cm sample disturbed or undistrubed"
+    ##  [7] "Comment"                                "LCR_Sample ID"                          "LCR_Soil profile ID"                   
+    ## [10] "LCR_Lab letter"                         "LCR_Horizon number"                     "LCR_pH [H2O]"                          
+    ## [13] "LCR_Total Carbon (%)"                   "LCR_Total Nitrogen (%)"                 "LCR_Carbon/Nitrogen"                   
+    ## [16] "LCR_P Olsen Available (ug/g)"           "LCR_P Bray Available (ug/g)"            "LCR_P inorganic (mg%)"                 
+    ## [19] "LCR_P organic (mg%)"                    "LCR_P Total (mg%)"                      "LCR_P retention (%)"                   
+    ## [22] "LCR_CEC (me.%)"                         "LCR_Sum bases (me.%)"                   "LCR_Base saturation (%)"               
+    ## [25] "LCR_Exchange Ca (me.%)"                 "LCR_Exchange Mg (me.%)"                 "LCR_Exchange K (me.%)"                 
+    ## [28] "LCR_Exchange Na (me.%)"                 "Scion_Sample ID"                        "Scion_pH [H2O]"                        
+    ## [31] "Scion_Bray P (mg/kg) seq 1"             "Scion_Bray P (mg/kg) seq 2"             "Scion_Bray P (mg/kg) seq 3"            
+    ## [34] "Scion_Mehlich 3 B (mg/kg)"              "Scion_Mehlich 3 Al (mg/kg)"             "Scion_Mehlich 3 Na (mg/kg)"            
+    ## [37] "Scion_Mehlich 3 Mg (mg/kg)"             "Scion_Mehlich 3 P (mg/kg)"              "Scion_Mehlich 3 K (mg/kg)"             
+    ## [40] "Scion_Mehlich 3 Ca (mg/kg)"             "Scion_Mehlich 3 Mn (mg/kg)"             "Scion_Mehlich 3 Fe (mg/kg)"            
+    ## [43] "Scion_Mehlich 3 Cu (mg/kg)"             "Scion_Mehlich 3 Zn (mg/kg)"             "Lab 3_Sulphate S (mg/kg)"              
+    ## [46] "Lab 4_Total B (mg/kg)"                  "Lab 4_Total Na (mg/kg)"                 "Lab 4_Total Mg (mg/kg)"                
+    ## [49] "Lab 4_Total Al (mg/kg)"                 "Lab 4_Total P (mg/kg)"                  "Lab 4_Total S (mg/kg)"                 
+    ## [52] "Lab 4_Total K (mg/kg)"                  "Lab 4_Total Ca (mg/kg)"                 "Lab 4_Total V (mg/kg)"                 
+    ## [55] "Lab 4_Total Cr (mg/kg)"                 "Lab 4_Total Mn (mg/kg)"                 "Lab 4_Total Fe (mg/kg"                 
+    ## [58] "Lab 4_Total Co (mg/kg)"                 "Lab 4_Total Ni (mg/kg)"                 "Lab 4_Total Cu (mg/kg)"                
+    ## [61] "Lab 4_Total Zn (mg/kg)"                 "Lab 4_Total As (mg/kg)"                 "Lab 4_Total Se (mg/kg)"                
+    ## [64] "Lab 4_Total Sr (mg/kg)"                 "Lab 4_Total Cd (mg/kg)"                 "Lab 4_Total Ba (mg/kg)"                
+    ## [67] "Lab 4_Total Tl (mg/kg)"                 "Lab 4_Total Pb (mg/kg)"                 "Lab 4_Total U (mg/kg)"
 
 ``` r
 # Checking FR380_particlesize
-excel_sheets(paste0(dir, "/FR380_particlesize.xlsx"))
-```
-
-    ## [1] "FR380_Particle size" "Data dictionary"
-
-``` r
+# excel_sheets(paste0(dir, "/FR380_particlesize.xlsx"))
 garrett.particlesize <- readxl::read_xlsx(paste0(dir, "/FR380_particlesize.xlsx"), sheet = "FR380_Particle size", skip = 0)
 # View(read_xlsx(paste0(dir, "/FR380_particlesize.xlsx"), sheet = "Data dictionary"))
 names(garrett.particlesize)
 ```
 
-    ##  [1] "Trial ID"            "LCR_Soil profile ID" "LCR_Lab letter"     
-    ##  [4] "LCR_Horizon number"  "Coarse sand (%)"     "Medium sand (%)"    
-    ##  [7] "Fine sand (%)"       "Sand (%)"            "Silt (%)"           
-    ## [10] "Clay (%)"
+    ##  [1] "Trial ID"            "LCR_Soil profile ID" "LCR_Lab letter"      "LCR_Horizon number"  "Coarse sand (%)"     "Medium sand (%)"    
+    ##  [7] "Fine sand (%)"       "Sand (%)"            "Silt (%)"            "Clay (%)"
 
 ``` r
 # Spectral measurements
-
 scans.csv <- list.files(paste0(dir, "/FR380_MIR spectra_csv"), full.names = TRUE)
 scans.names <- list.files(paste0(dir, "/FR380_MIR spectra_csv"), full.names = FALSE)
 
@@ -400,15 +286,7 @@ mir.allspectra %>%
   dplyr::summarise(n = n()) %>%
   dplyr::group_by(n) %>%
   dplyr::summarise(count = n())
-```
 
-    ## # A tibble: 2 × 2
-    ##       n count
-    ##   <int> <int>
-    ## 1     3   144
-    ## 2     4    40
-
-``` r
 # Checking number of unique spectral samples
 mir.allspectra %>%
   tidyr::separate(id, into = c("id", "replicate"), sep = "-") %>%
@@ -424,24 +302,12 @@ mir.allspectra %>%
 # Same number of samples in chemical data
 garrett.ids %>%
   dplyr::summarise(count = n())
-```
 
-    ## # A tibble: 1 × 1
-    ##   count
-    ##   <int>
-    ## 1   184
-
-``` r
 # Are there duplicates? No
 garrett.ids %>%
   dplyr::distinct(id.layer_local_c) %>%
   dplyr::summarise(count = n())
 ```
-
-    ## # A tibble: 1 × 1
-    ##   count
-    ##   <int>
-    ## 1   184
 
 ### Soil site information
 
@@ -526,143 +392,255 @@ soilsite.rds = paste0(dir, "/ossl_soilsite_v1.rds")
 saveRDS(garrett.soilsite, soilsite.rds)
 ```
 
-<!-- ### Soil lab information -->
-<!-- ```{r, warning=FALSE} -->
-<!-- # names(garrett.info) -->
-<!-- in.names <- c("BD_bulk", "BD_fine", -->
-<!--               "TN", "TC", "SOC", -->
-<!--               "pH_CaCl2_site", "EC_CaCl2_site", "eff_CEC_site", -->
-<!--               "clay_site", "silt_site", "sand_site") -->
-<!-- out.names <- c("bd.core_iso.11272.2017_gcm3", "bd.od_usda.3b2_gcm3", -->
-<!--                "n.tot_iso.13878.1998_wpct", "c.tot_iso.10694.1995_wpct", "oc_iso.10694.1995_wpct", -->
-<!--                "ph.cacl2_usda.4c1_index", "ec.w_usda.4f1_dsm", "ecec_usda.4b4_cmolkg", -->
-<!--                "clay.tot_iso.11277.2020_wpct", "silt.tot_iso.11277.2020_wpct", "sand.tot_iso.11277.2020_wpct") -->
-<!-- garrett.soillab <- garrett.info %>% # Spectra ID is the merge of EUP, sample_point, and increment -->
-<!--   dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>% -->
-<!--   tidyr::separate(increment, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>% -->
-<!--   dplyr::mutate(layer.upper.depth_usda_cm = as.numeric(layer.upper.depth_usda_cm), -->
-<!--                 layer.lower.depth_usda_cm = as.numeric(layer.lower.depth_usda_cm)) %>% -->
-<!--   dplyr::rename_with(~out.names, all_of(in.names)) %>% -->
-<!--   dplyr::select(id.layer_local_c, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, all_of(out.names)) %>% -->
-<!--   dplyr::mutate_at(vars(-id.layer_local_c), as.numeric) %>% -->
-<!--   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1) -->
-<!-- ``` -->
-<!-- Exporting soillab data -->
-<!-- ```{r} -->
-<!-- soillab.rds = paste0(dir, "/ossl_soillab_v1.rds") -->
-<!-- saveRDS(garrett.soillab, soillab.rds) -->
-<!-- ``` -->
-<!-- ### Mid-infrared spectroscopy data -->
-<!-- Mid-infrared (MIR) soil spectroscopy raw data (<https://doi.org/10.5281/zenodo.6024831>). Samples have different spectral range, therefore two spectral sets were formatted and binded together. -->
-<!-- Spec1: -->
-<!-- ```{r} -->
-<!-- # excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))  -->
-<!-- garrett.spec1 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 1) -->
-<!-- # garrett.spec1 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment -->
-<!-- # First column names -->
-<!-- names(garrett.spec1[,1:10]) -->
-<!-- # Removing filename column -->
-<!-- garrett.spec1 <- garrett.spec1 %>% -->
-<!--   dplyr::select(-filename) -->
-<!-- # Checking spectral range and resolution -->
-<!-- spectra <- garrett.spec1 %>% -->
-<!--   dplyr::select(-all_of(c("ID"))) -->
-<!-- old.spectral.range <- as.numeric(names(spectra)) -->
-<!-- cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n") -->
-<!-- cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n") -->
-<!-- # Resampling to 600-4000 interval -->
-<!-- new.spectral.range <- seq(4000, 600, by = -2) -->
-<!-- new.spectra <- spectra %>% -->
-<!--   prospectr::resample(wav = old.spectral.range, new.wav = new.spectral.range, interpol = "spline") %>% -->
-<!--   tibble::as_tibble() -->
-<!-- # Checking new range -->
-<!-- cat("New spectral range between ", range(as.numeric(names(new.spectra))), "cm-1 \n") -->
-<!-- # Preparing final spec 1 -->
-<!-- soilmir1 <- garrett.spec1 %>% -->
-<!--   dplyr::select(all_of(c("ID"))) %>% -->
-<!--   dplyr::bind_cols(new.spectra) %>% -->
-<!--   dplyr::select(all_of(c("ID")), all_of(rev(as.character(new.spectral.range)))) -->
-<!-- ``` -->
-<!-- Spec2: -->
-<!-- ```{r} -->
-<!-- # excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))  -->
-<!-- garrett.spec2 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 2) -->
-<!-- # garrett.spec2 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment -->
-<!-- # First column names -->
-<!-- names(garrett.spec2[,1:10]) -->
-<!-- # Removing filename column -->
-<!-- garrett.spec2 <- garrett.spec2 %>% -->
-<!--   dplyr::select(-filename) -->
-<!-- # Checking spectral range and resolution -->
-<!-- spectra <- garrett.spec2 %>% -->
-<!--   dplyr::select(-all_of(c("ID"))) -->
-<!-- old.spectral.range <- as.numeric(names(spectra)) -->
-<!-- cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n") -->
-<!-- cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n") -->
-<!-- # Resampling to 600-4000 interval -->
-<!-- new.spectral.range <- seq(4000, 600, by = -2) -->
-<!-- new.spectra <- spectra %>% -->
-<!--   prospectr::resample(wav = old.spectral.range, new.wav = new.spectral.range, interpol = "spline") %>% -->
-<!--   tibble::as_tibble() -->
-<!-- # Checking new range -->
-<!-- cat("New spectral range between ", range(as.numeric(names(new.spectra))), "cm-1 \n") -->
-<!-- # Preparing final spec 1 -->
-<!-- soilmir2 <- garrett.spec2 %>% -->
-<!--   dplyr::select(all_of(c("ID"))) %>% -->
-<!--   dplyr::bind_cols(new.spectra) %>% -->
-<!--   dplyr::select(all_of(c("ID")), all_of(rev(as.character(new.spectral.range)))) -->
-<!-- ``` -->
-<!-- Binding together and exporting: -->
-<!-- ```{r} -->
-<!-- garrett.mir <- bind_rows(soilmir1, soilmir2) %>% -->
-<!--   dplyr::rename(id.layer_local_c = ID) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("0-12", "0-15", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("16-28", "15-30", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("32-44", "30-45", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("48-60", "45-60", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1) -->
-<!-- soilmir.rds = paste0(dir, "/ossl_mir_v1.rds") -->
-<!-- saveRDS(garrett.mir, soilmir.rds) -->
-<!-- ``` -->
-<!-- ### Quality control -->
-<!-- Checking IDs: -->
-<!-- ```{r} -->
-<!-- # Checking if soil site ids are unique -->
-<!-- table(duplicated(garrett.soilsite$id.layer_uuid_c)) -->
-<!-- # Checking if soilab ids are compatible -->
-<!-- table(garrett.soilsite$id.layer_uuid_c %in% garrett.soillab$id.layer_uuid_c) -->
-<!-- # Checking if mir ids are compatible. In this case there 30 samples missing spectra -->
-<!-- table(garrett.soilsite$id.layer_local_c %in% garrett.mir$id.layer_local_c) -->
-<!-- ``` -->
-<!-- Plotting sites map: -->
-<!-- ```{r map} -->
-<!-- data("World") -->
-<!-- points <- garrett.soilsite %>% -->
-<!--    st_as_sf(coords = c('longitude_wgs84_dd', 'latitude_wgs84_dd'), crs = 4326) -->
-<!-- tmap_mode("plot") -->
-<!-- tm_shape(World) + -->
-<!--   tm_polygons('#f0f0f0f0', border.alpha = 0.2) + -->
-<!--   tm_shape(points) + -->
-<!--   tm_dots() -->
-<!-- ``` -->
-<!-- Soil analytical data summary: -->
-<!-- ```{r} -->
-<!-- garrett.soillab %>% -->
-<!--   skimr::skim() %>% -->
-<!--   dplyr::select(-numeric.hist, -complete_rate) -->
-<!-- ``` -->
-<!-- Spectral visualization: -->
-<!-- ```{r spec} -->
-<!-- garrett.mir %>% -->
-<!--   tidyr::pivot_longer(-all_of(c("id.layer_uuid_c", "id.layer_local_c")), names_to = "wavenumber", values_to = "absorbance") %>% -->
-<!--   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>% -->
-<!--   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) + -->
-<!--   geom_line(alpha = 0.1) + -->
-<!--   scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) + -->
-<!--   labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") + -->
-<!--   theme_light() -->
-<!-- ``` -->
-<!-- ### Rendering report -->
+### Soil lab information
+
+``` r
+# names(garrett.chemical)
+
+in.names.chemical <- c("LCR_Total Carbon (%)", "LCR_Total Nitrogen (%)", "Scion_pH [H2O]",
+                       "Scion_Mehlich 3 Al (mg/kg)", "Scion_Mehlich 3 Na (mg/kg)", "Scion_Mehlich 3 Mg (mg/kg)",
+                       "Scion_Mehlich 3 P (mg/kg)", "Scion_Mehlich 3 K (mg/kg)", "Scion_Mehlich 3 Ca (mg/kg)")
+
+out.names.chemical <- c("c.tot_usda.4h2_wpct", "n.tot_usda.4h2_wpct", "ph.h2o_usda.4c1_index",
+                        "al.kcl_usda.4b3_cmolkg", "na.ext_usda.4b1_cmolkg", "mg.ext_usda.4b1_cmolkg",
+                        "p.ext_usda.4d6_mgkg", "k.ext_usda.4b1_cmolkg", "ca.ext_usda.4b1_cmolkg")
+
+garrett.soil.chemical <- garrett.chemical %>%
+  dplyr::rename(id.layer_local_c = `Scion_Sample ID`) %>%
+  dplyr::relocate(id.layer_local_c, .before = 1) %>%
+  dplyr::rename_with(~out.names.chemical, all_of(in.names.chemical)) %>%
+  dplyr::select(id.layer_local_c, all_of(out.names.chemical)) %>%
+  dplyr::mutate_at(vars(-id.layer_local_c), as.numeric) %>% # mg.kg to cmolc.kg =  = atomic_mass/valence/100=g*1000=mg
+  dplyr::mutate(al.kcl_usda.4b3_cmolkg = al.kcl_usda.4b3_cmolkg/(26.982/3/100*1000),
+                na.ext_usda.4b1_cmolkg = na.ext_usda.4b1_cmolkg/(22.990/1/100*1000),
+                mg.ext_usda.4b1_cmolkg = mg.ext_usda.4b1_cmolkg/(24.305/2/100*1000),
+                k.ext_usda.4b1_cmolkg = k.ext_usda.4b1_cmolkg/(39.098/1/100*1000),
+                ca.ext_usda.4b1_cmolkg = ca.ext_usda.4b1_cmolkg/(40.078/2/100*1000)) %>%
+  dplyr::mutate(sum_of_bases = ca.ext_usda.4b1_cmolkg+mg.ext_usda.4b1_cmolkg+k.ext_usda.4b1_cmolkg+na.ext_usda.4b1_cmolkg,
+                cec.ext_usda.4b1_cmolkg = sum_of_bases+al.kcl_usda.4b3_cmolkg) %>%
+  dplyr::mutate(alsat_usda.4b4_wpct = al.kcl_usda.4b3_cmolkg/cec.ext_usda.4b1_cmolkg*100,
+                bsat_usda.4b4_wpct = sum_of_bases/cec.ext_usda.4b1_cmolkg*100) %>%
+  dplyr::select(-sum_of_bases)
+
+# names(garrett.particlesize)
+
+garrett.soil.psd <- garrett.particlesize %>%
+  dplyr::rename("sand.tot_usda.3a1_wpct" = "Sand (%)", "silt.tot_usda.3a1_wpct" = "Silt (%)", "clay.tot_usda.3a1_wpct" = "Clay (%)") %>%
+  dplyr::select(`LCR_Soil profile ID`, `LCR_Lab letter`,
+         sand.tot_usda.3a1_wpct, silt.tot_usda.3a1_wpct, clay.tot_usda.3a1_wpct) %>%
+  dplyr::left_join(garrett.ids, by = c("LCR_Soil profile ID", "LCR_Lab letter")) %>%
+  dplyr::select(id.layer_local_c, sand.tot_usda.3a1_wpct, silt.tot_usda.3a1_wpct, clay.tot_usda.3a1_wpct)
+
+# names(garrett.physical)
+
+garrett.soil.physical <- garrett.physical %>%
+  dplyr::filter(`Sample plots 'Disturbed' or 'Undisturbed'` == "Undisturbed") %>%
+  dplyr::rename("bd.od_usda.3b2_gcm3" = "Bulk density (g/cm3)",
+                "wr.33kbar_usda.3c1_wpct" = "Water content at 10 kPa (%w/w)",
+                "wr.1500kbar_usda.3c1_wpct" = "Water content at 1500 kPa (%w/w)") %>%
+  dplyr::mutate(`LCR_Horizon number` = str_sub(`LCR_Horizon number`, 1, 1)) %>%
+  dplyr::select(`LCR_Soil profile ID`, `LCR_Horizon number`,
+                bd.od_usda.3b2_gcm3, wr.33kbar_usda.3c1_wpct, wr.1500kbar_usda.3c1_wpct) %>%
+  dplyr::left_join(garrett.ids, by = c("LCR_Soil profile ID", "LCR_Horizon number")) %>%
+  dplyr::select(id.layer_local_c, bd.od_usda.3b2_gcm3, wr.33kbar_usda.3c1_wpct, wr.1500kbar_usda.3c1_wpct) %>%
+  dplyr::mutate_at(vars(-c('id.layer_local_c')), as.numeric) %>%
+  filter(!is.na(id.layer_local_c))
+
+garrett.soillab <- garrett.ids %>%
+  dplyr::select(id.layer_local_c) %>%
+  dplyr::left_join(garrett.soil.psd, by = "id.layer_local_c") %>%
+  dplyr::left_join(garrett.soil.physical, by = "id.layer_local_c") %>%
+  dplyr::left_join(garrett.soil.chemical, by = "id.layer_local_c") %>%
+  dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .after = 1)
+```
+
+Exporting soillab data
+
+``` r
+soillab.rds = paste0(dir, "/ossl_soillab_v1.rds")
+saveRDS(garrett.soillab, soillab.rds)
+```
+
+### Mid-infrared spectroscopy data
+
+Mid-infrared (MIR) soil spectroscopy raw data
+(<https://doi.org/10.6084/m9.figshare.20506587.v2>).
+
+``` r
+# garrett.ids
+# mir.allspectra
+
+# head(mir.allspectra[, 1:10])
+
+# Removing source column (it comes from csv importing when mapping listed files. number is row/object id)
+garrett.mir <- mir.allspectra %>%
+  dplyr::select(-source) %>%
+  dplyr::rename(scan.file_any_c = id) %>%
+  dplyr::mutate(id.scan_local_c = scan.file_any_c, .after = scan.file_any_c) %>%
+  tidyr::separate(id.scan_local_c, into = c("id.scan_local_c", "table_code"), sep = "_") %>%
+  dplyr::select(-table_code) %>%
+  dplyr::mutate(id.layer_local_c = str_sub(id.scan_local_c, 1, -3), .before = 1)
+
+# head(garrett.mir[, 1:10])
+
+# Checking spectral range and resolution
+spectra <- garrett.mir %>%
+  dplyr::select(-contains(c("id.", "scan.")))
+
+old.spectral.range <- as.numeric(names(spectra))
+cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n")
+```
+
+    ## Spectral range between 600 and 4000 cm-1
+
+``` r
+cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n")
+```
+
+    ## Spectral resolution is -2 cm-1
+
+``` r
+# Preparing final MIR spectra
+new.spectra.names <- paste0("scan_mir.", old.spectral.range, "_abs")
+
+garrett.mir <- garrett.mir %>%
+  dplyr::rename_with(~new.spectra.names, .cols = as.character(old.spectral.range))
+
+# head(garrett.mir[, 1:10])
+```
+
+Binding together and exporting:
+
+``` r
+soilmir.rds = paste0(dir, "/ossl_mir_v1.rds")
+saveRDS(garrett.mir, soilmir.rds)
+```
+
+### Quality control
+
+Checking IDs:
+
+``` r
+# Checking if soil site ids are unique
+table(duplicated(garrett.soilsite$id.layer_uuid_c))
+```
+
+    ## 
+    ## FALSE 
+    ##   184
+
+``` r
+# Checking if soilab ids are compatible
+table(garrett.soilsite$id.layer_uuid_c %in% garrett.soillab$id.layer_uuid_c)
+```
+
+    ## 
+    ## TRUE 
+    ##  184
+
+``` r
+# Checking if mir ids are compatible. In this case there 30 samples missing spectra
+table(garrett.soilsite$id.layer_local_c %in% garrett.mir$id.layer_local_c)
+```
+
+    ## 
+    ## TRUE 
+    ##  184
+
+Plotting sites map:
+
+``` r
+data("World")
+
+points <- garrett.soilsite %>%
+   sf::st_as_sf(coords = c('longitude_wgs84_dd', 'latitude_wgs84_dd'), crs = 4326)
+
+tmap::tmap_mode("plot")
+```
+
+    ## tmap mode set to plotting
+
+``` r
+tmap::tm_shape(World) +
+  tmap::tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+  tmap::tm_shape(points) +
+  tmap::tm_dots()
+```
+
+![](README_files/figure-gfm/map-1.png)<!-- -->
+
+Soil analytical data summary:
+
+``` r
+garrett.soillab %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+    ## Warning: Couldn't find skimmers for class: hash, md5; No user-defined `sfl` provided. Falling back to `character`.
+
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 207        |
+| Number of columns                                | 20         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| character                                        | 2          |
+| numeric                                          | 18         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
+
+Data summary
+
+**Variable type: character**
+
+| skim\_variable     | n\_missing | min | max | empty | n\_unique | whitespace |
+|:-------------------|-----------:|----:|----:|------:|----------:|-----------:|
+| id.layer\_local\_c |          0 |   6 |   6 |     0 |       184 |          0 |
+| id.layer\_uuid\_c  |          0 |  32 |  32 |     0 |       184 |          0 |
+
+**Variable type: numeric**
+
+| skim\_variable              | n\_missing |  mean |    sd |    p0 |   p25 |   p50 |   p75 |   p100 |
+|:----------------------------|-----------:|------:|------:|------:|------:|------:|------:|-------:|
+| sand.tot\_usda.3a1\_wpct    |         52 | 41.88 | 26.85 |  3.00 | 21.50 | 36.00 | 56.00 | 100.00 |
+| silt.tot\_usda.3a1\_wpct    |         52 | 38.28 | 19.29 |  0.00 | 27.00 | 39.00 | 50.00 |  79.00 |
+| clay.tot\_usda.3a1\_wpct    |         52 | 19.81 | 14.64 |  0.00 |  7.50 | 18.00 | 29.00 |  61.00 |
+| bd.od\_usda.3b2\_gcm3       |        101 |  0.94 |  0.27 |  0.25 |  0.72 |  0.96 |  1.12 |   1.52 |
+| wr.33kbar\_usda.3c1\_wpct   |        101 | 47.57 | 26.15 |  6.52 | 33.67 | 40.62 | 56.74 | 150.63 |
+| wr.1500kbar\_usda.3c1\_wpct |        101 | 21.63 | 14.05 |  0.90 | 10.14 | 19.75 | 29.40 |  70.10 |
+| c.tot\_usda.4h2\_wpct       |          0 |  3.52 |  3.26 |  0.08 |  1.01 |  2.69 |  5.05 |  21.56 |
+| n.tot\_usda.4h2\_wpct       |          0 |  0.18 |  0.16 |  0.00 |  0.06 |  0.14 |  0.27 |   0.67 |
+| ph.h2o\_usda.4c1\_index     |          0 |  4.81 |  0.65 |  3.40 |  4.35 |  4.74 |  5.14 |   6.43 |
+| al.kcl\_usda.4b3\_cmolkg    |          0 | 13.45 |  5.58 |  0.37 |  8.91 | 14.60 | 17.46 |  28.16 |
+| na.ext\_usda.4b1\_cmolkg    |          0 |  0.11 |  0.08 |  0.03 |  0.07 |  0.09 |  0.14 |   0.67 |
+| mg.ext\_usda.4b1\_cmolkg    |          0 |  0.87 |  2.29 |  0.02 |  0.16 |  0.43 |  0.82 |  19.59 |
+| p.ext\_usda.4d6\_mgkg       |          0 | 22.25 | 20.63 |  1.89 |  6.44 | 16.28 | 31.32 | 140.30 |
+| k.ext\_usda.4b1\_cmolkg     |          0 |  0.17 |  0.15 |  0.01 |  0.06 |  0.13 |  0.23 |   0.80 |
+| ca.ext\_usda.4b1\_cmolkg    |          0 |  1.65 |  2.41 |  0.09 |  0.31 |  0.74 |  2.04 |  16.65 |
+| cec.ext\_usda.4b1\_cmolkg   |          0 | 16.26 |  5.64 |  0.53 | 13.70 | 16.90 | 19.90 |  29.41 |
+| alsat\_usda.4b4\_wpct       |          0 | 82.62 | 17.33 | 18.75 | 76.54 | 87.72 | 95.22 |  98.89 |
+| bsat\_usda.4b4\_wpct        |          0 | 17.38 | 17.33 |  1.11 |  4.78 | 12.28 | 23.46 |  81.25 |
+
+Spectral visualization:
+
+``` r
+garrett.mir %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c", "scan.file_any_c", "id.scan_local_c")),
+                      names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.scan_local_c)) +
+  geom_line(alpha = 0.1) +
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) +
+  labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
+  theme_light()
+```
+
+![](README_files/figure-gfm/spec-1.png)<!-- -->
+
+### Rendering report
 
 Exporting to md/html for GitHub.
 
