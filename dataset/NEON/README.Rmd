@@ -1,6 +1,6 @@
 ---
 title: "Dataset import: The National Ecological Observatory Network (NEON) Soil Spectral Library"  
-author: "Tomislav Hengl (tom.hengl@opengeohub.org) and Jonathan Sanderman (jsanderman@woodwellclimate.org)"  
+author: "Tomislav Hengl (tom.hengl@opengeohub.org), Jonathan Sanderman (jsanderman@woodwellclimate.org), and Jose Lucas Safanelli (jsafanelli@woodwellclimate.org) - "  
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   github_document:
@@ -58,7 +58,7 @@ Directory/folder path:
 
 ```{r}
 dir = "/mnt/soilspec4gg/ossl/dataset/NEON/"
-#load.pigz(paste0(dir, "NEONSSL.RData"))
+load.pigz(paste0(dir, "NEONSSL.RData"))
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
@@ -303,7 +303,6 @@ neon.map
 ```
 
 `r fig_nums("neon.pnts_sites", "The NEON soil archive locations of sites across the USA.")`
-
 
 ```{r, eval=FALSE}
 #save.image.pigz(file=paste0(dir, "NEONSSL.RData"), n.cores=32)
