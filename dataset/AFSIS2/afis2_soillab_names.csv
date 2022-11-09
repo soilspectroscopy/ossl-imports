@@ -1,0 +1,18 @@
+table,original_name,import,ossl_name,original_description,units,comment
+GhanSIS;NiSIS;TanSIS,SSN,,,Sample serial number,NA,"NA; NA"
+GhanSIS;NiSIS;TanSIS,Country,,,Country name,NA,"NA; NA"
+GhanSIS;NiSIS;TanSIS,Depth,,,Topsoil = 0-20 cm depth; Subsoil = 20-50 cm depth,NA,"NA; NA"
+GhanSIS;NiSIS;TanSIS,pH,,,Soil pH in water (soil: water ratio of 1:2 weight to volume basis),NA,Potentiometric; Voltmeter
+GhanSIS;NiSIS;TanSIS,m3.Al,,,Exchangeable aluminium concentration by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.B,,,Boron concentration by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.Ca,,,Exchangeable calcium concentration by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.Cu,,,Copper concentration by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.Fe,,,Iron concentration by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.K,,,Potassium concentration by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.Mg,,,Exchangeable Magnesium by wet method,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.Mn,,,Exchangeable Manganese concentration by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.S,,,Sulphur by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,m3.Zn,,,Zinc by Mehlich 3 extraction,mg kg^-1,Mehlich-3; Optical Emission spectrometry ( ICP-OES)
+GhanSIS;NiSIS;TanSIS,N,,,Total Nitrogen content,% by weight,Dry combustion; Leco TruMac CN Combustion analyzer
+GhanSIS;NiSIS;TanSIS,TC,,,Total Carbon content,% by weight,Dry combustion; Leco TruMac CN Combustion analyzer
+GhanSIS;NiSIS;TanSIS,SOC,,,Organic carbon content calculated as TC minus inorganic C measured in carbonates,% by weight,Carbonates dissolution by acidification then IRGA; Skalar Primacs Inorganic Carbon Analyser

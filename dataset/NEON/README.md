@@ -189,9 +189,9 @@ knitr::kable(soilsite.names)
 
 ### Soil lab information
 
-Original analytical soil properties, descriptions, data types, and
-units. Run once and upload to Google Sheet for defining formatting
-rules. Requires Google authentication.
+Run once! Original naming of soil properties, descriptions, data types,
+and units. Run once and upload to Google Sheet for formatting and
+integrating with the OSSL. Requires Google authentication.
 
 ``` r
 # Getting soillab original variables
