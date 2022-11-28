@@ -1,6 +1,6 @@
 ---
 title: "Dataset import: Kellogg Soil Survey Laboratory (KSSL)"
-author: "Tomislav Hengl (tom.hengl@opengeohub.org), Jonathan Sanderman (jsanderman@woodwellclimate.org), Develyn Bloom (develyn.bloom@ufl.edu), and Jose Lucas Safanelli (jsafanelli@woodwellclimate.org) - "
+author: "Jose Lucas Safanelli (jsafanelli@woodwellclimate.org), Tomislav Hengl (tom.hengl@opengeohub.org), Jonathan Sanderman (jsanderman@woodwellclimate.org), Develyn Bloom (develyn.bloom@ufl.edu) - "
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   github_document:
@@ -53,7 +53,7 @@ For the DB structure and use refer to "Introduction to the KSSL Laboratory Infor
 ```{r packages, include=TRUE, echo=FALSE, eval=TRUE}
 packages <- c("tidyverse", "prospectr", "measurements", "readxl", "stringr",
               "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
-              "googledrive", "googlesheets4", "data.table", "doMC")
+              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 invisible(lapply(packages, library, character.only = TRUE))
@@ -63,6 +63,7 @@ The directory/folder path:
 
 ```{r dir}
 dir.files = "/mnt/soilspec4gg/ossl/dataset/KSSL/snapshot_Jul2022"
+tic()
 ```
 
 <!-- Load customized functions: -->
@@ -128,7 +129,11 @@ site.area <- site.area %>%
 site.overview <- site.area %>%
   left_join(area, by = "area.id") %>%
   left_join(centroid, by = "area.id") %>%
-  filter(area.type == "county") %>%
+  filter(area.type %in% c("county", "country")) %>%
+  pivot_wider(names_from = "area.type",
+              values_from = c("area.id", "area.name", "area.code")) %>%
+  group_by(lims.site.id) %>%
+  summarise_all(~first(na.omit(.))) %>%
   left_join(lims.site, by = "lims.site.id")
   
 # Joining all data
@@ -156,32 +161,6 @@ kssl.sitedata <- kssl.sitedata %>%
 kssl.sitedata <- kssl.sitedata %>%
   group_by(lay.id) %>%
   summarise_all(first)
-
-## Summary of pedons, layers and coordinates
-sitedata.summary <- kssl.sitedata %>%
-      summarise(var = "total_layers", count = n()) %>%
-  bind_rows(., tibble(var = "total_profiles", count = {kssl.sitedata %>%
-      group_by(lims.pedon.id) %>%
-      summarise(first_horizon = first(lay.id)) %>%
-      ungroup() %>%
-      summarise(count = n()) %>%
-      pull(count)})) %>%
-  bind_rows(., tibble(var = "profiles_with_point_coords", count = {kssl.sitedata %>%
-      group_by(lims.pedon.id) %>%
-      summarise(latitude.std.decimal.degrees = mean(latitude.std.decimal.degrees)) %>%
-      filter(!is.na(latitude.std.decimal.degrees)) %>%
-      ungroup() %>%
-      summarise(count = n()) %>%
-      pull(count)})) %>%
-  bind_rows(., tibble(var = "profiles_with_county_coords", count = {kssl.sitedata %>%
-      group_by(lims.pedon.id) %>%
-      summarise(lat.ycntr = mean(lat.ycntr)) %>%
-      filter(!is.na(lat.ycntr)) %>%
-      ungroup() %>%
-      summarise(count = n()) %>%
-      pull(count)}))
-
-sitedata.summary
 
 # Available datums
 datum.summary <- kssl.sitedata %>%
@@ -287,7 +266,92 @@ for(i in 1:length(datums)) {
 
 kssl.sitedata <- Reduce(bind_rows, projection.list)
 
-# Transforming to OSSL naming
+# Correcting incorrect coordinates
+check.data <- kssl.sitedata %>%
+  filter(longitude.std.decimal.degrees > 0 |
+           latitude.std.decimal.degrees < 10) %>%
+  select(contains(c("id", "area", "proj", "degrees")))
+
+# Getting project names and ids with issues for comparing with good data
+projects <- check.data %>%
+  distinct(submit.proj.name) %>%
+  pull(submit.proj.name)
+
+wrong.ids <- check.data %>%
+  distinct(lay.id) %>%
+  pull(lay.id)
+
+# Manually/Visually checking
+wrong.data <- kssl.sitedata %>%
+  select(contains(c("id", "area", "proj", "degrees"))) %>%
+  filter(submit.proj.name %in% projects) %>%
+  mutate(wrong = ifelse(lay.id %in% wrong.ids, TRUE, FALSE), .after = 1)
+
+# Unrecoverable coordinates, mistyped?
+id.pedons.na <- c(10134, 11930, 12450, 12451, 12452, 12453)
+
+# Pedon ids that need a negative long
+id.pedons.neg.longitude <- c(12776, 12778, 12779, 32888, 34509,
+                             35124, 35125, 36777, 38043, 38958,
+                             39334, 40135)
+
+# Pedon ids that need reverse lat/long, and negative long
+id.pedons.reverse.neg.longitude <- c(39332, 39333)
+
+# Site ids that need a negative long
+id.site.neg.longitude <- c(33668)
+
+# Final corrected version
+kssl.sitedata <- kssl.sitedata %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.na,
+                                                NA,
+                                                longitude.std.decimal.degrees),
+         latitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.na, 
+                                               NA, 
+                                               latitude.std.decimal.degrees)) %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.neg.longitude, 
+                                                longitude.std.decimal.degrees*-1, 
+                                                longitude.std.decimal.degrees)) %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.site.id %in% id.site.neg.longitude, 
+                                                longitude.std.decimal.degrees*-1, 
+                                                longitude.std.decimal.degrees)) %>%
+  mutate(temp.long = longitude.std.decimal.degrees,
+         temp.lat = latitude.std.decimal.degrees,
+         longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.reverse.neg.longitude, 
+                                                latitude.std.decimal.degrees*-1, 
+                                                longitude.std.decimal.degrees),
+         latitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.reverse.neg.longitude, 
+                                               temp.long, 
+                                               temp.lat)) %>%
+  select(-temp.long, -temp.lat)
+
+# Summary of pedons, layers and coordinates
+sitedata.summary <- kssl.sitedata %>%
+      summarise(var = "total_layers", count = n()) %>%
+  bind_rows(., tibble(var = "total_profiles", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(first_horizon = first(lay.id)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)})) %>%
+  bind_rows(., tibble(var = "profiles_with_point_coords", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(latitude.std.decimal.degrees = mean(latitude.std.decimal.degrees)) %>%
+      filter(!is.na(latitude.std.decimal.degrees)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)})) %>%
+  bind_rows(., tibble(var = "profiles_with_county_coords", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(lat.ycntr = mean(lat.ycntr)) %>%
+      filter(!is.na(lat.ycntr)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)}))
+
+sitedata.summary
+
+# Formatting to OSSL names
 kssl.sitedata <- kssl.sitedata %>%
   rename(id.layer_local_c = lay.id,
          id.project_ascii_c = submit.proj.name,
@@ -834,7 +898,9 @@ kssl.availability %>%
   summarise(count = n())
 ```
 
-This summary shows that, at total, about 92k observations are available. Some rows have both MIR and VisNIR scans, many not. As we have repeats for MIR (due to different preparations), it means that for the same layer id we can have different MIR scans, but similar VisNIR scans as they are repeated when joining. Therefore, when modeling specifically with the VisNIR spectra, it is necessary to drop or first those duplicates. They represent a minor fraction (n=60).
+This summary shows that, at total, about 92k observations are available. Some rows have both MIR and VisNIR scans, many not. As we have repeats for MIR (due to different preparations), it means that for the same layer id we can have different MIR scans, but similar VisNIR scans as they are repeated when joining.
+
+NOTE: As the duplicated layers represent a minor fraction (n=60) of the database, they will be dropped when binding  all the datasets for making OSSL level 0.
 
 Plotting sites map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
@@ -895,6 +961,7 @@ kssl.visnir %>%
 ```{r}
 rm(list = ls())
 gc()
+toc()
 ```
 
 ## References

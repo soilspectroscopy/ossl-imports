@@ -1,10 +1,10 @@
 Dataset import: Kellogg Soil Survey Laboratory (KSSL)
 ================
-Tomislav Hengl (<tom.hengl@opengeohub.org>), Jonathan Sanderman
+Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
+(<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>), Develyn Bloom
-(<develyn.bloom@ufl.edu>), and Jose Lucas Safanelli
-(<jsafanelli@woodwellclimate.org>) -
-24 November, 2022
+(<develyn.bloom@ufl.edu>) -
+28 November, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-24  
+Last update: 2022-11-28  
 Dataset:
 [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
@@ -61,6 +61,7 @@ The directory/folder path:
 
 ``` r
 dir.files = "/mnt/soilspec4gg/ossl/dataset/KSSL/snapshot_Jul2022"
+tic()
 ```
 
 <!-- Load customized functions: -->
@@ -125,7 +126,11 @@ site.area <- site.area %>%
 site.overview <- site.area %>%
   left_join(area, by = "area.id") %>%
   left_join(centroid, by = "area.id") %>%
-  filter(area.type == "county") %>%
+  filter(area.type %in% c("county", "country")) %>%
+  pivot_wider(names_from = "area.type",
+              values_from = c("area.id", "area.name", "area.code")) %>%
+  group_by(lims.site.id) %>%
+  summarise_all(~first(na.omit(.))) %>%
   left_join(lims.site, by = "lims.site.id")
   
 # Joining all data
@@ -154,42 +159,6 @@ kssl.sitedata <- kssl.sitedata %>%
   group_by(lay.id) %>%
   summarise_all(first)
 
-## Summary of pedons, layers and coordinates
-sitedata.summary <- kssl.sitedata %>%
-      summarise(var = "total_layers", count = n()) %>%
-  bind_rows(., tibble(var = "total_profiles", count = {kssl.sitedata %>%
-      group_by(lims.pedon.id) %>%
-      summarise(first_horizon = first(lay.id)) %>%
-      ungroup() %>%
-      summarise(count = n()) %>%
-      pull(count)})) %>%
-  bind_rows(., tibble(var = "profiles_with_point_coords", count = {kssl.sitedata %>%
-      group_by(lims.pedon.id) %>%
-      summarise(latitude.std.decimal.degrees = mean(latitude.std.decimal.degrees)) %>%
-      filter(!is.na(latitude.std.decimal.degrees)) %>%
-      ungroup() %>%
-      summarise(count = n()) %>%
-      pull(count)})) %>%
-  bind_rows(., tibble(var = "profiles_with_county_coords", count = {kssl.sitedata %>%
-      group_by(lims.pedon.id) %>%
-      summarise(lat.ycntr = mean(lat.ycntr)) %>%
-      filter(!is.na(lat.ycntr)) %>%
-      ungroup() %>%
-      summarise(count = n()) %>%
-      pull(count)}))
-
-sitedata.summary
-```
-
-    ## # A tibble: 4 × 2
-    ##   var                          count
-    ##   <chr>                        <int>
-    ## 1 total_layers                105602
-    ## 2 total_profiles               25585
-    ## 3 profiles_with_point_coords    9072
-    ## 4 profiles_with_county_coords  24871
-
-``` r
 # Available datums
 datum.summary <- kssl.sitedata %>%
   rename(hor.datum = horizontal.datum.name) %>%
@@ -202,13 +171,13 @@ datum.summary
     ## # A tibble: 7 × 2
     ##   hor.datum      count
     ##   <chr>          <int>
-    ## 1 ""             59518
+    ## 1 ""             59490
     ## 2 "NAD27"         1938
-    ## 3 "NAD83"        22000
+    ## 3 "NAD83"        21994
     ## 4 "NULL"            39
     ## 5 "old hawaiian"    49
     ## 6 "WGS84"        17035
-    ## 7  <NA>           5023
+    ## 7  <NA>           5057
 
 ``` r
 # We will assume layers with NA, empty and NULL in the datum column as NAD83
@@ -235,10 +204,10 @@ datum.summary.cor
     ##   hor.datum    count
     ##   <chr>        <int>
     ## 1 NAD27         1927
-    ## 2 NAD83        27521
+    ## 2 NAD83        27501
     ## 3 old hawaiian    49
     ## 4 WGS84        15872
-    ## 5 <NA>         60233
+    ## 5 <NA>         60253
 
 ``` r
 # Transforming all datums to WGS84
@@ -318,7 +287,102 @@ for(i in 1:length(datums)) {
 
 kssl.sitedata <- Reduce(bind_rows, projection.list)
 
-# Transforming to OSSL naming
+# Correcting incorrect coordinates
+check.data <- kssl.sitedata %>%
+  filter(longitude.std.decimal.degrees > 0 |
+           latitude.std.decimal.degrees < 10) %>%
+  select(contains(c("id", "area", "proj", "degrees")))
+
+# Getting project names and ids with issues for comparing with good data
+projects <- check.data %>%
+  distinct(submit.proj.name) %>%
+  pull(submit.proj.name)
+
+wrong.ids <- check.data %>%
+  distinct(lay.id) %>%
+  pull(lay.id)
+
+# Manually/Visually checking
+wrong.data <- kssl.sitedata %>%
+  select(contains(c("id", "area", "proj", "degrees"))) %>%
+  filter(submit.proj.name %in% projects) %>%
+  mutate(wrong = ifelse(lay.id %in% wrong.ids, TRUE, FALSE), .after = 1)
+
+# Unrecoverable coordinates, mistyped?
+id.pedons.na <- c(10134, 11930, 12450, 12451, 12452, 12453)
+
+# Pedon ids that need a negative long
+id.pedons.neg.longitude <- c(12776, 12778, 12779, 32888, 34509,
+                             35124, 35125, 36777, 38043, 38958,
+                             39334, 40135)
+
+# Pedon ids that need reverse lat/long, and negative long
+id.pedons.reverse.neg.longitude <- c(39332, 39333)
+
+# Site ids that need a negative long
+id.site.neg.longitude <- c(33668)
+
+# Final corrected version
+kssl.sitedata <- kssl.sitedata %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.na,
+                                                NA,
+                                                longitude.std.decimal.degrees),
+         latitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.na, 
+                                               NA, 
+                                               latitude.std.decimal.degrees)) %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.neg.longitude, 
+                                                longitude.std.decimal.degrees*-1, 
+                                                longitude.std.decimal.degrees)) %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.site.id %in% id.site.neg.longitude, 
+                                                longitude.std.decimal.degrees*-1, 
+                                                longitude.std.decimal.degrees)) %>%
+  mutate(temp.long = longitude.std.decimal.degrees,
+         temp.lat = latitude.std.decimal.degrees,
+         longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.reverse.neg.longitude, 
+                                                latitude.std.decimal.degrees*-1, 
+                                                longitude.std.decimal.degrees),
+         latitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.reverse.neg.longitude, 
+                                               temp.long, 
+                                               temp.lat)) %>%
+  select(-temp.long, -temp.lat)
+
+# Summary of pedons, layers and coordinates
+sitedata.summary <- kssl.sitedata %>%
+      summarise(var = "total_layers", count = n()) %>%
+  bind_rows(., tibble(var = "total_profiles", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(first_horizon = first(lay.id)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)})) %>%
+  bind_rows(., tibble(var = "profiles_with_point_coords", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(latitude.std.decimal.degrees = mean(latitude.std.decimal.degrees)) %>%
+      filter(!is.na(latitude.std.decimal.degrees)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)})) %>%
+  bind_rows(., tibble(var = "profiles_with_county_coords", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(lat.ycntr = mean(lat.ycntr)) %>%
+      filter(!is.na(lat.ycntr)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)}))
+
+sitedata.summary
+```
+
+    ## # A tibble: 4 × 2
+    ##   var                          count
+    ##   <chr>                        <int>
+    ## 1 total_layers                105602
+    ## 2 total_profiles               25585
+    ## 3 profiles_with_point_coords    9061
+    ## 4 profiles_with_county_coords  24871
+
+``` r
+# Formatting to OSSL names
 kssl.sitedata <- kssl.sitedata %>%
   rename(id.layer_local_c = lay.id,
          id.project_ascii_c = submit.proj.name,
@@ -924,9 +988,11 @@ This summary shows that, at total, about 92k observations are available.
 Some rows have both MIR and VisNIR scans, many not. As we have repeats
 for MIR (due to different preparations), it means that for the same
 layer id we can have different MIR scans, but similar VisNIR scans as
-they are repeated when joining. Therefore, when modeling specifically
-with the VisNIR spectra, it is necessary to drop or first those
-duplicates. They represent a minor fraction (n=60).
+they are repeated when joining.
+
+NOTE: As the duplicated layers represent a minor fraction (n=60) of the
+database, they will be dropped when binding all the datasets for making
+OSSL level 0.
 
 Plotting sites map:
 
@@ -1076,6 +1142,21 @@ kssl.visnir %>%
 ```
 
 ![](README_files/figure-gfm/visnir_plot-1.png)<!-- -->
+
+``` r
+rm(list = ls())
+gc()
+```
+
+    ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
+    ## Ncells  2613494 139.6   15218534  812.8   19023167 1016.0
+    ## Vcells 35778026 273.0  880126520 6714.9 1003034275 7652.6
+
+``` r
+toc()
+```
+
+    ## 545.616 sec elapsed
 
 ## References
 

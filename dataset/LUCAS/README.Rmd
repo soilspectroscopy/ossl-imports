@@ -24,6 +24,9 @@ This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 Inter
 ```{r, include=FALSE}
 library(captioner)
 fig_nums <- captioner(prefix = "Fig.")
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+options(scipen = 999)
 ```
 
 ## LUCAS
@@ -34,17 +37,11 @@ Good](https://soilspectroscopy.org)
 Last update: `r Sys.Date()`  
 Dataset: [LUCAS.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#lucas.ssl)
 
-
-```{r, include=FALSE}
-knitr::opts_chunk$set(message = FALSE)
-knitr::opts_chunk$set(warning = FALSE)
-```
-
 The Land-Use/Cover Area frame statistical Survey (LUCAS) Soil and Spectral Library comprise topsoil information including 28 European Union Member States in 2009 and 2015 [@orgiazzi2018lucas]. Data is hosted by Joint Research Centre (JRC)- European Soil Data Centre (ESDAC); dataset properties and licence are explained in detail in <https://esdac.jrc.ec.europa.eu/projects/lucas>.
 
 Input datasets:
 
-- `LUCAS.SOIL_corr.Rdata`: VNIR soil spectral reflectances (4200 channels/ window of 0.5 nm from 400 - 2499.5 nm);
+- `LUCAS.SOIL_corr.Rdata`: VNIR soil spectral absorbance (4200 channels/ window of 0.5 nm from 400 - 2499.5 nm);
 - `LUCAS_Topsoil_2009_ESPG4326.csv`: 2009 Database with site and soil analytes (19,860 observations);  
 - `LUCAS_spectra_2015.rds`: VNIR soil spectral reflectances (4200 channels/ window of 0.5 nm from 400 - 2499.5 nm);
 - `LUCAS_Topsoil_complete_2015_ESPG4326.csv`: 2015 Database with site and soil analytes (21,848 observations);  
@@ -53,11 +50,11 @@ For the DB structure and use refer to "LUCAS Soil, the largest expandable soil d
 
 ```{r, echo=FALSE}
 packages <- c("tidyverse", "prospectr", "measurements", "readxl", "stringr",
-              "olctools", "openssl", "tmap", "sf", "skimr",
-              "googledrive", "googlesheets4")
+              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
+              "googledrive", "googlesheets4", "data.table", "doMC")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
-x <- lapply(packages, library, character.only = TRUE)
+invisible(lapply(packages, library, character.only = TRUE))
 ```
 
 Directory/folder path
@@ -75,17 +72,24 @@ source("../../R-code/functions/SSL_functions.R")
 
 ### Soil site information
 
-### Soil lab information
-
-Run once! Original naming of soil properties, descriptions, data types, and units. Run once and upload to Google Sheet for formatting and integrating with the OSSL. Requires Google authentication.
-
 ```{r, eval=FALSE, echo=TRUE}
-
 gpkg.lst = list.files(dir, glob2rx("SoilAttr_*.gpkg$"), full.names = TRUE)
 lucas.2009 = lapply(gpkg.lst, function(i){sf::st_read(i) %>% dplyr::as_tibble(.) %>% dplyr::select(-geom)})
 lucas.2009 = Reduce(dplyr::bind_rows, lucas.2009)
 
-lucas.2015 = readr::read_csv(paste0(dir, "/LUCAS_Topsoil_2015_20200323.csv"))
+lucas.2015 = fread(paste0(dir, "/LUCAS_Topsoil_2015_20200323.csv"))
+```
+
+### Soil lab information
+
+NOTE: The code chunk below this paragraph is hidden. Just run once for getting the original names of soil properties, descriptions, data types, and units. Run once and upload to Google Sheet for formatting and integrating with the OSSL. Requires Google authentication.
+
+```{r soilab_overview, include=FALSE, echo=FALSE, eval=FALSE}
+gpkg.lst = list.files(dir, glob2rx("SoilAttr_*.gpkg$"), full.names = TRUE)
+lucas.2009 = lapply(gpkg.lst, function(i){sf::st_read(i) %>% dplyr::as_tibble(.) %>% dplyr::select(-geom)})
+lucas.2009 = Reduce(dplyr::bind_rows, lucas.2009)
+
+lucas.2015 = fread(paste0(dir, "/LUCAS_Topsoil_2015_20200323.csv"))
 
 soillab.names <- lucas.2009 %>%
   names(.) %>%
@@ -123,6 +127,73 @@ googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "LUCAS"
 
 # Checking metadata
 googlesheets4::as_sheets_id(OSSL.soildata.importing)
+```
+
+NOTE: The code chunk below this paragraph is hidden. Run once for importing the transformation rules. The table can be edited online at Google Sheets. A copy is downloaded to github for archiving.
+```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE}
+# Downloading from google sheet
+
+# FACT CIN folder id
+listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"),
+                                      pattern = "OSSL_tab2_soildata_importing")
+
+OSSL.soildata.importing <- listed.table[[1,"id"]]
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+
+# Preparing soillab.names
+transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "LUCAS") %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "ossl_")))
+
+# Saving to folder
+write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv"))
+```
+
+Reading LUCAS-to-OSSL transformation values:
+```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv"))
+knitr::kable(transvalues)
+```
+
+Preparing soil data from different files:
+```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+gpkg.lst = list.files(dir, glob2rx("SoilAttr_*.gpkg$"), full.names = TRUE)
+lucas.2009 = lapply(gpkg.lst, function(i){
+  loaded <- sf::st_read(i) %>%
+  table <- loaded %>%
+    dplyr::as_tibble(.) %>% dplyr::select(-geom) %>%
+    mutate(longitude_wgs84_dd = st_coordinates(loaded)[,1],
+           latitude_wgs84_dd = st_coordinates(iloaded)[,2])
+  table
+})
+
+lucas.2009 = Reduce(dplyr::bind_rows, lucas.2009)
+
+lucas.2015 = fread(paste0(dir, "/LUCAS_Topsoil_2015_20200323.csv"))
+
+# Reading tables with site info
+layer <- fread(paste0(dir.db, "/layer.csv"))
+sample <- fread(paste0(dir.db, "/sample.csv"))
+layer.analyte <- fread(paste0(dir.db, "/layer_analyte.csv"))
+result <- fread(paste0(dir.db, "/result.csv"))
+
+# Analyte selection
+analyte.sel.ids <- transvalues %>%
+  filter(source == "kssl_analyte") %>%
+  pull(id)
+
+analyte.sel.names <- transvalues %>%
+  filter(source == "kssl_analyte") %>%
+  select(id, ossl_name, ossl_convert)
+
+layer.analyte.sel <- layer.analyte %>%
+  filter(analyte.id %in% analyte.sel.ids) %>%
+  select(analyte.id, lay.id, calc.value, master.prep.id) %>%
+  left_join(analyte.sel.names, by = c("analyte.id" = "id")) %>%
+  rename(value = calc.value, prep = master.prep.id) %>%
+  select(contains("ossl"), lay.id, value, prep)
 ```
 
 ### Mid-infrared spectroscopy data
