@@ -61,6 +61,7 @@ source("../../R-code/functions/SSL_functions.R")
 Directory/folder path
 ```{r}
 dir = "/mnt/soilspec4gg/ossl/dataset/LUCAS/"
+tic()
 ```
 
 ## Data import
@@ -374,7 +375,7 @@ qs::qsave(lucas.soildata, soillab.qs, preset = "high")
 
 ### Visible and Near-infrared spectroscopy data
 
-Reading the ViSNIR scans. They spectra is in absorbance log units and placed in a matrix inside the dataframe.
+Reading the ViSNIR scans. The spectra is in absorbance log units and placed in a matrix inside the dataframe.
 ```{r visnir, include=TRUE, echo=TRUE, eval=TRUE}
 # Spectra from 2009/2012
 load(paste0(dir, "LUCAS.SOIL_corr.Rdata"))
@@ -748,9 +749,9 @@ lucas.visnir %>%
 ```
 
 ```{r}
+toc()
 rm(list = ls())
 gc()
-toc()
 ```
 
 ## References

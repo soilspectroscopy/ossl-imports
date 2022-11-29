@@ -360,6 +360,7 @@ kssl.sitedata <- kssl.sitedata %>%
          layer.upper.depth_usda_cm = lay.depth.to.top,
          layer.lower.depth_usda_cm = lay.depth.to.bottom,
          layer.texture_usda_c = texture.description,
+         pedon.taxa_usda_c = taxonomic.classification.name,
          horizon.designation_usda_c = horizon.designation,
          observation.date.end_iso.8601_yyyy.mm.dd = fiscal.year,
          longitude.point_wgs84_dd = longitude.std.decimal.degrees,
@@ -374,6 +375,7 @@ kssl.sitedata <- kssl.sitedata %>%
   mutate(observation.date.end_iso.8601_yyyy.mm.dd = ymd(paste0(observation.date.end_iso.8601_yyyy.mm.dd, "-12-31"))) %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = floor_date(observation.date.end_iso.8601_yyyy.mm.dd, "year"),
          .before = observation.date.end_iso.8601_yyyy.mm.dd) %>%
+  mutate(layer.sequence_usda_uint16 = NA, .after = layer.texture_usda_c) %>%
   mutate(location.point.error_any_m = 30,
          location.country_iso.3166_c = "USA",
          observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
@@ -957,9 +959,9 @@ kssl.visnir %>%
 ```
 
 ```{r}
+toc()
 rm(list = ls())
 gc()
-toc()
 ```
 
 ## References
