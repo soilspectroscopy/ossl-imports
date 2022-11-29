@@ -61,6 +61,7 @@ Directory/folder path:
 
 ``` r
 dir = "/mnt/soilspec4gg/ossl/dataset/ICRAF_ISRIC/"
+tic()
 ```
 
 ## Data import
@@ -198,15 +199,8 @@ icraf.isric.sitedata <- icraf.isric.sitedata %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
   as.data.frame()
 
-# Comparing site columns
-# kssl.sitedata <- qread(paste0("/mnt/soilspec4gg/ossl/dataset/KSSL/ossl_soilsite_v1.2.qs"))
-# table(names(icraf.isric.sitedata) %in% names(icraf.isric.sitedata))
-# names(icraf.isric.sitedata)[which(!(names(icraf.isric.sitedata) %in% names(kssl.sitedata)))]
-
 # Saving version to dataset root dir
-# site.rds = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.rds")
-# saveRDS(icraf.isric.sitedata, site.rds)
-site.qs = paste0(dirname(dir), "/ossl_soilsite_v1.2.qs")
+site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
 qs::qsave(icraf.isric.sitedata, site.qs, preset = "high")
 ```
 
@@ -350,9 +344,7 @@ icraf.isric.soildata %>%
 
 ``` r
 # Saving version to dataset root dir
-# soillab.rds = paste0(dirname(dir.files), "/ossl_soillab_v1.2.rds")
-# saveRDS(lucas.soildata, soillab.rds)
-soillab.qs = paste0(dirname(dir), "/ossl_soillab_v1.2.qs")
+soillab.qs = paste0(dir, "/ossl_soillab_v1.2.qs")
 qs::qsave(icraf.isric.soildata, soillab.qs, preset = "high")
 ```
 
@@ -481,9 +473,7 @@ icraf.isric.mir.export <- icraf.isric.mir.metadata %>%
   left_join(icraf.isric.mir, by = "id.layer_local_c")
 
 # Saving version to dataset root dir
-# soilmir.rds = paste0(dirname(dir.files), "/ossl_mir_v1.2.rds")
-# saveRDS(icraf.isric.mir.export, soilmir.rds)
-soilmir.qs = paste0(dirname(dir), "/ossl_mir_v1.2.qs")
+soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
 qs::qsave(icraf.isric.mir.export, soilmir.qs, preset = "high")
 ```
 
@@ -608,9 +598,7 @@ icraf.isric.visnir.export <- icraf.isric.visnir.metadata %>%
   left_join(icraf.isric.visnir, by = "id.layer_local_c")
 
 # Saving version to dataset root dir
-# soilvisnir.rds = paste0(dirname(dir.files), "/ossl_visnir_v1.2.rds")
-# saveRDS(icraf.isric.visnir.export, soilvisnir.rds)
-soilvisnir.qs = paste0(dirname(dir), "/ossl_visnir_v1.2.qs")
+soilvisnir.qs = paste0(dir, "/ossl_visnir_v1.2.qs")
 qs::qsave(icraf.isric.visnir.export, soilvisnir.qs, preset = "high")
 ```
 
@@ -793,13 +781,18 @@ icraf.isric.visnir %>%
 
 ``` r
 toc()
+```
+
+    ## 123.721 sec elapsed
+
+``` r
 rm(list = ls())
 gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb)  max used  (Mb)
-    ## Ncells 2635828 140.8    7372696 393.8  14399794 769.1
-    ## Vcells 7609548  58.1   90171856 688.0 112714820 860.0
+    ## Ncells 2635890 140.8    7416489 396.1  14485328 773.6
+    ## Vcells 7609359  58.1   89692445 684.3 112115556 855.4
 
 ## References
 

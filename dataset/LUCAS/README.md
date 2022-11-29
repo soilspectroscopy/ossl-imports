@@ -63,6 +63,7 @@ Directory/folder path
 
 ``` r
 dir = "/mnt/soilspec4gg/ossl/dataset/LUCAS/"
+tic()
 ```
 
 ## Data import
@@ -211,15 +212,8 @@ lucas.sitedata <- lucas.sitedata %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
   as.data.frame()
 
-# Comparing site columns
-# kssl.sitedata <- qread(paste0("/mnt/soilspec4gg/ossl/dataset/KSSL/ossl_soilsite_v1.2.qs"))
-# table(names(lucas.sitedata) %in% names(kssl.sitedata))
-# names(lucas.sitedata)[which(!(names(lucas.sitedata) %in% names(kssl.sitedata)))]
-
 # Saving version to dataset root dir
-# site.rds = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.rds")
-# saveRDS(kssl.sitedata, site.rds)
-site.qs = paste0(dirname(dir), "/ossl_soilsite_v1.2.qs")
+site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
 qs::qsave(lucas.sitedata, site.qs, preset = "high")
 ```
 
@@ -430,15 +424,13 @@ lucas.soildata %>%
 
 ``` r
 # Saving version to dataset root dir
-# soillab.rds = paste0(dirname(dir.files), "/ossl_soillab_v1.2.rds")
-# saveRDS(lucas.soildata, soillab.rds)
-soillab.qs = paste0(dirname(dir), "/ossl_soillab_v1.2.qs")
+soillab.qs = paste0(dir, "/ossl_soillab_v1.2.qs")
 qs::qsave(lucas.soildata, soillab.qs, preset = "high")
 ```
 
 ### Visible and Near-infrared spectroscopy data
 
-Reading the ViSNIR scans. They spectra is in absorbance log units and
+Reading the ViSNIR scans. The spectra is in absorbance log units and
 placed in a matrix inside the dataframe.
 
 ``` r
@@ -583,9 +575,7 @@ scans.summary %>%
 
 ``` r
 # Saving version to dataset root dir
-# soilvisnir.rds = paste0(dirname(dir.files), "/ossl_visnir_v1.2.rds")
-# saveRDS(lucas.visnir, soilvisnir.rds)
-soilvisnir.qs = paste0(dirname(dir), "/ossl_visnir_v1.2.qs")
+soilvisnir.qs = paste0(dir, "/ossl_visnir_v1.2.qs")
 qs::qsave(lucas.visnir, soilvisnir.qs)
 ```
 
@@ -716,9 +706,7 @@ lucas.mir.export <- lucas.mir.metadata %>%
   left_join(lucas.mir, by = "id.layer_local_c")
 
 # Saving version to dataset root dir
-# soilmir.rds = paste0(dirname(dir.files), "/ossl_mir_v1.2.rds")
-# saveRDS(lucas.mir.export, soilmir.rds)
-soilmir.qs = paste0(dirname(dir), "/ossl_mir_v1.2.qs")
+soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
 qs::qsave(lucas.mir.export, soilmir.qs, preset = "high")
 ```
 
@@ -898,17 +886,19 @@ lucas.visnir %>%
 ![](README_files/figure-gfm/visnir_plot-1.png)<!-- -->
 
 ``` r
+toc()
+```
+
+    ## 538.431 sec elapsed
+
+``` r
 rm(list = ls())
 gc()
 ```
 
     ##           used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells 2635808 140.8   22332975 1192.8  34895272 1863.7
-    ## Vcells 9742777  74.4  403815348 3080.9 985876951 7521.7
-
-``` r
-toc()
-```
+    ## Ncells 2636280 140.8   22319058 1192.0  34873527 1862.5
+    ## Vcells 9743465  74.4  403815287 3080.9 985876848 7521.7
 
 ## References
 
