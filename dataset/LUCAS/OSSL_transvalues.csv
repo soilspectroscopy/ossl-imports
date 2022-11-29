@@ -11,8 +11,8 @@ LUCAS 2009/2012; SoilAttr_*.gpkg,N,n.tot,ISO.11261,w.pct,"ifelse(as.numeric(x) <
 LUCAS 2009/2012; SoilAttr_*.gpkg,P,p.ext,ISO.11263,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_ISO.11263_mg.kg
 LUCAS 2009/2012; SoilAttr_*.gpkg,K,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/(39.098*10/2))",k.ext_usda.a725_cmolc.kg
 LUCAS 2009/2012; SoilAttr_*.gpkg,CEC,cec,ISO.11260,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_ISO.11260_cmolc.kg
-LUCAS_Topsoil_2015.csv,Coarse,cf,ISO.11464,w.pctw.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cf_ISO.11464_w.pctw.pct
-LUCAS_Topsoil_2015.csv,Clay,clay.tot,ISO.11277,w.pctw.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_ISO.11277_w.pctw.pct
+LUCAS_Topsoil_2015.csv,Coarse,cf,ISO.11464,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cf_ISO.11464_w.pct
+LUCAS_Topsoil_2015.csv,Clay,clay.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_ISO.11277_w.pct
 LUCAS_Topsoil_2015.csv,Sand,sand.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_ISO.11277_w.pct
 LUCAS_Topsoil_2015.csv,Silt,silt.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_ISO.11277_w.pct
 LUCAS_Topsoil_2015.csv,pH(CaCl2),ph.cacl2,ISO.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_ISO.10390_index

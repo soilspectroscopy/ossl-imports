@@ -53,10 +53,11 @@ For the DB structure and use refer to "Introduction to the KSSL Laboratory Infor
 ```{r packages, include=TRUE, echo=FALSE, eval=TRUE}
 packages <- c("tidyverse", "prospectr", "measurements", "readxl", "stringr",
               "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
-              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc")
+              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc", "qs")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 invisible(lapply(packages, library, character.only = TRUE))
+source("../../R-code/functions/SSL_functions.R")
 ```
 
 The directory/folder path:
@@ -370,7 +371,11 @@ kssl.sitedata <- kssl.sitedata %>%
          horizon.designation_usda_c, observation.date.end_iso.8601_yyyy.mm.dd,
          longitude.point_wgs84_dd, latitude.point_wgs84_dd,
          longitude.county_wgs84_dd, latitude.county_wgs84_dd) %>%
-  mutate(location.country_iso.3166_c = "USA",
+  mutate(observation.date.end_iso.8601_yyyy.mm.dd = ymd(paste0(observation.date.end_iso.8601_yyyy.mm.dd, "-12-31"))) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = floor_date(observation.date.end_iso.8601_yyyy.mm.dd, "year"),
+         .before = observation.date.end_iso.8601_yyyy.mm.dd) %>%
+  mutate(location.point.error_any_m = 30,
+         location.country_iso.3166_c = "USA",
          observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
          observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
          surveyor.title_utf8_txt = "USDA NRCS staff",
@@ -390,8 +395,10 @@ kssl.sitedata <- kssl.sitedata %>%
          .after = id.dataset.site_ascii_c)
 
 # Saving version to dataset root dir
-site.rds = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.rds")
-saveRDS(kssl.sitedata, site.rds)
+# site.rds = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.rds")
+# saveRDS(kssl.sitedata, site.rds)
+site.qs = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.qs")
+qs::qsave(kssl.sitedata, site.qs, preset = "high")
 ```
 
 ### Soil lab information
@@ -522,7 +529,7 @@ kssl.soildata.numeric <- kssl.soildata %>%
   summarise(value = mean(as.numeric(value), na.rm = TRUE), .groups = "drop") %>%
   filter(!is.na(value))
 
-# Also passing transforming function
+# Passing the transforming function
 # mutate(x = value) %>%
 #   mutate(value = eval(parse(text = ossl_convert))) %>%
   
@@ -530,20 +537,6 @@ kssl.soildata.numeric.bind <- kssl.soildata.numeric %>%
   mutate(value = round(value, 5)) %>%
   pivot_wider(names_from = "ossl_name", values_from = value) %>%
   as.data.frame()
-
-transform_values <- function(df, out.name, in.name, fun.lst){
-  if(!length(out.name)==length(in.name)){
-    stop("Arguments 'out.name' and 'in.name' not equal length")
-  }
-  if(missing(fun.lst)){
-    fun.lst = as.list(rep("x*1", length(out.name)))
-  }
-  ## https://stackoverflow.com/questions/61094854/storing-functions-in-an-r-list
-  utility.fns = lapply(1:length(fun.lst), function(i){function(x){eval(parse(text = fun.lst[[i]]) )}})
-  out <- as.data.frame(lapply(1:length(in.name), function(i){utility.fns[[i]](df[,in.name[i]])}))
-  names(out) = out.name
-  return(out)
-}
 
 # The first column lay.id is preserved the same
 functions.list <- transvalues %>%
@@ -602,8 +595,10 @@ kssl.soildata %>%
   summarise(count = n())
   
 # Saving version to dataset root dir
-soillab.rds = paste0(dirname(dir.files), "/ossl_soillab_v1.2.rds")
-saveRDS(kssl.soildata, soillab.rds)
+# soillab.rds = paste0(dirname(dir.files), "/ossl_soillab_v1.2.rds")
+# saveRDS(kssl.soildata, soillab.rds)
+soillab.qs = paste0(dirname(dir.files), "/ossl_soillab_v1.2.qs")
+qs::qsave(kssl.soildata, soillab.qs, preset = "high")
 ```
 
 ### Mid-infrared spectroscopy data
@@ -745,8 +740,10 @@ kssl.mir.metadata <- metadata %>%
 kssl.mir.export <- right_join(kssl.mir.metadata, kssl.mir, by = "id.scan_local_c")
 
 # Saving version to dataset root dir
-soilmir.rds = paste0(dirname(dir.files), "/ossl_mir_v1.2.rds")
-saveRDS(kssl.mir.export, soilmir.rds)
+# soilmir.rds = paste0(dirname(dir.files), "/ossl_mir_v1.2.rds")
+# saveRDS(kssl.mir.export, soilmir.rds)
+soilmir.qs = paste0(dirname(dir.files), "/ossl_mir_v1.2.qs")
+qs::qsave(kssl.mir.export, soilmir.qs, preset = "high")
 ```
 
 ### Visible and Near-infrared spectroscopy data
@@ -850,10 +847,11 @@ kssl.visnir.metadata <- visnir.scans %>%
 # Final table
 kssl.visnir.export <- right_join(kssl.visnir.metadata, kssl.visnir, by = "id.scan_local_c")
 
-# No sample is removed
 # Saving version to dataset root dir
-soilvisnir.rds = paste0(dirname(dir.files), "/ossl_visnir_v1.2.rds")
-saveRDS(kssl.visnir.export, soilvisnir.rds)
+# soilvisnir.rds = paste0(dirname(dir.files), "/ossl_visnir_v1.2.rds")
+# saveRDS(kssl.visnir.export, soilvisnir.rds)
+soilvisnir.qs = paste0(dirname(dir.files), "/ossl_visnir_v1.2.qs")
+qs::qsave(kssl.visnir.export, soilvisnir.qs)
 ```
 
 ### Quality control
@@ -865,7 +863,7 @@ For joining site, soil lab and spectral data, we must keep in mind that soil lab
 - The result is left joined with the site and soil lab data. This drop data without any scan.
 
 The availabilty of data is summarised below:
-```{r, include=TRUE, echo=TRUE, eval=TRUE}
+```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
 # Taking a few representative columns for checking the consistency of joins
 kssl.availability <- kssl.mir %>%
   select(id.scan_local_c, id.layer_local_c, scan_mir.600_abs) %>%

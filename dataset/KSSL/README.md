@@ -421,8 +421,10 @@ kssl.sitedata <- kssl.sitedata %>%
          .after = id.dataset.site_ascii_c)
 
 # Saving version to dataset root dir
-site.rds = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.rds")
-saveRDS(kssl.sitedata, site.rds)
+# site.rds = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.rds")
+# saveRDS(kssl.sitedata, site.rds)
+site.qs = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.qs")
+qs::qsave(kssl.sitedata, site.qs, preset = "high")
 ```
 
 ### Soil lab information
@@ -553,7 +555,7 @@ kssl.soildata.numeric <- kssl.soildata %>%
   summarise(value = mean(as.numeric(value), na.rm = TRUE), .groups = "drop") %>%
   filter(!is.na(value))
 
-# Also passing transforming function
+# Passing the transforming function
 # mutate(x = value) %>%
 #   mutate(value = eval(parse(text = ossl_convert))) %>%
   
@@ -561,20 +563,6 @@ kssl.soildata.numeric.bind <- kssl.soildata.numeric %>%
   mutate(value = round(value, 5)) %>%
   pivot_wider(names_from = "ossl_name", values_from = value) %>%
   as.data.frame()
-
-transform_values <- function(df, out.name, in.name, fun.lst){
-  if(!length(out.name)==length(in.name)){
-    stop("Arguments 'out.name' and 'in.name' not equal length")
-  }
-  if(missing(fun.lst)){
-    fun.lst = as.list(rep("x*1", length(out.name)))
-  }
-  ## https://stackoverflow.com/questions/61094854/storing-functions-in-an-r-list
-  utility.fns = lapply(1:length(fun.lst), function(i){function(x){eval(parse(text = fun.lst[[i]]) )}})
-  out <- as.data.frame(lapply(1:length(in.name), function(i){utility.fns[[i]](df[,in.name[i]])}))
-  names(out) = out.name
-  return(out)
-}
 
 # The first column lay.id is preserved the same
 functions.list <- transvalues %>%
@@ -642,8 +630,10 @@ kssl.soildata %>%
 
 ``` r
 # Saving version to dataset root dir
-soillab.rds = paste0(dirname(dir.files), "/ossl_soillab_v1.2.rds")
-saveRDS(kssl.soildata, soillab.rds)
+# soillab.rds = paste0(dirname(dir.files), "/ossl_soillab_v1.2.rds")
+# saveRDS(kssl.soildata, soillab.rds)
+soillab.qs = paste0(dirname(dir.files), "/ossl_soillab_v1.2.qs")
+qs::qsave(kssl.soildata, soillab.qs, preset = "high")
 ```
 
 ### Mid-infrared spectroscopy data
@@ -795,8 +785,10 @@ kssl.mir.metadata <- metadata %>%
 kssl.mir.export <- right_join(kssl.mir.metadata, kssl.mir, by = "id.scan_local_c")
 
 # Saving version to dataset root dir
-soilmir.rds = paste0(dirname(dir.files), "/ossl_mir_v1.2.rds")
-saveRDS(kssl.mir.export, soilmir.rds)
+# soilmir.rds = paste0(dirname(dir.files), "/ossl_mir_v1.2.rds")
+# saveRDS(kssl.mir.export, soilmir.rds)
+soilmir.qs = paste0(dirname(dir.files), "/ossl_mir_v1.2.qs")
+qs::qsave(kssl.mir.export, soilmir.qs, preset = "high")
 ```
 
 ### Visible and Near-infrared spectroscopy data
@@ -909,10 +901,11 @@ kssl.visnir.metadata <- visnir.scans %>%
 # Final table
 kssl.visnir.export <- right_join(kssl.visnir.metadata, kssl.visnir, by = "id.scan_local_c")
 
-# No sample is removed
 # Saving version to dataset root dir
-soilvisnir.rds = paste0(dirname(dir.files), "/ossl_visnir_v1.2.rds")
-saveRDS(kssl.visnir.export, soilvisnir.rds)
+# soilvisnir.rds = paste0(dirname(dir.files), "/ossl_visnir_v1.2.rds")
+# saveRDS(kssl.visnir.export, soilvisnir.rds)
+soilvisnir.qs = paste0(dirname(dir.files), "/ossl_visnir_v1.2.qs")
+qs::qsave(kssl.visnir.export, soilvisnir.qs)
 ```
 
 ### Quality control
@@ -1148,15 +1141,15 @@ rm(list = ls())
 gc()
 ```
 
-    ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2613494 139.6   15218534  812.8   19023167 1016.0
-    ## Vcells 35778026 273.0  880126520 6714.9 1003034275 7652.6
+    ##            used (Mb) gc trigger   (Mb)   max used   (Mb)
+    ## Ncells  2619838  140   15247130  814.3   19058912 1017.9
+    ## Vcells 35779325  273  834476767 6366.6 1003162727 7653.6
 
 ``` r
 toc()
 ```
 
-    ## 545.616 sec elapsed
+    ## 472.184 sec elapsed
 
 ## References
 
