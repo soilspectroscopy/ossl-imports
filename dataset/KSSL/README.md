@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>), Develyn Bloom
 (<develyn.bloom@ufl.edu>) -
-28 November, 2022
+30 November, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-28  
+Last update: 2022-11-30  
 Dataset:
 [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
@@ -390,6 +390,7 @@ kssl.sitedata <- kssl.sitedata %>%
          layer.upper.depth_usda_cm = lay.depth.to.top,
          layer.lower.depth_usda_cm = lay.depth.to.bottom,
          layer.texture_usda_c = texture.description,
+         pedon.taxa_usda_c = taxonomic.classification.name,
          horizon.designation_usda_c = horizon.designation,
          observation.date.end_iso.8601_yyyy.mm.dd = fiscal.year,
          longitude.point_wgs84_dd = longitude.std.decimal.degrees,
@@ -401,7 +402,12 @@ kssl.sitedata <- kssl.sitedata %>%
          horizon.designation_usda_c, observation.date.end_iso.8601_yyyy.mm.dd,
          longitude.point_wgs84_dd, latitude.point_wgs84_dd,
          longitude.county_wgs84_dd, latitude.county_wgs84_dd) %>%
-  mutate(location.country_iso.3166_c = "USA",
+  mutate(observation.date.end_iso.8601_yyyy.mm.dd = ymd(paste0(observation.date.end_iso.8601_yyyy.mm.dd, "-12-31"))) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = floor_date(observation.date.end_iso.8601_yyyy.mm.dd, "year"),
+         .before = observation.date.end_iso.8601_yyyy.mm.dd) %>%
+  mutate(layer.sequence_usda_uint16 = NA, .after = layer.texture_usda_c) %>%
+  mutate(location.point.error_any_m = 30,
+         location.country_iso.3166_c = "USA",
          observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
          observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
          surveyor.title_utf8_txt = "USDA NRCS staff",
@@ -434,9 +440,57 @@ getting the original names of soil properties, descriptions, data types,
 and units. Run once and upload to Google Sheet for formatting and
 integrating with the OSSL. Requires Google authentication.
 
+<!-- ```{r soilab_overview, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- analyte <- read_csv(paste0(dir, "/All_Spectra_Access_Portable_20220712/analyte.csv")) -->
+<!-- calc <- read_csv(paste0(dir, "/All_Spectra_Access_Portable_20220712/calc.csv")) -->
+<!-- soillab.names <- analyte %>% -->
+<!--   select(analyte.id, analyte.name, analyte.abbrev, uom.abbrev, analyte.desc) %>% -->
+<!--   mutate(source = "kssl_analyte", .before = 1) %>% -->
+<!--   rename(id = analyte.id, original_name = analyte.name, abbrev = analyte.abbrev, -->
+<!--          unit = uom.abbrev, original_description = analyte.desc) %>% -->
+<!--   bind_rows({calc %>% -->
+<!--       select(calc.id, calc.name, calc.abbrev, uom.abbrev, calc.desc) %>% -->
+<!--       mutate(source = "kssl_calc", .before = 1) %>% -->
+<!--       rename(id = calc.id, original_name = calc.name, abbrev = calc.abbrev, -->
+<!--              unit = uom.abbrev, original_description = calc.desc)}) %>% -->
+<!--   arrange(original_name) %>% -->
+<!--   dplyr::mutate(import = '', ossl_name = '', .after = original_name) -->
+<!-- readr::write_csv(soillab.names, paste0(getwd(), "/kssl_soillab_names.csv")) -->
+<!-- # Uploading to google sheet -->
+<!-- # FACT CIN folder. Get ID for soildata importing table -->
+<!-- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA")) -->
+<!-- OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM" -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Checking readme -->
+<!-- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme') -->
+<!-- # Preparing soillab.names -->
+<!-- upload <- dplyr::as_tibble(soillab.names) -->
+<!-- # Uploading -->
+<!-- googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "KSSL") -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- ``` -->
+
 NOTE: The code chunk below this paragraph is hidden. Run once for
 importing the transformation rules. The table can be edited online at
 Google Sheets. A copy is downloaded to github for archiving.
+
+<!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # Downloading from google sheet -->
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
+<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Preparing soillab.names -->
+<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "KSSL") %>% -->
+<!--   filter(import == TRUE) %>% -->
+<!--   select(contains(c("source", "id", "original_name", "ossl_"))) -->
+<!-- # Saving to folder -->
+<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- ``` -->
 
 Reading KSSL-to-OSSL transformation values:
 
@@ -693,34 +747,27 @@ kssl.mir <- kssl.mir %>%
   rename_with(~new.wavenumbers, as.character(old.wavenumbers))
 
 # Spectral consistency analysis
-cl = makeCluster(mc <- getOption("cl.cores", data.table::getDTthreads()))
 
 # Gaps
 scans.na.gaps <- kssl.mir %>%
   select(-id.scan_local_c, -id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
   bind_cols({kssl.mir %>% select(id.scan_local_c)}, .)
 
 # Extreme negative - irreversible erratic patterns
 scans.extreme.neg <- kssl.mir %>%
   select(-id.scan_local_c, -id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
   bind_cols({kssl.mir %>% select(id.scan_local_c)}, .)
 
 # Extreme positive, irreversible erratic patterns
 scans.extreme.pos <- kssl.mir %>%
   select(-id.scan_local_c, -id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_higherAbs5 = .) %>%
   bind_cols({kssl.mir %>% select(id.scan_local_c)}, .)
-
-stopCluster(cl)
 
 # Consistency summary - problematic scans
 scans.summary <- scans.na.gaps %>%
@@ -1137,19 +1184,19 @@ kssl.visnir %>%
 ![](README_files/figure-gfm/visnir_plot-1.png)<!-- -->
 
 ``` r
+toc()
+```
+
+    ## 234.923 sec elapsed
+
+``` r
 rm(list = ls())
 gc()
 ```
 
-    ##            used (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2619838  140   15247130  814.3   19058912 1017.9
-    ## Vcells 35779325  273  834476767 6366.6 1003162727 7653.6
-
-``` r
-toc()
-```
-
-    ## 472.184 sec elapsed
+    ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
+    ## Ncells  2621722 140.1   15468060  826.1   19335074 1032.7
+    ## Vcells 35785389 273.1  801992528 6118.8 1002490655 7648.4
 
 ## References
 

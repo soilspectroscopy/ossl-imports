@@ -490,34 +490,27 @@ icraf.isric.visnir <- icraf.isric.visnir %>%
   summarise_all(mean)
 
 # Spectral consistency analysis
-cl = makeCluster(mc <- getOption("cl.cores", data.table::getDTthreads()))
 
 # Gaps
 scans.na.gaps <- icraf.isric.visnir %>%
   select(all_of(as.character(new.wavelengths))) %>%
-  parallel::parRapply(cl, ., function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
   bind_cols({icraf.isric.visnir %>% select(id.layer_local_c)}, .)
 
 # Extreme negative
 scans.extreme.neg <- icraf.isric.visnir %>%
   select(all_of(as.character(new.wavelengths))) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
   bind_cols({icraf.isric.visnir %>% select(id.layer_local_c)}, .)
 
 # Extreme positive
 scans.extreme.pos <- icraf.isric.visnir %>%
   select(all_of(as.character(new.wavelengths))) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_higherRef1 = .) %>%
   bind_cols({icraf.isric.visnir %>% select(id.layer_local_c)}, .)
-
-stopCluster(cl)
 
 # Consistency summary - problematic scans
 scans.summary <- scans.na.gaps %>%

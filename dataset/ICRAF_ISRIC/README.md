@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Wanderson Mendes de Sousa
 (<wanderson.mendes@zalf.de>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-29 November, 2022
+30 November, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-29  
+Last update: 2022-11-30  
 Dataset:
 [ICRAF.ISRIC](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#icraf.isric)
 
@@ -211,44 +211,50 @@ getting the original names of soil properties, descriptions, data types,
 and units. Run once and upload to Google Sheet for formatting and
 integrating with the OSSL. Requires Google authentication.
 
-``` r
-icraf.df = vroom::vroom(paste0(dir, "ICRAF_ISRIC_reference_data.csv"))
-
-soillab.names <- icraf.df %>%
-  names(.) %>%
-  tibble::tibble(original_name = .) %>%
-  dplyr::mutate(table = 'ICRAF_ISRIC_reference_data.csv', .before = 1) %>%
-  dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>%
-  dplyr::mutate(comment = '')
-
-readr::write_csv(soillab.names, paste0(getwd(), "/icraf_isric_soillab_names.csv"))
-
-# Uploading to google sheet
-
-# FACT CIN folder. Get ID for soildata importing table
-googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"))
-
-OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM"
-
-# Checking metadata
-googlesheets4::as_sheets_id(OSSL.soildata.importing)
-
-# Checking readme
-googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
-
-# Preparing soillab.names
-upload <- dplyr::as_tibble(soillab.names)
-
-# Uploading
-googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "ICRAF_ISRIC")
-
-# Checking metadata
-googlesheets4::as_sheets_id(OSSL.soildata.importing)
-```
+<!-- ```{r, eval=FALSE, echo=TRUE} -->
+<!-- icraf.df = vroom::vroom(paste0(dir, "ICRAF_ISRIC_reference_data.csv")) -->
+<!-- soillab.names <- icraf.df %>% -->
+<!--   names(.) %>% -->
+<!--   tibble::tibble(original_name = .) %>% -->
+<!--   dplyr::mutate(table = 'ICRAF_ISRIC_reference_data.csv', .before = 1) %>% -->
+<!--   dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>% -->
+<!--   dplyr::mutate(comment = '') -->
+<!-- readr::write_csv(soillab.names, paste0(getwd(), "/icraf_isric_soillab_names.csv")) -->
+<!-- # Uploading to google sheet -->
+<!-- # FACT CIN folder. Get ID for soildata importing table -->
+<!-- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA")) -->
+<!-- OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM" -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Checking readme -->
+<!-- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme') -->
+<!-- # Preparing soillab.names -->
+<!-- upload <- dplyr::as_tibble(soillab.names) -->
+<!-- # Uploading -->
+<!-- googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "ICRAF_ISRIC") -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- ``` -->
 
 NOTE: The code chunk below this paragraph is hidden. Run once for
 importing the transformation rules. The table can be edited online at
 Google Sheets. A copy is downloaded to github for archiving.
+
+<!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # Downloading from google sheet -->
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
+<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Preparing soillab.names -->
+<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "ICRAF_ISRIC") %>% -->
+<!--   filter(import == TRUE) %>% -->
+<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
+<!-- # Saving to folder -->
+<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- ``` -->
 
 Reading ICRAF-ISRIC-to-OSSL transformation values:
 
@@ -378,35 +384,26 @@ icraf.isric.mir <- icraf.isric.mir %>%
   group_by(id.layer_local_c) %>%
   summarise_all(mean)
 
-# Spectral consistency analysis
-cl = makeCluster(mc <- getOption("cl.cores", data.table::getDTthreads()))
-
 # Gaps
 scans.na.gaps <- icraf.isric.mir %>%
   select(-id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
   bind_cols({icraf.isric.mir %>% select(id.layer_local_c)}, .)
 
 # Extreme negative - irreversible erratic patterns
 scans.extreme.neg <- icraf.isric.mir %>%
   select(-id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
   bind_cols({icraf.isric.mir %>% select(id.layer_local_c)}, .)
 
 # Extreme positive, irreversible erratic patterns
 scans.extreme.pos <- icraf.isric.mir %>%
   select(-id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_higherAbs5 = .) %>%
   bind_cols({icraf.isric.mir %>% select(id.layer_local_c)}, .)
-
-stopCluster(cl)
 
 # Consistency summary - problematic scans
 scans.summary <- scans.na.gaps %>%
@@ -511,34 +508,27 @@ icraf.isric.visnir <- icraf.isric.visnir %>%
   summarise_all(mean)
 
 # Spectral consistency analysis
-cl = makeCluster(mc <- getOption("cl.cores", data.table::getDTthreads()))
 
 # Gaps
 scans.na.gaps <- icraf.isric.visnir %>%
   select(all_of(as.character(new.wavelengths))) %>%
-  parallel::parRapply(cl, ., function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
   bind_cols({icraf.isric.visnir %>% select(id.layer_local_c)}, .)
 
 # Extreme negative
 scans.extreme.neg <- icraf.isric.visnir %>%
   select(all_of(as.character(new.wavelengths))) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
   bind_cols({icraf.isric.visnir %>% select(id.layer_local_c)}, .)
 
 # Extreme positive
 scans.extreme.pos <- icraf.isric.visnir %>%
   select(all_of(as.character(new.wavelengths))) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_higherRef1 = .) %>%
   bind_cols({icraf.isric.visnir %>% select(id.layer_local_c)}, .)
-
-stopCluster(cl)
 
 # Consistency summary - problematic scans
 scans.summary <- scans.na.gaps %>%
@@ -783,7 +773,7 @@ icraf.isric.visnir %>%
 toc()
 ```
 
-    ## 123.721 sec elapsed
+    ## 100.985 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -791,8 +781,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb)  max used  (Mb)
-    ## Ncells 2635890 140.8    7416489 396.1  14485328 773.6
-    ## Vcells 7609359  58.1   89692445 684.3 112115556 855.4
+    ## Ncells 2632462 140.6    8872248 473.9  14388424 768.5
+    ## Vcells 7601480  58.0   89867007 685.7 112280410 856.7
 
 ## References
 

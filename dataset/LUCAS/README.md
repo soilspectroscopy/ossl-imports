@@ -4,7 +4,7 @@ Dataset import: The Land-Use/Cover Area Survey Soil and Spectral Library
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Leandro Parente
 (<leandro.parente@opengeohub.org>) -
-29 November, 2022
+30 November, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-29  
+Last update: 2022-11-30  
 Dataset:
 [LUCAS.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#lucas.ssl)
 
@@ -224,9 +224,59 @@ getting the original names of soil properties, descriptions, data types,
 and units. Run once and upload to Google Sheet for formatting and
 integrating with the OSSL. Requires Google authentication.
 
+<!-- ```{r soilab_overview, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- gpkg.lst = list.files(dir, glob2rx("SoilAttr_*.gpkg$"), full.names = TRUE) -->
+<!-- lucas.2009 = lapply(gpkg.lst, function(i){sf::st_read(i) %>% dplyr::as_tibble(.) %>% dplyr::select(-geom)}) -->
+<!-- lucas.2009 = Reduce(dplyr::bind_rows, lucas.2009) -->
+<!-- lucas.2015 = fread(paste0(dir, "/LUCAS_Topsoil_2015_20200323.csv")) -->
+<!-- soillab.names <- lucas.2009 %>% -->
+<!--   names(.) %>% -->
+<!--   tibble::tibble(original_name = .) %>% -->
+<!--   dplyr::mutate(table = 'LUCAS 2009/2012; SoilAttr_*.gpkg', .before = 1) %>% -->
+<!--   dplyr::bind_rows({ -->
+<!--     lucas.2015 %>% -->
+<!--       names(.) %>% -->
+<!--       tibble::tibble(original_name = .) %>% -->
+<!--       dplyr::mutate(table = 'LUCAS_Topsoil_2015.csv', .before = 1) -->
+<!--   }) %>% -->
+<!--   dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>% -->
+<!--   dplyr::mutate(comment = '') -->
+<!-- readr::write_csv(soillab.names, paste0(getwd(), "/lucas_soillab_names.csv")) -->
+<!-- # Uploading to google sheet -->
+<!-- # FACT CIN folder. Get ID for soildata importing table -->
+<!-- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA")) -->
+<!-- OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM" -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Checking readme -->
+<!-- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme') -->
+<!-- # Preparing soillab.names -->
+<!-- upload <- dplyr::as_tibble(soillab.names) -->
+<!-- # Uploading -->
+<!-- googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "LUCAS") -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- ``` -->
+
 NOTE: The code chunk below this paragraph is hidden. Run once for
 importing the transformation rules. The table can be edited online at
 Google Sheets. A copy is downloaded to github for archiving.
+
+<!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # Downloading from google sheet -->
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
+<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Preparing soillab.names -->
+<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "LUCAS") %>% -->
+<!--   filter(import == TRUE) %>% -->
+<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
+<!-- # Saving to folder -->
+<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- ``` -->
 
 Reading LUCAS-to-OSSL transformation values:
 
@@ -528,34 +578,27 @@ lucas.visnir <- lucas.visnir %>%
   rename_with(~new.wavelengths, as.character(old.wavelengths))
 
 # Spectral consistency analysis
-cl = makeCluster(mc <- getOption("cl.cores", data.table::getDTthreads()))
 
 # Gaps
 scans.na.gaps <- lucas.visnir %>%
   select(all_of(new.wavelengths)) %>%
-  parallel::parRapply(cl, ., function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
   bind_cols({lucas.visnir %>% select(id.scan_local_c)}, .)
 
 # Extreme negative
 scans.extreme.neg <- lucas.visnir %>%
   select(all_of(new.wavelengths)) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
   bind_cols({lucas.visnir %>% select(id.scan_local_c)}, .)
 
 # Extreme positive
 scans.extreme.pos <- lucas.visnir %>%
   select(all_of(new.wavelengths)) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_higherRef1 = .) %>%
   bind_cols({lucas.visnir %>% select(id.scan_local_c)}, .)
-
-stopCluster(cl)
 
 # Consistency summary
 scans.summary <- scans.na.gaps %>%
@@ -606,34 +649,27 @@ lucas.mir <- lucas.mir %>%
   select(id.layer_local_c, as.character(rev(new.wavenumbers)))
 
 # Spectral consistency analysis
-cl = makeCluster(mc <- getOption("cl.cores", data.table::getDTthreads()))
 
 # Gaps
 scans.na.gaps <- lucas.mir %>%
   select(-id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
   bind_cols({lucas.mir %>% select(id.layer_local_c)}, .)
 
 # Extreme negative - irreversible erratic patterns
 scans.extreme.neg <- lucas.mir %>%
   select(-id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
   bind_cols({lucas.mir %>% select(id.layer_local_c)}, .)
 
 # Extreme positive, irreversible erratic patterns
 scans.extreme.pos <- lucas.mir %>%
   select(-id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x > 3.5, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 3.5, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_higherAbs5 = .) %>%
   bind_cols({lucas.mir %>% select(id.layer_local_c)}, .)
-
-stopCluster(cl)
 
 # Consistency summary - problematic scans
 scans.summary <- scans.na.gaps %>%
@@ -889,7 +925,7 @@ lucas.visnir %>%
 toc()
 ```
 
-    ## 538.431 sec elapsed
+    ## 453.536 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -897,8 +933,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells 2636280 140.8   22319058 1192.0  34873527 1862.5
-    ## Vcells 9743465  74.4  403815287 3080.9 985876848 7521.7
+    ## Ncells 2632849 140.7   26813084 1432.0  41895442 2237.5
+    ## Vcells 9732428  74.3  403815238 3080.9 985876765 7521.7
 
 ## References
 

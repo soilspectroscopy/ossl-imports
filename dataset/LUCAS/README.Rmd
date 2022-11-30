@@ -551,8 +551,6 @@ scans.extreme.pos <- lucas.mir %>%
   tibble(proportion_higherAbs5 = .) %>%
   bind_cols({lucas.mir %>% select(id.layer_local_c)}, .)
 
-stopCluster(cl)
-
 # Consistency summary - problematic scans
 scans.summary <- scans.na.gaps %>%
   left_join(scans.extreme.neg, by = "id.layer_local_c") %>%

@@ -1,6 +1,6 @@
 ---
 title: "Dataset import: TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL"
-author: "Tomislav Hengl (tom.hengl@opengeohub.org), Jonathan Sanderman (jsanderman@woodwellclimate.org), and Jose Lucas Safanelli (jsafanelli@woodwellclimate.org) - "
+author: "Jose Lucas Safanelli (jsafanelli@woodwellclimate.org), Tomislav Hengl (tom.hengl@opengeohub.org), Jonathan Sanderman (jsanderman@woodwellclimate.org) - "
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   github_document:
@@ -107,7 +107,7 @@ soillab.names <- variables.names.TanSIS %>%
   dplyr::select(table, original_name, original_description, units, comment) %>%
   dplyr::mutate(import = '', ossl_name = '', .after = original_name)
 
-readr::write_csv(soillab.names, paste0(getwd(), "/afis2_soillab_names.csv"))
+readr::write_csv(soillab.names, paste0(getwd(), "/afsis2_soillab_names.csv"))
 
 # Uploading to google sheet
 
