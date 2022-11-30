@@ -1,0 +1,21 @@
+table,original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+AfSIS_reference.csv,ECd,ec,usda.a364,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ec_usda.a364_ds.m
+AfSIS_reference.csv,m3.Al,al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a1056_mg.kg
+AfSIS_reference.csv,m3.B,b.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",b.ext_mel3_mg.kg
+AfSIS_reference.csv,m3.Ca,ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a1059_mg.kg
+AfSIS_reference.csv,m3.Cu,cu.ext,usda.a1063,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cu.ext_usda.a1063_mg.kg
+AfSIS_reference.csv,m3.Fe,fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",fe.ext_usda.a1064_mg.kg
+AfSIS_reference.csv,m3.K,k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a1065_mg.kg
+AfSIS_reference.csv,m3.Mg,mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a1066_mg.kg
+AfSIS_reference.csv,m3.Mn,mn.ext,usda.a1067,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mn.ext_usda.a1067_mg.kg
+AfSIS_reference.csv,m3.Na,na.ext,usda.a1068,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a1068_mg.kg
+AfSIS_reference.csv,m3.P,p.ext,usda.a652,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_usda.a652_mg.kg
+AfSIS_reference.csv,m3.S,s.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",s.ext_mel3_mg.kg
+AfSIS_reference.csv,m3.Zn,zn.ext,usda.a1073,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",zn.ext_usda.a1073_mg.kg
+AfSIS_reference.csv,pH,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+AfSIS_reference.csv,Total.Nitrogen,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_usda.a623_w.pct
+AfSIS_reference.csv,Total.Carbon,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_usda.a622_w.pct
+AfSIS_reference.csv,Acidified.Carbon,oc,usda.c1059,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",oc_usda.c1059_w.pct
+AfSIS_reference.csv,Clay,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct
+AfSIS_reference.csv,Silt,silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct
+AfSIS_reference.csv,Sand,sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct
