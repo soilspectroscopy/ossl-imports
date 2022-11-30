@@ -24,10 +24,12 @@ editor_options:
 
 This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
 
-
-```{r, include=FALSE}
+```{r setup, include=FALSE}
 library(captioner)
 fig_nums <- captioner(prefix = "Fig.")
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+options(scipen = 999)
 ```
 
 ## TanSIS, NiSIS and GhanSIS inputs
@@ -38,43 +40,129 @@ Good](https://soilspectroscopy.org)
 Last update: `r Sys.Date()`  
 Dataset: [AFSIS2.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis2.ssl)
 
-```{r, include=FALSE}
-knitr::opts_chunk$set(message = FALSE)
-knitr::opts_chunk$set(warning = FALSE)
-```
-
 Mid-Infrared Spectra (MIRS) from AfSIS2 Soil and Plant Spectroscopy Laboratory, which are the national 
 Soil Information Systems: TanSIS (Tanzania), NiSIS (Nigeria) and GhanSIS (Ghana).
 
 The three datasets are available from <https://doi.org/10.34725/DVN/XUDGJY>, <https://doi.org/10.34725/DVN/WLAKR2> and <https://doi.org/10.34725/DVN/SPRSFN>. 
-Documentation of the datasets is available in @hengl2021african.
-Data has been analyzed at the ICRAF Soil-Plant Spectral Diagnostics Laboratory, Nairobi, and the Rothamsted Research.
-Coordinates for points are not provided and soil reference data is available only for a limited subset of points.
-Coordinates for TanSIS points are available with a different coding system via <https://registry.opendata.aws/afsis/>.
-From the 31,269 soil scans ("ZnSe") only 820 (2.6%) have reference data.
+Documentation of the datasets is available in @hengl2021african. Data has been analyzed at the ICRAF Soil-Plant Spectral Diagnostics Laboratory, Nairobi, and the Rothamsted Research. Coordinates for points are not provided and soil reference data is available only for a limited subset of points. Coordinates for TanSIS points are available with a different coding system via <https://registry.opendata.aws/afsis/>. From the 31,269 soil scans only 820 (2.6%) have reference data.
 
-```{r, echo=FALSE}
+Input datasets:  
+- `glob2rx("*samples.csv")`: Separate csv files with site and soil analytes;  
+- `afsis_mir_2013`: folder with MIR soil spectral data;  
+- `Calibration_MPA_NIR.csv`: VNIR soil spectral data;
+
+```{r packages, include=TRUE, echo=FALSE, eval=TRUE}
 packages <- c("tidyverse", "prospectr", "measurements", "readxl", "stringr",
-              "olctools", "openssl", "tmap", "sf", "skimr",
-              "googledrive", "googlesheets4")
+              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
+              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc", "qs")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
-x <- lapply(packages, library, character.only = TRUE)
+invisible(lapply(packages, library, character.only = TRUE))
+source("../../R-code/functions/SSL_functions.R")
 ```
 
-Directory/folder path
-
+Directory/folder path:
 ```{r}
 dir = "/mnt/soilspec4gg/ossl/dataset/AFSIS2/"
-```
-
-```{r, echo=FALSE, eval=FALSE}
-source("../../R-code/functions/SSL_functions.R")
+tic()
 ```
 
 ## Data import
 
 ### Soil site information
+
+```{r soilsite, include=TRUE, echo=TRUE, eval=TRUE}
+
+sample.files <- list.files(dir, pattern = glob2rx("*samples.csv"), full.names = T)
+
+samples <- sample.files %>%
+  purrr::map_dfr(fread, header = TRUE)
+
+
+afsis1.geo <- fread(paste0(dir, "/georeferences_2013.csv"))
+tansis.geo <- fread(paste0(dir, "/georeferences_tansis.csv"))
+
+afsis2.geo <- afsis1.geo %>%
+  select(SSN, Latitude, Longitude, Depth, Scientist) %>%
+  rename(id.layer_local_c = SSN,
+         longitude.point_wgs84_dd = Longitude,
+         latitude.point_wgs84_dd = Latitude,
+         surveyor.title_utf8_txt = Scientist) %>%
+  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
+         layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
+         layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2011-01-01"),
+         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2013-12-31")) %>%
+  select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd,
+         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
+         observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
+         surveyor.title_utf8_txt)
+
+tansis.geo <- tansis.geo %>%
+  select(SSN, Latitude, Longitude, Depth, Scientist) %>%
+  rename(id.layer_local_c = SSN,
+         longitude.point_wgs84_dd = Longitude,
+         latitude.point_wgs84_dd = Latitude,
+         surveyor.title_utf8_txt = Scientist) %>%
+  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
+         layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
+         layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-01-01"),
+         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-12-31")) %>%
+  select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd,
+         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
+         observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
+         surveyor.title_utf8_txt)
+
+# Joining both datasets
+afsis1.sitedata <- bind_rows(afsis1.geo, tansis.geo) %>%
+  mutate(id.project_ascii_c = "Africa Soil Information Service (AfSIS-1)",
+         id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
+         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         layer.texture_usda_c = "",
+         horizon.designation_usda_c = "",
+         longitude.county_wgs84_dd = NA,
+         latitude.county_wgs84_dd = NA,
+         location.point.error_any_m = 30,
+         location.country_iso.3166_c = "",
+         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+         surveyor.contact_ietf_email = "afsis.info@africasoils.net",
+         surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya",
+         dataset.title_utf8_txt = "Africa Soil Information Service (AfSIS-1)",
+         dataset.owner_utf8_txt = "ICRAF), CROPNUTS, RRES",
+         dataset.code_ascii_c = "AFSIS1.SSL",
+         dataset.address_idn_url = "https://www.isric.org/explore/ISRIC-collections",
+         dataset.doi_idf_url = "https://doi.org/10.1016/j.geodrs.2015.06.002",
+         dataset.license.title_ascii_txt = "ODC Open Database License",
+         dataset.license.address_idn_url = "https://opendatacommons.org/licenses/odbl/",
+         dataset.contact.name_utf8_txt = "Keith Shepherd",
+         dataset.contact_ietf_email = "afsis.info@africasoils.net")
+
+# Removing duplicates
+afsis1.sitedata %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  group_by(repeats) %>%
+  summarise(count = n())
+
+dupli.ids <- afsis1.sitedata %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(id.layer_local_c)
+
+afsis1.sitedata <- afsis1.sitedata %>%
+  filter(!(id.layer_local_c %in% dupli.ids))
+
+# Removing rows without spatial coordinates
+afsis1.sitedata <- afsis1.sitedata %>%
+  filter(!(is.na(longitude.point_wgs84_dd) & is.na(latitude.point_wgs84_dd)))
+
+# Saving version to dataset root dir
+site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
+qs::qsave(afsis1.sitedata, site.qs, preset = "high")
+```
 
 ### Soil lab information
 

@@ -72,7 +72,6 @@ tic()
 ```{r soilsite, include=TRUE, echo=TRUE, eval=TRUE}
 # AfIS1 site data
 afsis1.geo <- fread(paste0(dir, "/georeferences_2013.csv"))
-tansis.geo <- fread(paste0(dir, "/georeferences_tansis.csv"))
 
 afsis1.geo <- afsis1.geo %>%
   select(SSN, Latitude, Longitude, Depth, Scientist) %>%
@@ -90,24 +89,8 @@ afsis1.geo <- afsis1.geo %>%
          observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
          surveyor.title_utf8_txt)
 
-tansis.geo <- tansis.geo %>%
-  select(SSN, Latitude, Longitude, Depth, Scientist) %>%
-  rename(id.layer_local_c = SSN,
-         longitude.point_wgs84_dd = Longitude,
-         latitude.point_wgs84_dd = Latitude,
-         surveyor.title_utf8_txt = Scientist) %>%
-  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
-         layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
-         layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
-  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-01-01"),
-         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-12-31")) %>%
-  select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd,
-         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
-         observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
-         surveyor.title_utf8_txt)
-
-# Joining both datasets
-afsis1.sitedata <- bind_rows(afsis1.geo, tansis.geo) %>%
+# Preparing dataset
+afsis1.sitedata <- afsis1.geo %>%
   mutate(id.project_ascii_c = "Africa Soil Information Service (AfSIS-1)",
          id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
          id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),

@@ -62,7 +62,6 @@ tic()
 ``` r
 # AfIS1 site data
 afsis1.geo <- fread(paste0(dir, "/georeferences_2013.csv"))
-tansis.geo <- fread(paste0(dir, "/georeferences_tansis.csv"))
 
 afsis1.geo <- afsis1.geo %>%
   select(SSN, Latitude, Longitude, Depth, Scientist) %>%
@@ -80,24 +79,8 @@ afsis1.geo <- afsis1.geo %>%
          observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
          surveyor.title_utf8_txt)
 
-tansis.geo <- tansis.geo %>%
-  select(SSN, Latitude, Longitude, Depth, Scientist) %>%
-  rename(id.layer_local_c = SSN,
-         longitude.point_wgs84_dd = Longitude,
-         latitude.point_wgs84_dd = Latitude,
-         surveyor.title_utf8_txt = Scientist) %>%
-  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
-         layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
-         layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
-  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-01-01"),
-         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-12-31")) %>%
-  select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd,
-         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
-         observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
-         surveyor.title_utf8_txt)
-
-# Joining both datasets
-afsis1.sitedata <- bind_rows(afsis1.geo, tansis.geo) %>%
+# Preparing dataset
+afsis1.sitedata <- afsis1.geo %>%
   mutate(id.project_ascii_c = "Africa Soil Information Service (AfSIS-1)",
          id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
          id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
@@ -129,13 +112,10 @@ afsis1.sitedata %>%
   summarise(count = n())
 ```
 
-    ## # A tibble: 4 × 2
+    ## # A tibble: 1 × 2
     ##   repeats count
     ##     <int> <int>
-    ## 1       1 19933
-    ## 2       2   357
-    ## 3       3     1
-    ## 4       6     2
+    ## 1       1  1843
 
 ``` r
 dupli.ids <- afsis1.sitedata %>%
@@ -463,7 +443,7 @@ afsis1.availability %>%
     ##   column                    count
     ##   <chr>                     <int>
     ## 1 id.layer_local_c           1904
-    ## 2 layer.upper.depth_usda_cm  1614
+    ## 2 layer.upper.depth_usda_cm  1838
     ## 3 ph.h2o_usda.a268_index     1904
     ## 4 scan_mir.600_abs           1904
 
@@ -586,7 +566,7 @@ afsis1.mir %>%
 toc()
 ```
 
-    ## 32.167 sec elapsed
+    ## 30.285 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -594,8 +574,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells  2609719 139.4    5185647  277.0   5185647  277.0
-    ## Vcells 10181698  77.7  211313387 1612.2 264141733 2015.3
+    ## Ncells  2609470 139.4    4940952  263.9   4940952  263.9
+    ## Vcells 10071851  76.9  211081685 1610.5 263851731 2013.1
 
 ## References
 
