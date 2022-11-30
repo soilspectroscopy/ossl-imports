@@ -105,7 +105,7 @@ afsis1.sitedata <- afsis1.geo %>%
          surveyor.contact_ietf_email = "afsis.info@africasoils.net",
          surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya",
          dataset.title_utf8_txt = "Africa Soil Information Service (AfSIS-1)",
-         dataset.owner_utf8_txt = "ICRAF), CROPNUTS, RRES",
+         dataset.owner_utf8_txt = "ICRAF, CROPNUTS, RRES",
          dataset.code_ascii_c = "AFSIS1.SSL",
          dataset.address_idn_url = "https://www.isric.org/explore/ISRIC-collections",
          dataset.doi_idf_url = "https://doi.org/10.1016/j.geodrs.2015.06.002",
