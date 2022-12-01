@@ -46,7 +46,7 @@ The dataset was shared by email, but a public version is available at Zenodo <ht
 Input datasets:  
 - `ID_DRIFT_all.xlsx`: excel file with site information;  
 - `ID_DRIFT_all.xlsx`: csv file with soil information;  
-- `XXX`: MIR spectral scans;
+- `Schiedung_opusimport.xlsx`: MIR spectral scans;
 
 ```{r packages, include=TRUE, echo=FALSE, eval=TRUE}
 packages <- c("tidyverse", "prospectr", "measurements", "readxl", "stringr",
@@ -212,7 +212,7 @@ transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv"))
 knitr::kable(transvalues)
 ```
 
-```{r, warning=FALSE}
+```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
 # Reading soil information
 schiedung.info <- read_xlsx(paste0(dir, "/ID_DRIFT_all.xlsx"), sheet = 1)
 
@@ -271,7 +271,7 @@ qs::qsave(schiedung.soildata, soillab.qs, preset = "high")
 
 Mid-infrared (MIR) soil spectroscopy raw data (<https://doi.org/10.5281/zenodo.6024831>). Samples have different spectral range, therefore two spectral sets were formatted and binded together.
 
-```{r}
+```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
 # excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))
 
 # First dataset

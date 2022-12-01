@@ -44,7 +44,7 @@ Zenodo <https://doi.org/10.5281/zenodo.6024831>.
 Input datasets:  
 - `ID_DRIFT_all.xlsx`: excel file with site information;  
 - `ID_DRIFT_all.xlsx`: csv file with soil information;  
-- `XXX`: MIR spectral scans;
+- `Schiedung_opusimport.xlsx`: MIR spectral scans;
 
 Directory/folder path:
 
@@ -543,7 +543,7 @@ schiedung.mir %>%
 toc()
 ```
 
-    ## 9.294 sec elapsed
+    ## 9.401 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -551,8 +551,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2579355 137.8    4659662 248.9  4659662 248.9
-    ## Vcells 5477812  41.8   32023495 244.4 40029368 305.4
+    ## Ncells 2579362 137.8    4659674 248.9  4659674 248.9
+    ## Vcells 5477864  41.8   32023565 244.4 40029456 305.5
 
 ## References
 
