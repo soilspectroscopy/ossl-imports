@@ -1,0 +1,10 @@
+original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+BD_fine,bd,usda.a4,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a4_g.cm3
+TN,n.tot,ISO.13878,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_ISO.13878_w.pct
+TC,c.tot,ISO.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_ISO.10694_w.pct
+SOC,oc,ISO.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",oc_ISO.10694_w.pct
+pH_CaCl2_site,ph.cacl2,ISO.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_ISO.10390_index
+EC_CaCl2_site,ec,ISO.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ec_ISO.11265_ds.m
+clay_site,clay.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_ISO.11277_w.pct
+silt_site,silt.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_ISO.11277_w.pct
+sand_site,sand.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_ISO.11277_w.pct

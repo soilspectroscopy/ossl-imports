@@ -374,8 +374,6 @@ caf.availability %>%
   summarise(count = n())
 ```
 
-This summary shows that, at total, about 2k observations are available without duplicates. Originally 20k MIR scans are available but only about 10% has reference data.
-
 Plotting sites map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")

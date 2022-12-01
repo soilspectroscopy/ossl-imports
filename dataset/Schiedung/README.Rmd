@@ -24,9 +24,12 @@ editor_options:
 
 This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
 
-```{r, include=FALSE}
+```{r setup, include=FALSE}
 library(captioner)
 fig_nums <- captioner(prefix = "Fig.")
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+options(scipen = 999)
 ```
 
 ## The Schiedung et al. (2022) Soil Spectral Library inputs
@@ -36,348 +39,437 @@ Project: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)
 Last update: `r Sys.Date()`  
 Dataset: [SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#schiedung.ssl)
 
-```{r, include=FALSE}
-knitr::opts_chunk$set(message = FALSE)
-knitr::opts_chunk$set(warning = FALSE)
-```
+Mid-Infrared Spectra (MIRS) from Schiedung et al. (2022) representing high-latitude forest soil data. The SSL explained in detail in @Schiedung2022.
 
-Mid-Infrared Spectra (MIRS) from Schiedung et al. (2022) Soil Spectral Library explained in detail in @Schiedung2022.
+The dataset was shared by email, but a public version is available at Zenodo <https://doi.org/10.5281/zenodo.6024831>.
 
-```{r, echo=FALSE}
+Input datasets:  
+- `ID_DRIFT_all.xlsx`: excel file with site information;  
+- `ID_DRIFT_all.xlsx`: csv file with soil information;  
+- `XXX`: MIR spectral scans;
+
+```{r packages, include=TRUE, echo=FALSE, eval=TRUE}
 packages <- c("tidyverse", "prospectr", "measurements", "readxl", "stringr",
-              "olctools", "openssl", "tmap", "sf", "skimr",
-              "googledrive", "googlesheets4")
+              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
+              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc", "qs")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
-x <- lapply(packages, library, character.only = TRUE)
-```
-
-```{r, echo=FALSE, eval=FALSE}
+invisible(lapply(packages, library, character.only = TRUE))
 source("../../R-code/functions/SSL_functions.R")
 ```
 
 Directory/folder path:
 ```{r}
 dir = "/mnt/soilspec4gg/ossl/dataset/Schiedung/"
+tic()
 ```
 
 ## Data import
 
-The dataset was shared by email, but a public version is available at Zenodo <https://doi.org/10.5281/zenodo.6024831>.
+### Soil site information
 
 ```{r}
-# Checking shared files
-# list.files(dir)
-
-# Checking column description
-schiedung.desc <- read_xlsx(paste0(dir, "/Var_names_ID_DRIFT_all.xlsx"), sheet = 1)
-
 # Reading site information
 schiedung.info <- read_xlsx(paste0(dir, "/ID_DRIFT_all.xlsx"), sheet = 1)
-# names(schiedung.info)
+
+# Formatting to OSSL standard
+schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sample_point, and increment
+  dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>%
+  dplyr::rename(longitude.point_wgs84_dd = Latitute_DD, latitude.point_wgs84_dd = Longitute_DD) %>% # Author confused columns
+  dplyr::mutate(id.dataset.site_ascii_c = paste(EUP, sample_point, sep = ".")) %>%
+  dplyr::select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd, id.dataset.site_ascii_c) %>%
+  dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c),
+                id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+                id.project_ascii_c = "High-latitude forest soil data",
+                observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library',
+                observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io',
+                observation.date.begin_iso.8601_yyyy.mm.dd = "2019-07-01",
+                observation.date.end_iso.8601_yyyy.mm.dd = "2019-08-31",
+                pedon.taxa_usda_c = "",
+                layer.texture_usda_c = "",
+                horizon.designation_usda_c = "",
+                longitude.county_wgs84_dd = NA,
+                latitude.county_wgs84_dd = NA,
+                location.address_utf8_txt = "North Canada",
+                location.country_iso.3166_c = "CAN",
+                location.error_any_m = 30,
+                surveyor.title_utf8_txt = "Marcus Schiedung",
+                surveyor.contact_ietf_email = "marcus.schiedung@geo.uzh.ch",
+                surveyor.address_utf8_txt = 'University of Zurich, Winterthurerstrasse 190, 8057 Zurich, Switzerland',
+                dataset.title_utf8_txt = 'Schiedung et al. (2022)',
+                dataset.owner_utf8_txt = 'Schiedung et al. (2022)',
+                dataset.code_ascii_txt = 'SCHIEDUNG.SSL',
+                dataset.address_idn_url = 'https://zenodo.org/record/6024831',
+                dataset.license.title_ascii_txt = 'CC-BY',
+                dataset.license.address_idn_url = 'https://creativecommons.org/licenses/by/4.0/legalcode',
+                dataset.doi_idf_c = 'https://doi.org/10.5281/zenodo.6024831',
+                dataset.contact.name_utf8_txt = "Marcus Schiedung",
+                dataset.contact.email_ietf_email = "marcus.schiedung@geo.uzh.ch") %>%
+  dplyr::select(id.layer_uuid_c, # Following the sequence from ossl-manual
+                id.layer_local_c,
+                id.location_olc_c,
+                id.dataset.site_ascii_c,
+                id.project_ascii_c,
+                observation.date.begin_iso.8601_yyyy.mm.dd,
+                observation.date.end_iso.8601_yyyy.mm.dd,
+                longitude.point_wgs84_dd,
+                latitude.point_wgs84_dd,
+                pedon.taxa_usda_c,
+                layer.texture_usda_c,
+                horizon.designation_usda_c,
+                longitude.county_wgs84_dd,
+                latitude.county_wgs84_dd,
+                location.address_utf8_txt,
+                location.country_iso.3166_c,
+                location.error_any_m,
+                observation.ogc.schema.title_ogc_txt,
+                observation.ogc.schema_idn_url,
+                surveyor.title_utf8_txt,
+                surveyor.contact_ietf_email,
+                surveyor.address_utf8_txt,
+                dataset.title_utf8_txt,
+                dataset.owner_utf8_txt,
+                dataset.code_ascii_txt,
+                dataset.address_idn_url,
+                dataset.license.title_ascii_txt,
+                dataset.license.address_idn_url,
+                dataset.doi_idf_c,
+                dataset.contact.name_utf8_txt,
+                dataset.contact.email_ietf_email)
+
+# Saving version to dataset root dir
+site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
+qs::qsave(schiedung.sitedata, site.qs, preset = "high")
 ```
 
-Run once! Original naming of soil properties, descriptions, data types, and units. Run once and upload to Google Sheet for formatting and integrating with the OSSL. Requires Google authentication.
+### Soil lab information
 
-```{r, eval=FALSE, echo=TRUE}
-soillab.names <- schiedung.desc %>%
-  dplyr::rename(original_name = Variable, original_description = Description) %>%
-  dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>%
-  dplyr::mutate(comment = '')
+NOTE: The code chunk below this paragraph is hidden. Just run once for getting the original names of soil properties, descriptions, data types, and units. Run once and upload to Google Sheet for formatting and integrating with the OSSL. Requires Google authentication.
 
-readr::write_csv(soillab.names, paste0(getwd(), "/schiedung_soillab_names.csv"))
+<!-- ```{r, eval=FALSE, echo=TRUE} -->
+<!-- # Checking shared files -->
+<!-- # list.files(dir) -->
 
-# Uploading to google sheet
+<!-- # Checking column description -->
+<!-- schiedung.desc <- read_xlsx(paste0(dir, "/Var_names_ID_DRIFT_all.xlsx"), sheet = 1) -->
 
-# FACT CIN folder. Get ID for soildata importing table
-googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"))
+<!-- soillab.names <- schiedung.desc %>% -->
+<!--   dplyr::rename(original_name = Variable, original_description = Description) %>% -->
+<!--   dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>% -->
+<!--   dplyr::mutate(comment = '') -->
 
-OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM"
+<!-- readr::write_csv(soillab.names, paste0(getwd(), "/schiedung_soillab_names.csv")) -->
 
-# Checking metadata
-googlesheets4::as_sheets_id(OSSL.soildata.importing)
+<!-- # Uploading to google sheet -->
 
-# Checking readme
-googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
+<!-- # FACT CIN folder. Get ID for soildata importing table -->
+<!-- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA")) -->
 
-# Preparing soillab.names
-upload <- dplyr::as_tibble(soillab.names)
+<!-- OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM" -->
 
-# Uploading
-googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "Schiedung")
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
 
-# Checking metadata
-googlesheets4::as_sheets_id(OSSL.soildata.importing)
+<!-- # Checking readme -->
+<!-- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme') -->
+
+<!-- # Preparing soillab.names -->
+<!-- upload <- dplyr::as_tibble(soillab.names) -->
+
+<!-- # Uploading -->
+<!-- googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "Schiedung") -->
+
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- ``` -->
+
+NOTE: The code chunk below this paragraph is hidden. Run once for importing the transformation rules. The table can be edited online at Google Sheets. A copy is downloaded to github for archiving.
+
+<!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # Downloading from google sheet -->
+
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
+
+<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+
+<!-- # Preparing soillab.names -->
+<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "Schiedung") %>% -->
+<!--   filter(import == TRUE) %>% -->
+<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
+
+<!-- # Saving to folder -->
+<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- ``` -->
+
+Reading AFSIS1-to-OSSL transformation values:
+```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv"))
+knitr::kable(transvalues)
 ```
 
-<!-- ### Soil site information -->
+```{r, warning=FALSE}
+# Reading soil information
+schiedung.info <- read_xlsx(paste0(dir, "/ID_DRIFT_all.xlsx"), sheet = 1)
 
-<!-- ```{r} -->
-<!-- # Formatting to OSSL standard -->
+# Harmonization of names and units
+analytes.old.names <- transvalues %>%
+  pull(original_name)
 
-<!-- schiedung.soilsite <- schiedung.info %>% # Spectra ID is the merge of EUP, sample_point, and increment -->
-<!--   dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>% -->
-<!--   dplyr::rename(longitude_wgs84_dd = Latitute_DD, latitude_wgs84_dd = Longitute_DD) %>% # Author confused columns -->
-<!--   dplyr::mutate(id.user.site_ascii_c = paste(EUP, sample_point, sep = "."), # Unique locations -->
-<!--                 id.dataset.site_ascii_c = paste(EUP, sample_point, sep = ".")) %>% -->
-<!--   dplyr::select(id.layer_local_c, longitude_wgs84_dd, latitude_wgs84_dd, -->
-<!--                 id.user.site_ascii_c, id.dataset.site_ascii_c) %>% # Adding missing metadata -->
-<!--   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), -->
-<!--                 id.location_olc_c = olctools::encode_olc(latitude_wgs84_dd, longitude_wgs84_dd, 10), -->
-<!--                 observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library', -->
-<!--                 observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io', -->
-<!--                 observation.date.begin_iso.8601_yyyy.mm.dd = "2019.07.01", -->
-<!--                 observation.date.end_iso.8601_yyyy.mm.dd = "2019.08.31", -->
-<!--                 location.address_utf8_txt = "North Canada", -->
-<!--                 location.country_iso.3166_c = "CAN", -->
-<!--                 location.method_any_c = "GPS", -->
-<!--                 location.error_any_m = 5, # Check with Marcus -->
-<!--                 surveyor.title_utf8_txt = "Marcus Schiedung", -->
-<!--                 surveyor.contact_ietf_email = "marcus.schiedung@geo.uzh.ch", -->
-<!--                 surveyor.address_utf8_txt = 'Department of Geography, University of Zurich, Winterthurerstrasse 190, 8057 Zurich, Switzerland', -->
-<!--                 dataset.title_utf8_txt = 'Schiedung et al. (2022)', -->
-<!--                 dataset.owner_utf8_txt = 'Schiedung et al. (2022)', -->
-<!--                 dataset.code_ascii_txt = 'SCHIEDUNG.SSL', -->
-<!--                 dataset.address_idn_url = 'https://zenodo.org/record/6024831', -->
-<!--                 dataset.license.title_ascii_txt = 'CC-BY 4.0', -->
-<!--                 dataset.license.address_idn_url = 'https://creativecommons.org/licenses/by/4.0/legalcode', -->
-<!--                 dataset.doi_idf_c = 'https://doi.org/10.5281/zenodo.6024831', -->
-<!--                 dataset.contact.name_utf8_txt = "Marcus Schiedung", -->
-<!--                 dataset.contact.email_ietf_email = "marcus.schiedung@geo.uzh.ch", -->
-<!--                 id.project_ascii_c = "SCHIEDUNG", -->
-<!--                 pedon.taxa_usda_c = '') %>% -->
-<!--   dplyr::select(id.layer_uuid_c, # Following the sequence from ossl-manual -->
-<!--                 id.layer_local_c, -->
-<!--                 id.location_olc_c, -->
-<!--                 observation.ogc.schema.title_ogc_txt, -->
-<!--                 observation.ogc.schema_idn_url, -->
-<!--                 observation.date.begin_iso.8601_yyyy.mm.dd, -->
-<!--                 observation.date.end_iso.8601_yyyy.mm.dd, -->
-<!--                 location.address_utf8_txt, -->
-<!--                 location.country_iso.3166_c, -->
-<!--                 location.method_any_c, -->
-<!--                 surveyor.title_utf8_txt, -->
-<!--                 surveyor.contact_ietf_email, -->
-<!--                 surveyor.address_utf8_txt, -->
-<!--                 longitude_wgs84_dd, -->
-<!--                 latitude_wgs84_dd, -->
-<!--                 location.error_any_m, -->
-<!--                 dataset.title_utf8_txt, -->
-<!--                 dataset.owner_utf8_txt, -->
-<!--                 dataset.code_ascii_txt, -->
-<!--                 dataset.address_idn_url, -->
-<!--                 dataset.license.title_ascii_txt, -->
-<!--                 dataset.license.address_idn_url, -->
-<!--                 dataset.doi_idf_c, -->
-<!--                 dataset.contact.name_utf8_txt, -->
-<!--                 dataset.contact.email_ietf_email, -->
-<!--                 id.dataset.site_ascii_c, -->
-<!--                 id.user.site_ascii_c, -->
-<!--                 id.project_ascii_c, -->
-<!--                 pedon.taxa_usda_c) -->
-<!-- ``` -->
+analytes.new.names <- transvalues %>%
+  pull(ossl_name)
 
-<!-- Exporting soilsite data -->
+# Selecting and renaming
+schiedung.soildata <- schiedung.info %>%
+  mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>%
+  separate(increment, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>%
+  mutate(layer.upper.depth_usda_cm = as.numeric(layer.upper.depth_usda_cm),
+         layer.lower.depth_usda_cm = as.numeric(layer.lower.depth_usda_cm)) %>%
+  select(id.layer_local_c, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, all_of(analytes.old.names)) %>%
+  rename_with(~analytes.new.names, analytes.old.names) %>%
+  mutate_at(vars(-id.layer_local_c), as.numeric) %>%
+  as.data.frame()
 
-<!-- ```{r} -->
-<!-- soilsite.rds = paste0(dir, "/ossl_soilsite_v1.rds") -->
-<!-- saveRDS(schiedung.soilsite, soilsite.rds) -->
-<!-- ``` -->
+# Removing duplicates
+schiedung.soildata %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  group_by(repeats) %>%
+  summarise(count = n())
 
-<!-- ### Soil lab information -->
+# Getting the formulas
+functions.list <- transvalues %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(schiedung.soildata))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", "x", "x", .)
 
-<!-- ```{r, warning=FALSE} -->
-<!-- # names(schiedung.info) -->
+# Applying transformation rules
+schiedung.soildata.trans <- transform_values(df = schiedung.soildata,
+                                             out.name = names(schiedung.soildata),
+                                             in.name = names(schiedung.soildata),
+                                             fun.lst = functions.list)
 
-<!-- in.names <- c("BD_bulk", "BD_fine", -->
-<!--               "TN", "TC", "SOC", -->
-<!--               "pH_CaCl2_site", "EC_CaCl2_site", "eff_CEC_site", -->
-<!--               "clay_site", "silt_site", "sand_site") -->
+# Final soillab data
+schiedung.soildata <- schiedung.soildata.trans
 
-<!-- out.names <- c("bd.core_iso.11272.2017_gcm3", "bd.od_usda.3b2_gcm3", -->
-<!--                "n.tot_iso.13878.1998_wpct", "c.tot_iso.10694.1995_wpct", "oc_iso.10694.1995_wpct", -->
-<!--                "ph.cacl2_usda.4c1_index", "ec.w_usda.4f1_dsm", "ecec_usda.4b4_cmolkg", -->
-<!--                "clay.tot_iso.11277.2020_wpct", "silt.tot_iso.11277.2020_wpct", "sand.tot_iso.11277.2020_wpct") -->
+# Checking total number of observations
+schiedung.soildata %>%
+  distinct(id.layer_local_c) %>%
+  summarise(count = n())
+  
+# Saving version to dataset root dir
+soillab.qs = paste0(dir, "/ossl_soillab_v1.2.qs")
+qs::qsave(schiedung.soildata, soillab.qs, preset = "high")
+```
 
-<!-- schiedung.soillab <- schiedung.info %>% # Spectra ID is the merge of EUP, sample_point, and increment -->
-<!--   dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>% -->
-<!--   tidyr::separate(increment, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>% -->
-<!--   dplyr::mutate(layer.upper.depth_usda_cm = as.numeric(layer.upper.depth_usda_cm), -->
-<!--                 layer.lower.depth_usda_cm = as.numeric(layer.lower.depth_usda_cm)) %>% -->
-<!--   dplyr::rename_with(~out.names, all_of(in.names)) %>% -->
-<!--   dplyr::select(id.layer_local_c, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, all_of(out.names)) %>% -->
-<!--   dplyr::mutate_at(vars(-id.layer_local_c), as.numeric) %>% -->
-<!--   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1) -->
-<!-- ``` -->
+### Mid-infrared spectroscopy data
 
-<!-- Exporting soillab data -->
+Mid-infrared (MIR) soil spectroscopy raw data (<https://doi.org/10.5281/zenodo.6024831>). Samples have different spectral range, therefore two spectral sets were formatted and binded together.
 
-<!-- ```{r} -->
-<!-- soillab.rds = paste0(dir, "/ossl_soillab_v1.rds") -->
-<!-- saveRDS(schiedung.soillab, soillab.rds) -->
-<!-- ``` -->
+```{r}
+# excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))
 
-<!-- ### Mid-infrared spectroscopy data -->
+# First dataset
+schiedung.spec1 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 1)
+# schiedung.spec1 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment
 
-<!-- Mid-infrared (MIR) soil spectroscopy raw data (<https://doi.org/10.5281/zenodo.6024831>). Samples have different spectral range, therefore two spectral sets were formatted and binded together. -->
+# Removing filename column
+schiedung.spec1 <- schiedung.spec1 %>%
+  select(-filename) %>%
+  rename(id.layer_local_c = ID)
 
-<!-- Spec1: -->
+# Need to resample spectra
+old.wavenumber <- na.omit(as.numeric(names(schiedung.spec1)))
+new.wavenumbers <- rev(seq(600, 4000, by = 2))
 
-<!-- ```{r} -->
-<!-- # excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))  -->
+schiedung.mir1 <- schiedung.spec1 %>%
+  select(-id.layer_local_c) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = old.wavenumber, new.wav = new.wavenumbers, interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({schiedung.spec1 %>%
+      select(id.layer_local_c)}, .) %>%
+  select(id.layer_local_c, as.character(rev(new.wavenumbers)))
 
-<!-- schiedung.spec1 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 1) -->
-<!-- # schiedung.spec1 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment -->
+# Second dataset
+schiedung.spec2 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 2)
+# schiedung.spec2 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment
 
-<!-- # First column names -->
-<!-- names(schiedung.spec1[,1:10]) -->
+# Removing filename column
+schiedung.spec2 <- schiedung.spec2 %>%
+  select(-filename) %>%
+  rename(id.layer_local_c = ID)
 
-<!-- # Removing filename column -->
-<!-- schiedung.spec1 <- schiedung.spec1 %>% -->
-<!--   dplyr::select(-filename) -->
+# Need to resample spectra
+old.wavenumber <- na.omit(as.numeric(names(schiedung.spec2)))
+new.wavenumbers <- rev(seq(600, 4000, by = 2))
 
-<!-- # Checking spectral range and resolution -->
-<!-- spectra <- schiedung.spec1 %>% -->
-<!--   dplyr::select(-all_of(c("ID"))) -->
+schiedung.mir2 <- schiedung.spec2 %>%
+  select(-id.layer_local_c) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = old.wavenumber, new.wav = new.wavenumbers, interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({schiedung.spec2 %>%
+      select(id.layer_local_c)}, .) %>%
+  select(id.layer_local_c, as.character(rev(new.wavenumbers)))
 
-<!-- old.spectral.range <- as.numeric(names(spectra)) -->
-<!-- cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n") -->
-<!-- cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n") -->
+# Binding together and exporting
+schiedung.mir <- bind_rows(schiedung.mir1, schiedung.mir2) %>%
+  dplyr::mutate(id.layer_local_c = gsub("0-12", "0-15", id.layer_local_c)) %>%
+  dplyr::mutate(id.layer_local_c = gsub("16-28", "15-30", id.layer_local_c)) %>%
+  dplyr::mutate(id.layer_local_c = gsub("32-44", "30-45", id.layer_local_c)) %>%
+  dplyr::mutate(id.layer_local_c = gsub("48-60", "45-60", id.layer_local_c))
 
-<!-- # Resampling to 600-4000 interval -->
-<!-- new.spectral.range <- seq(4000, 600, by = -2) -->
+# Gaps
+scans.na.gaps <- schiedung.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({schiedung.mir %>% select(id.layer_local_c)}, .)
 
-<!-- new.spectra <- spectra %>% -->
-<!--   prospectr::resample(wav = old.spectral.range, new.wav = new.spectral.range, interpol = "spline") %>% -->
-<!--   tibble::as_tibble() -->
+# Extreme negative - irreversible erratic patterns
+scans.extreme.neg <- schiedung.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({schiedung.mir %>% select(id.layer_local_c)}, .)
 
-<!-- # Checking new range -->
-<!-- cat("New spectral range between ", range(as.numeric(names(new.spectra))), "cm-1 \n") -->
+# Extreme positive, irreversible erratic patterns
+scans.extreme.pos <- schiedung.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols({schiedung.mir %>% select(id.layer_local_c)}, .)
 
-<!-- # Preparing final spec 1 -->
-<!-- soilmir1 <- schiedung.spec1 %>% -->
-<!--   dplyr::select(all_of(c("ID"))) %>% -->
-<!--   dplyr::bind_cols(new.spectra) %>% -->
-<!--   dplyr::select(all_of(c("ID")), all_of(rev(as.character(new.spectral.range)))) -->
-<!-- ``` -->
+# Consistency summary - problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.layer_local_c")
 
-<!-- Spec2: -->
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
 
-<!-- ```{r} -->
-<!-- # excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))  -->
+# Renaming
+old.wavenumbers <- seq(600, 4000, by = 2)
+new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
 
-<!-- schiedung.spec2 <- read_xlsx(paste0(dir, "/Schiedung_opusimport.xlsx"), sheet = 2) -->
-<!-- # schiedung.spec2 %>% pull(ID) # ID is the merge of EUP, sample_point, and increment -->
+schiedung.mir <- schiedung.mir %>%
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
 
-<!-- # First column names -->
-<!-- names(schiedung.spec2[,1:10]) -->
+# Preparing metadata
+schiedung.mir.metadata <- schiedung.mir %>%
+  select(id.layer_local_c) %>%
+  mutate(id.scan_local_c = id.layer_local_c) %>%
+  mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2019-07-01"),
+         scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2019-08-31"),
+         scan.mir.model.name_utf8_txt = "Bruker Tensor 27",
+         scan.mir.model.code_any_c = "Bruker_Tensor_27",
+         scan.mir.method.light.source_any_c = "",
+         scan.mir.method.preparation_any_c = "",
+         scan.mir.license.title_ascii_txt = "CC-BY",
+         scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
+         scan.mir.doi_idf_c = 'https://doi.org/10.5281/zenodo.6024831',
+         scan.mir.contact.name_utf8_txt = "Marcus Schiedung",
+         scan.mir.contact.email_ietf_email = "marcus.schiedung@geo.uzh.ch")
 
-<!-- # Removing filename column -->
-<!-- schiedung.spec2 <- schiedung.spec2 %>% -->
-<!--   dplyr::select(-filename) -->
+# Final preparation
+schiedung.mir.export <- schiedung.mir.metadata %>%
+  left_join(schiedung.mir, by = "id.layer_local_c")
 
-<!-- # Checking spectral range and resolution -->
-<!-- spectra <- schiedung.spec2 %>% -->
-<!--   dplyr::select(-all_of(c("ID"))) -->
+# Saving version to dataset root dir
+soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
+qs::qsave(schiedung.mir.export, soilmir.qs, preset = "high")
+```
 
-<!-- old.spectral.range <- as.numeric(names(spectra)) -->
-<!-- cat("Spectral range between", range(old.spectral.range)[1], "and", range(old.spectral.range)[2], "cm-1 \n") -->
-<!-- cat("Spectral resolution is", old.spectral.range[2]-old.spectral.range[1], "cm-1 \n") -->
+### Quality control
 
-<!-- # Resampling to 600-4000 interval -->
-<!-- new.spectral.range <- seq(4000, 600, by = -2) -->
+The final table must be joined as:
 
-<!-- new.spectra <- spectra %>% -->
-<!--   prospectr::resample(wav = old.spectral.range, new.wav = new.spectral.range, interpol = "spline") %>% -->
-<!--   tibble::as_tibble() -->
+- MIR is used as first reference.
+- Then it is left joined with the site and soil lab data. This drop data without any scan.
 
-<!-- # Checking new range -->
-<!-- cat("New spectral range between ", range(as.numeric(names(new.spectra))), "cm-1 \n") -->
+The availabilty of data is summarised below:
+```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
+# Taking a few representative columns for checking the consistency of joins
+schiedung.availability <- schiedung.mir %>%
+  select(id.layer_local_c, scan_mir.600_abs) %>%
+  left_join({schiedung.sitedata %>%
+      select(id.layer_local_c, latitude.point_wgs84_dd)}, by = "id.layer_local_c") %>%
+  left_join({schiedung.soildata %>%
+      select(id.layer_local_c, ph.cacl2_ISO.10390_index)}, by = "id.layer_local_c") %>%
+  filter(!is.na(id.layer_local_c))
 
-<!-- # Preparing final spec 1 -->
-<!-- soilmir2 <- schiedung.spec2 %>% -->
-<!--   dplyr::select(all_of(c("ID"))) %>% -->
-<!--   dplyr::bind_cols(new.spectra) %>% -->
-<!--   dplyr::select(all_of(c("ID")), all_of(rev(as.character(new.spectral.range)))) -->
-<!-- ``` -->
+# Availability of information from schiedung
+schiedung.availability %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
 
-<!-- Binding together and exporting: -->
+# Repeats check - Duplicates are dropped
+schiedung.availability %>%
+  mutate_all(as.character) %>%
+  select(id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  group_by(column, value) %>%
+  summarise(repeats = n()) %>%
+  group_by(column, repeats) %>%
+  summarise(count = n())
+```
 
-<!-- ```{r} -->
-<!-- schiedung.mir <- bind_rows(soilmir1, soilmir2) %>% -->
-<!--   dplyr::rename(id.layer_local_c = ID) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("0-12", "0-15", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("16-28", "15-30", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("32-44", "30-45", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_local_c = gsub("48-60", "45-60", id.layer_local_c)) %>% -->
-<!--   dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), .before = 1) -->
+Plotting sites map:
+```{r map, include=TRUE, echo=TRUE, eval=TRUE}
+data("World")
 
-<!-- schiedung.mir <- schiedung.mir %>% -->
-<!--   rename_with(~paste0("scan_mir.", new.spectral.range, "_abs"), as.character(new.spectral.range)) -->
+points <- schiedung.sitedata %>%
+  filter(!is.na(longitude.point_wgs84_dd)) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
 
-<!-- soilmir.rds = paste0(dir, "/ossl_mir_v1.rds") -->
-<!-- saveRDS(schiedung.mir, soilmir.rds) -->
-<!-- ``` -->
+tmap_mode("plot")
 
-<!-- ### Quality control -->
+tm_shape(World) +
+  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+  tm_shape(points) +
+  tm_dots()
+```
 
-<!-- Checking IDs: -->
+Soil analytical data summary. Note: many scans could not be linked with the wetchem.
+```{r summary, include=TRUE, echo=TRUE, eval=TRUE}
+schiedung.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
 
-<!-- ```{r} -->
-<!-- # Checking if soil site ids are unique -->
-<!-- table(duplicated(schiedung.soilsite$id.layer_uuid_c)) -->
+MIR spectral visualization:
+```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+schiedung.mir %>%
+  select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+                      names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1) +
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) +
+  labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
+  theme_light()
+```
 
-<!-- # Checking if soilab ids are compatible -->
-<!-- table(schiedung.soilsite$id.layer_uuid_c %in% schiedung.soillab$id.layer_uuid_c) -->
+```{r}
+toc()
+rm(list = ls())
+gc()
+```
 
-<!-- # Checking if mir ids are compatible. In this case there 30 samples missing spectra -->
-<!-- table(schiedung.soilsite$id.layer_local_c %in% schiedung.mir$id.layer_local_c) -->
-<!-- ``` -->
-
-<!-- Plotting sites map: -->
-
-<!-- ```{r map} -->
-<!-- data("World") -->
-
-<!-- points <- schiedung.soilsite %>% -->
-<!--    st_as_sf(coords = c('longitude_wgs84_dd', 'latitude_wgs84_dd'), crs = 4326) -->
-
-<!-- tmap_mode("plot") -->
-
-<!-- tm_shape(World) + -->
-<!--   tm_polygons('#f0f0f0f0', border.alpha = 0.2) + -->
-<!--   tm_shape(points) + -->
-<!--   tm_dots() -->
-<!-- ``` -->
-
-<!-- Soil analytical data summary: -->
-
-<!-- ```{r} -->
-<!-- schiedung.soillab %>% -->
-<!--   skimr::skim() %>% -->
-<!--   dplyr::select(-numeric.hist, -complete_rate) -->
-<!-- ``` -->
-
-<!-- Spectral visualization: -->
-
-<!-- ```{r spec} -->
-<!-- schiedung.mir %>% -->
-<!--   tidyr::pivot_longer(-all_of(c("id.layer_uuid_c", "id.layer_local_c")), names_to = "wavenumber", values_to = "absorbance") %>% -->
-<!--   dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>% -->
-<!--   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>% -->
-<!--   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) + -->
-<!--   geom_line(alpha = 0.1) + -->
-<!--   scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) + -->
-<!--   labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") + -->
-<!--   theme_light() -->
-<!-- ``` -->
-
-<!-- ### Rendering report -->
-
-<!-- Exporting to md/html for GitHub. -->
-
-<!-- ```{r, eval=FALSE} -->
-<!-- rmarkdown::render("README.Rmd") -->
-<!-- ``` -->
-
-<!-- ## References -->
+## References
