@@ -1,21 +1,19 @@
 Dataset import: TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL
 ================
-Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman
-(<jsanderman@woodwellclimate.org>)
-10 May, 2022
+Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
+(<tom.hengl@opengeohub.org>), Jonathan Sanderman
+(<jsanderman@woodwellclimate.org>) -
+30 November, 2022
 
 
 
 -   [TanSIS, NiSIS and GhanSIS inputs](#tansis-nisis-and-ghansis-inputs)
 -   [Data import](#data-import)
-    -   [Soil site and laboratory data
-        import:](#soil-site-and-laboratory-data-import)
-        -   [Soil lab information](#soil-lab-information)
-        -   [Soil site information](#soil-site-information)
+    -   [Soil site information](#soil-site-information)
+    -   [Soil lab information](#soil-lab-information)
     -   [Mid-infrared spectroscopy
         data](#mid-infrared-spectroscopy-data)
     -   [Quality control](#quality-control)
-    -   [Distribution of points](#distribution-of-points)
 -   [References](#references)
 
 [<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
@@ -31,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-05-10  
+Last update: 2022-11-30  
 Dataset:
 [AFSIS2.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis2.ssl)
 
@@ -49,431 +47,588 @@ Soil-Plant Spectral Diagnostics Laboratory, Nairobi, and the Rothamsted
 Research. Coordinates for points are not provided and soil reference
 data is available only for a limited subset of points. Coordinates for
 TanSIS points are available with a different coding system via
-<https://registry.opendata.aws/afsis/>. From the 31,269 soil scans
-(“ZnSe”) only 820 (2.6%) have reference data.
+<https://registry.opendata.aws/afsis/>. From the 31,269 soil scans only
+820 (2.6%) have reference data.
 
-Directory/folder path
+Input datasets:  
+- `glob2rx("*samples.csv")`: Separate csv files with site and soil
+analytes;  
+- `afsis_mir_2013`: folder with MIR soil spectral data;  
+- `Calibration_MPA_NIR.csv`: VNIR soil spectral data;
+
+Directory/folder path:
 
 ``` r
 dir = "/mnt/soilspec4gg/ossl/dataset/AFSIS2/"
+tic()
 ```
 
 ## Data import
 
-### Soil site and laboratory data import:
-
-Read from multiple csv files, hopefully all consistent:
+### Soil site information
 
 ``` r
-afsis2.xy = plyr::rbind.fill(lapply(list.files(dir, pattern=glob2rx("*samples.csv"), full.names = TRUE), vroom::vroom))
+sample.files <- list.files(dir, pattern = glob2rx("*samples.csv"), full.names = T)
+
+samples <- sample.files %>%
+  purrr::map_dfr(fread, header = TRUE)
+
+# Importing AfSIS 1 to see if some site info is available
+afsis1.geo <- fread(paste0(dir, "/AfSIS1_georeferences.csv"))
+tansis.geo <- fread(paste0(dir, "/AfSIS2_TanSIS_georeferences.csv"))
+
+afsis1.geo <- afsis1.geo %>%
+  select(SSN, Latitude, Longitude, Depth, Scientist) %>%
+  rename(id.layer_local_c = SSN,
+         longitude.point_wgs84_dd = Longitude,
+         latitude.point_wgs84_dd = Latitude,
+         surveyor.title_utf8_txt = Scientist) %>%
+  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
+         layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
+         layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2011-01-01"),
+         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2013-12-31")) %>%
+  select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd,
+         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
+         observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
+         surveyor.title_utf8_txt)
+
+tansis.geo <- tansis.geo %>%
+  select(SSN, Latitude, Longitude, Depth, Scientist) %>%
+  mutate(SSN = gsub("_|-", "", SSN)) %>%
+  rename(id.layer_local_c = SSN,
+         longitude.point_wgs84_dd = Longitude,
+         latitude.point_wgs84_dd = Latitude,
+         surveyor.title_utf8_txt = Scientist) %>%
+  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
+         layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
+         layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-01-01"),
+         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-12-31")) %>%
+  select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd,
+         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
+         observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
+         surveyor.title_utf8_txt)
+
+# Removing unnecessary data
+reference.files <- list.files(dir, pattern = glob2rx("*reference.csv"), full.names = T)
+
+references <- reference.files %>%
+  purrr::map_dfr(fread, header = TRUE) %>%
+  mutate(SSN = str_to_upper(SSN))
+
+reference.ids <- references %>%
+  pull(SSN)
+
+# Joining both datasets
+afsis2.geo <- bind_rows(afsis1.geo, tansis.geo)
+
+afsis2.sitedata <- samples %>%
+  select(SSN, Country) %>%
+  left_join(afsis2.geo, by = c("SSN" = "id.layer_local_c")) %>%
+  mutate(SSN = str_to_upper(SSN)) %>%
+  rename(id.layer_local_c = SSN) %>%
+  filter(id.layer_local_c %in% reference.ids) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-01-01"),
+         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-12-31")) %>%
+  mutate(id.project_ascii_c = "TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL",
+         id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
+         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         layer.texture_usda_c = "",
+         horizon.designation_usda_c = "",
+         longitude.county_wgs84_dd = NA,
+         latitude.county_wgs84_dd = NA,
+         location.point.error_any_m = 30,
+         location.country_iso.3166_c = "",
+         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+         surveyor.title_utf8_txt = case_when(is.na(Country) ~ NA_character_,
+                                             Country == "Ghana" ~ "Teteh, Francis (CSIR)",
+                                             Country == "Nigeria" ~ "Vincent, Aduramigba-Modupe (Obafemi Awolowo University)",
+                                             Country == "Tanzania" ~ "Meliyo, Joel (TARI)",
+                                             TRUE ~ NA_character_),
+         surveyor.contact_ietf_email = "afsis.info@africasoils.net",
+         surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya",
+         dataset.title_utf8_txt = "TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL",
+         dataset.owner_utf8_txt = "the World Agroforestry Centre (ICRAF) and Rothamsted Research (RRES)",
+         dataset.code_ascii_c = "AFSIS2.SSL",
+         dataset.address_idn_url = "https://www.isric.org/explore/ISRIC-collections",
+         dataset.doi_idf_url = case_when(is.na(Country) ~ NA_character_,
+                                         Country == "Ghana" ~ "https://doi.org/10.34725/DVN/SPRSFN",
+                                         Country == "Nigeria" ~ "https://doi.org/10.34725/DVN/WLAKR2",
+                                         Country == "Tanzania" ~ "https://doi.org/10.34725/DVN/XUDGJY",
+                                         TRUE ~ NA_character_),
+         dataset.license.title_ascii_txt = "CC0",
+         dataset.license.address_idn_url = "https://creativecommons.org/publicdomain/zero/1.0/",
+         dataset.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)",
+         dataset.contact_ietf_email = "L.A.WINOWIECKI@cgiar.org") %>%
+  select(-Country)
+
+# Saving version to dataset root dir
+site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
+qs::qsave(afsis2.sitedata, site.qs, preset = "high")
 ```
 
-    ## Rows: 3,069
-    ## Columns: 4
-    ## Delimiter: ","
-    ## chr [4]: SSN, Study, Country, pref
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
+### Soil lab information
 
-    ## Rows: 1,490
-    ## Columns: 4
-    ## Delimiter: ","
-    ## chr [4]: SSN, Study, Country, pref
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
+NOTE: The code chunk below this paragraph is hidden. Just run once for
+getting the original names of soil properties, descriptions, data types,
+and units. Run once and upload to Google Sheet for formatting and
+integrating with the OSSL. Requires Google authentication.
 
-    ## Rows: 26,772
-    ## Columns: 4
-    ## Delimiter: ","
-    ## chr [4]: SSN, Study, Country, pref
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
+<!-- ```{r, eval=FALSE, echo=TRUE} -->
+<!-- # Getting soillab original variables -->
+<!-- variables.files = list.files(dir, glob2rx("0Variables Description*"), full.names=TRUE, recursive = TRUE) -->
+<!-- variables.files -->
+<!-- # GhanSIS -->
+<!-- readxl::excel_sheets(grep("GhanSIS", variables.files, value = T)) -->
+<!-- variables.names.GhanSIS <- readxl::read_xlsx(grep("GhanSIS", variables.files, value = T),sheet = 1) -->
+<!-- # NiSIS -->
+<!-- readxl::excel_sheets(grep("NiSIS", variables.files, value = T)) -->
+<!-- variables.names.NiSIS <- readxl::read_xlsx(grep("NiSIS", variables.files, value = T),sheet = 1) -->
+<!-- # TanSIS -->
+<!-- readxl::excel_sheets(grep("TanSIS", variables.files, value = T)) -->
+<!-- variables.names.TanSIS <- readxl::read_xlsx(grep("TanSIS", variables.files, value = T),sheet = 1) -->
+<!-- names(variables.names.TanSIS) -->
+<!-- # They all have the same soil properties -->
+<!-- soillab.names <- variables.names.TanSIS %>% -->
+<!--   dplyr::mutate(table = "GhanSIS;NiSIS;TanSIS", .before = 1) %>% -->
+<!--   dplyr::rename(original_name = `variable name`, original_description = `variable description`, -->
+<!--                 units = Units) %>% -->
+<!--   dplyr::mutate(comment = paste0(`method used`, "; ", `instrument used for analysis`)) %>% -->
+<!--   dplyr::select(table, original_name, original_description, units, comment) %>% -->
+<!--   dplyr::mutate(import = '', ossl_name = '', .after = original_name) -->
+<!-- readr::write_csv(soillab.names, paste0(getwd(), "/afsis2_soillab_names.csv")) -->
+<!-- # Uploading to google sheet -->
+<!-- # FACT CIN folder. Get ID for soildata importing table -->
+<!-- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA")) -->
+<!-- OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM" -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Checking readme -->
+<!-- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme') -->
+<!-- # Preparing soillab.names -->
+<!-- upload <- dplyr::as_tibble(soillab.names) -->
+<!-- # Uploading -->
+<!-- googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "AFSIS2") -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- ``` -->
+
+NOTE: The code chunk below this paragraph is hidden. Run once for
+importing the transformation rules. The table can be edited online at
+Google Sheets. A copy is downloaded to github for archiving.
+
+<!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # Downloading from google sheet -->
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
+<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Preparing soillab.names -->
+<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "AFSIS2") %>% -->
+<!--   filter(import == TRUE) %>% -->
+<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
+<!-- # Saving to folder -->
+<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- ``` -->
+
+Reading AFSIS1-to-OSSL transformation values:
 
 ``` r
-dim(afsis2.xy)
+transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv"))
+knitr::kable(transvalues)
 ```
 
-    ## [1] 31331     4
+| table                | original\_name | ossl\_abbrev | ossl\_method | ossl\_unit | ossl\_convert                                      | ossl\_name                |
+|:---------------------|:---------------|:-------------|:-------------|:-----------|:---------------------------------------------------|:--------------------------|
+| GhanSIS;NiSIS;TanSIS | pH             | ph.h2o       | usda.a268    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ph.h2o\_usda.a268\_index  |
+| GhanSIS;NiSIS;TanSIS | m3.Al          | al.ext       | usda.a1056   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | al.ext\_usda.a1056\_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.B           | b.ext        | mel3         | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | b.ext\_mel3\_mg.kg        |
+| GhanSIS;NiSIS;TanSIS | m3.Ca          | ca.ext       | usda.a1059   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ca.ext\_usda.a1059\_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Cu          | cu.ext       | usda.a1063   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | cu.ext\_usda.a1063\_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Fe          | fe.ext       | usda.a1064   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | fe.ext\_usda.a1064\_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.K           | k.ext        | usda.a1065   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | k.ext\_usda.a1065\_mg.kg  |
+| GhanSIS;NiSIS;TanSIS | m3.Mg          | mg.ext       | usda.a1066   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | mg.ext\_usda.a1066\_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Mn          | mn.ext       | usda.a1067   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | mn.ext\_usda.a1067\_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.S           | s.ext        | mel3         | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | s.ext\_mel3\_mg.kg        |
+| GhanSIS;NiSIS;TanSIS | m3.Zn          | zn.ext       | usda.a1073   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | zn.ext\_usda.a1073\_mg.kg |
+| GhanSIS;NiSIS;TanSIS | N              | n.tot        | usda.a623    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | n.tot\_usda.a623\_w.pct   |
+| GhanSIS;NiSIS;TanSIS | TC             | c.tot        | usda.a622    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | c.tot\_usda.a622\_w.pct   |
+| GhanSIS;NiSIS;TanSIS | SOC            | oc           | usda.c1059   | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | oc\_usda.c1059\_w.pct     |
+
+Preparing soil data from different files:
 
 ``` r
-## 31331     4
-summary(as.factor(afsis2.xy$Country))
+reference.files <- list.files(dir, pattern = glob2rx("*reference.csv"), full.names = T)
+
+afsis2.reference <- reference.files %>%
+  purrr::map_dfr(fread, header = TRUE)
+
+# Harmonization of names and units
+analytes.old.names <- transvalues %>%
+  filter(table == "GhanSIS;NiSIS;TanSIS") %>%
+  pull(original_name)
+
+analytes.new.names <- transvalues %>%
+  filter(table == "GhanSIS;NiSIS;TanSIS") %>%
+  pull(ossl_name)
+
+# Selecting and renaming
+afsis2.soildata <- afsis2.reference %>%
+  rename(id.layer_local_c = SSN) %>%
+  select(id.layer_local_c, all_of(analytes.old.names)) %>%
+  rename_with(~analytes.new.names, analytes.old.names) %>%
+  as.data.frame()
+
+# Removing duplicates
+# afsis2.soildata %>%
+#   group_by(id.layer_local_c) %>%
+#   summarise(repeats = n()) %>%
+#   group_by(repeats) %>%
+#   summarise(count = n())
+
+# Getting the formulas
+functions.list <- transvalues %>%
+  filter(table == "GhanSIS;NiSIS;TanSIS") %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(afsis2.soildata))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+afsis2.soildata.trans <- transform_values(df = afsis2.soildata,
+                                          out.name = names(afsis2.soildata),
+                                          in.name = names(afsis2.soildata),
+                                          fun.lst = functions.list)
+
+# Final soillab data
+afsis2.soildata <- afsis2.soildata.trans %>%
+  mutate(id.layer_local_c = str_to_upper(id.layer_local_c))
+
+# Checking total number of observations
+afsis2.soildata %>%
+  distinct(id.layer_local_c) %>%
+  summarise(count = n())
 ```
 
-    ##    Ghana  Nigeria Tanzania     NA's 
-    ##     3013     1458    26772       88
+    ##   count
+    ## 1   819
 
 ``` r
-#   Ghana  Nigeria Tanzania     NA's 
-#    3013     1458    26772       88 
-afsis2.xy$observation.date.begin_iso.8601_yyyy.mm.dd = ifelse(afsis2.xy$Country=="Ghana", "2018-01-01", "2019-01-01")
-afsis2.xy$observation.date.end_iso.8601_yyyy.mm.dd = ifelse(afsis2.xy$Country=="Ghana", "2018-12-31", "2019-12-31")
-afsis2.xy$sample.doi_idf_c = ifelse(afsis2.xy$Country=="Ghana", "10.34725/DVN/SPRSFN", ifelse(afsis2.xy$Country=="Nigeria", "10.34725/DVN/WLAKR2", "10.34725/DVN/XUDGJY"))
-afsis2.xy$sample.contact.name_utf8_txt = ifelse(afsis2.xy$Country=="Ghana", "Teteh, Francis (CSIR)", ifelse(afsis2.xy$Country=="Nigeria", "Vincent, Aduramigba-Modupe (Obafemi Awolowo University)", "Meliyo, Joel (TARI)"))
-## Laboratory data:
-afsis2.hor = plyr::rbind.fill(lapply(list.files(dir, pattern=glob2rx("*reference.csv"), full.names = TRUE), vroom::vroom))
-```
-
-    ## Rows: 210
-    ## Columns: 15
-    ## Delimiter: ","
-    ## chr [ 1]: SSN
-    ## dbl [14]: pH, N, TC, SOC, m3.Al, m3.B, m3.Ca, m3.Cu, m3.Fe, m3.K, m3.Mg, m3.Mn, m3.S, m3.Zn
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 148
-    ## Columns: 15
-    ## Delimiter: ","
-    ## chr [ 1]: SSN
-    ## dbl [14]: pH, N, TC, SOC, m3.Al, m3.B, m3.Ca, m3.Cu, m3.Fe, m3.K, m3.Mg, m3.Mn, m3.S, m3.Zn
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 461
-    ## Columns: 15
-    ## Delimiter: ","
-    ## chr [ 1]: SSN
-    ## dbl [14]: pH, N, TC, SOC, m3.Al, m3.B, m3.Ca, m3.Cu, m3.Fe, m3.K, m3.Mg, m3.Mn, m3.S, m3.Zn
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-``` r
-dim(afsis2.hor)
-```
-
-    ## [1] 819  15
-
-``` r
-## 819   15
-#summary(afsis2.hor$pH)
-#summary(afsis2.hor$SOC)
-tansis.xy = read.csv("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/tansis/Georeferences/georeferences.csv")
-## code mismatch
-tansis.xy$SSN = gsub("_", "", gsub("-", "", tansis.xy$SSN))
-#tansis.xy[tansis.xy$SSN=="TanSISSUBBRVKcqaDD",]
-#afsis2.hor[afsis2.hor$SSN=="TanSISSUBBRVKcqaDD",]
-afsis2t.df = plyr::join(plyr::join(afsis2.hor, afsis2.xy), tansis.xy)
-```
-
-    ## Joining by: SSN
-
-    ## Joining by: SSN, Country
-
-``` r
-afsis2t.df = afsis2t.df[!is.na(afsis2t.df$SOC),]
-#summary(afsis2t.df$Longitude)
-afsis2t.df$layer.upper.depth_usda_cm = 0
-afsis2t.df$layer.lower.depth_usda_cm = 20
-afsis2t.df$layer.upper.depth_usda_cm[grep("sub", afsis2t.df$SSN, ignore.case = TRUE)] = 20
-afsis2t.df$layer.lower.depth_usda_cm[grep("sub", afsis2t.df$SSN, ignore.case = TRUE)] = 50
-afsis2t.df$layer.sequence_usda_uint16 = 1
-afsis2t.df$layer.sequence_usda_uint16[grep("sub", afsis2t.df$SSN, ignore.case = TRUE)] = 2
-```
-
-#### Soil lab information
-
-Harmonization function:
-
-``` r
-in.name = c("pH", "N", "TC", "SOC", "m3.Al", "m3.B", "m3.Ca", "m3.Cu", "m3.Fe", 
-            "m3.K", "m3.Mg", "m3.Mn", "m3.S", "m3.Zn", "layer.upper.depth_usda_cm", 
-            "layer.lower.depth_usda_cm", "layer.sequence_usda_uint16", "Latitude", 
-            "Longitude", "observation.date.begin_iso.8601_yyyy.mm.dd", "observation.date.end_iso.8601_yyyy.mm.dd",
-            "Scientist", "sample.doi_idf_c", "sample.contact.name_utf8_txt")
-#in.name[which(!in.name %in% names(afsis2t.df))]
-afsis2.yw = as.data.frame(afsis2t.df[,in.name])
-out.name = c("ph.h2o_usda.4c1_index", "n.tot_usda.4h2_wpct", "c.tot_usda.4h2_wpct", "oc_usda.calc_wpct",
-             "al.meh3_usda.4d6_mgkg", "b.meh3_usda.4d6_mgkg", "ca.meh3_usda.4d6_mgkg", 
-             "cu.meh3_usda.4d6_mgkg", "fe.meh3_usda.4d6_mgkg", "k.meh3_usda.4d6_mgkg",
-             "mg.meh3_usda.4d6_mgkg", "mn.meh3_usda.4d6_mgkg", "s.meh3_usda.4d6_mgkg", 
-             "zn.meh3_usda.4d6_mgkg", "layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm", 
-             "layer.sequence_usda_uint16", "latitude_wgs84_dd", "longitude_wgs84_dd",
-             "observation.date.begin_iso.8601_yyyy.mm.dd", "observation.date.end_iso.8601_yyyy.mm.dd",
-            "surveyor.title_utf8_txt", "sample.doi_idf_c", "sample.contact.name_utf8_txt")
-## compare values
-#summary(afsis2.yw$Latitude)
-fun.lst = as.list(rep("x*1", length(in.name)))
-fun.lst[[which(in.name=="Scientist")]] = "paste(x)"
-fun.lst[[which(in.name=="sample.doi_idf_c")]] = "paste(x)"
-fun.lst[[which(in.name=="sample.contact.name_utf8_txt")]] = "paste(x)"
-fun.lst[[which(in.name=="observation.date.begin_iso.8601_yyyy.mm.dd")]] = "paste(x)"
-fun.lst[[which(in.name=="observation.date.end_iso.8601_yyyy.mm.dd")]] = "paste(x)"
-## save translation rules:
-#View(data.frame(in.name, out.name, unlist(fun.lst)))
-write.csv(data.frame(in.name, out.name, unlist(fun.lst)), "./afsis2_soilab_transvalues.csv")
-afsis2.soil = transvalues(afsis2.yw, out.name, in.name, fun.lst)
-afsis2.soil$id.layer_local_c = afsis2t.df$SSN
-#summary(duplicated(afsis2.soil$id.layer_local_c))
-## 1 duplicate
-```
-
-Exporting the table:
-
-``` r
-afsis2.soil$id.layer_uuid_c = openssl::md5(make.unique(paste0(afsis2.soil$id.layer_local_c)))
-afsis2.soil$sample.contact.email_ietf_email = "afsis.info@africasoils.net"
-x.na = soilab.name[which(!soilab.name %in% names(afsis2.soil))]
-if(length(x.na)>0){ for(i in x.na){ afsis2.soil[,i] <- NA } }
-soilab.rds = paste0(dir, "ossl_soillab_v1.rds")
-if(!file.exists(soilab.rds)){
-  saveRDS.gz(afsis2.soil[,soilab.name], soilab.rds)
-}
-```
-
-#### Soil site information
-
-``` r
-afsis2.site = as.data.frame(afsis2.soil[,c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm", 
-                                           "layer.sequence_usda_uint16", "latitude_wgs84_dd", "longitude_wgs84_dd",
-                                           "observation.date.begin_iso.8601_yyyy.mm.dd", "observation.date.end_iso.8601_yyyy.mm.dd",
-                                           "surveyor.title_utf8_txt", "id.layer_local_c")])
-afsis2.site$id.location_olc_c = olctools::encode_olc(afsis2.site$latitude_wgs84_dd, afsis2.site$longitude_wgs84_dd, 10)
-```
-
-Exporting the table:
-
-``` r
-afsis2.site$id.layer_uuid_c = openssl::md5(make.unique(paste0(afsis2.site$id.layer_local_c)))
-afsis2.site$observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library'
-afsis2.site$observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io'
-afsis2.site$dataset.title_utf8_txt = "TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL"
-afsis2.site$surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya"
-afsis2.site$dataset.code_ascii_c = "AFSIS2.SSL"
-afsis2.site$location.method_any_c = "GPS"
-afsis2.site$location.error_any_m = 30
-afsis2.site$dataset.license.title_ascii_txt = "CC0" 
-afsis2.site$dataset.license.address_idn_url = "https://creativecommons.org/publicdomain/zero/1.0/"
-afsis2.site$dataset.address_idn_url = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya"
-afsis2.site$dataset.owner_utf8_txt = "the World Agroforestry Centre (ICRAF) and Rothamsted Research (RRES)"
-afsis2.site$dataset.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)"
-afsis2.site$dataset.contact_ietf_email = "L.A.WINOWIECKI@cgiar.org"
-x.na = site.name[which(!site.name %in% names(afsis2.site))]
-if(length(x.na)>0){ for(i in x.na){ afsis2.site[,i] <- NA } }
-soilsite.rds = paste0(dir, "ossl_soilsite_v1.rds")
-if(!file.exists(soilsite.rds)){
-  saveRDS.gz(afsis2.site[,site.name], soilsite.rds)
-}
+# Saving version to dataset root dir
+soillab.qs = paste0(dir, "/ossl_soillab_v1.2.qs")
+qs::qsave(afsis2.soildata, soillab.qs, preset = "high")
 ```
 
 ### Mid-infrared spectroscopy data
 
-Mid-infrared (MIR) soil spectroscopy raw data (only limited number of
-samples come with reference):
-
 ``` r
-if(!exists("afsis2.mir")){
-  mir.afsis2.lst = list.files(dir, pattern=glob2rx("*_ZnSe_*.csv$"), full.names = TRUE, recursive = TRUE)
-  afsis2.mir = plyr::rbind.fill(lapply(mir.afsis2.lst, vroom::vroom))
-  ## subset to scans with laboratory data
-  afsis2.mir = afsis2.mir[which(afsis2.mir$SSN %in% afsis2t.df$SSN),]
-}
-dim(afsis2.mir)
+# Floating wavenumbers
+mir.files <- list.files(dir, pattern = glob2rx("*_ZnSe_*.csv$"), full.names = T)
+
+mir.scans <- mir.files %>%
+  purrr::map_dfr(fread, header = TRUE, colClasses = 'character')
+
+# # Some prefixes are wrong
+# mir.scans %>%
+#   mutate(prefix = str_sub(SSN, 1, 7)) %>%
+#   distinct(prefix)
+# 
+# mir.scans.ids <- mir.scans %>%
+#   select(SSN) %>%
+#   mutate(SSN = str_to_upper(SSN)) %>%
+#   mutate(SSN = gsub("_|-", "", SSN)) %>%
+#   mutate(SSN = gsub(" ", "", SSN)) %>%
+#   mutate(SSN = gsub("\\b(ASAG)", "TANSIS", SSN)) %>%
+#   mutate(SSN = gsub("\\b(ANSIS)", "TANSIS", SSN)) %>%
+#   mutate(SSN = gsub("\\b(ANSAG)", "TANSIS", SSN)) %>%
+#   mutate(SSN = gsub("\\b(TASAG)", "TANSIS", SSN)) %>%
+#   mutate(SSN = gsub("\\b(TANSAG)", "TANSIS", SSN)) %>%
+#   mutate(prefix = str_sub(SSN, 1, -9),
+#          sufix = str_sub(SSN, -8, -1))
+# 
+# mir.scans.ids %>%
+#   mutate(prefix = str_sub(SSN, 1, 6)) %>%
+#   distinct(prefix)
+# 
+# soildata.ids <- afsis2.soildata %>%
+#   select(id.layer_local_c) %>%
+#   mutate(id.layer_local_c = str_to_upper(id.layer_local_c)) %>%
+#   mutate(prefix = str_sub(id.layer_local_c, 1, -9),
+#          sufix = str_sub(id.layer_local_c, -8, -1))
+# 
+# soilsite.ids <- afsis2.sitedata %>%
+#   select(id.layer_local_c) %>%
+#   mutate(id.layer_local_c = str_to_upper(id.layer_local_c)) %>%
+#   mutate(prefix = str_sub(id.layer_local_c, 1, -9),
+#          sufix = str_sub(id.layer_local_c, -8, -1))
+# 
+# table(soildata.ids$sufix %in% mir.scans.ids$sufix)
+# table(soilsite.ids$sufix %in% mir.scans.ids$sufix)
+# table(soildata.ids$sufix %in% soilsite.ids$sufix)
+# table(soildata.ids$id.layer_local_c %in% soilsite.ids$id.layer_local_c)
+
+# Filtering
+reference.ids <- afsis2.soildata %>%
+  pull(id.layer_local_c)
+
+mir.scans <- mir.scans %>%
+  mutate(SSN = str_to_upper(SSN)) %>%
+  filter(SSN %in% reference.ids)
+
+old.names <- names(mir.scans)
+new.names <- gsub("X", "", old.names)
+
+afsis2.mir <- mir.scans %>%
+  rename_with(~new.names, old.names) %>%
+  rename(id.layer_local_c = SSN) %>%
+  mutate_at(vars(all_of(new.names[-1])), as.numeric)
+
+# Need to resample spectra
+old.wavenumber <- na.omit(as.numeric(names(afsis2.mir)))
+new.wavenumbers <- rev(seq(600, 4000, by = 2))
+
+afsis2.mir <- afsis2.mir %>%
+  select(-id.layer_local_c) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = old.wavenumber, new.wav = new.wavenumbers, interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({afsis2.mir %>%
+      select(id.layer_local_c)}, .) %>%
+  select(id.layer_local_c, as.character(rev(new.wavenumbers)))
+
+# Gaps
+scans.na.gaps <- afsis2.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({afsis2.mir %>% select(id.layer_local_c)}, .)
+
+# Extreme negative - irreversible erratic patterns
+scans.extreme.neg <- afsis2.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({afsis2.mir %>% select(id.layer_local_c)}, .)
+
+# Extreme positive, irreversible erratic patterns
+scans.extreme.pos <- afsis2.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols({afsis2.mir %>% select(id.layer_local_c)}, .)
+
+# Consistency summary - problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.layer_local_c")
+
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
 ```
 
-    ## [1]  781 1717
+    ## # A tibble: 0 × 2
+    ## # … with 2 variables: check <chr>, count <int>
 
 ``` r
-## 781 1701
-## only 781 sample with callibration data
-```
+# Renaming
+old.wavenumbers <- seq(600, 4000, by = 2)
+new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
 
-Add the [Universal Unique
-Identifier](https://cran.r-project.org/web/packages/uuid/) (UUI):
+afsis2.mir <- afsis2.mir %>%
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
 
-``` r
-afsis2.mir$id.scan_uuid_c = openssl::md5(make.unique(paste0("AFSIS2.SSL", afsis2.mir$SSN)))
-```
+# Preparing metadata
+afsis2.mir.metadata <- afsis2.mir %>%
+  select(id.layer_local_c) %>%
+  mutate(id.scan_local_c = id.layer_local_c) %>%
+  mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2019-01-01"),
+         scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2019-12-31"),
+         scan.mir.model.name_utf8_txt = "Bruker Alpha 1 ZnSe",
+         scan.mir.model.code_any_c = "Bruker_Alpha_1_ZnSe",
+         scan.mir.method.light.source_any_c = "",
+         scan.mir.method.preparation_any_c = "",
+         scan.mir.license.title_ascii_txt = "CC0",
+         scan.mir.license.address_idn_url = "https://creativecommons.org/publicdomain/zero/1.0/",
+         scan.mir.doi_idf_c = "https://doi.org/10.34725/DVN/XUDGJY",
+         scan.mir.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)",
+         scan.mir.contact.email_ietf_email = "L.A.WINOWIECKI@cgiar.org")
 
-Resampling the MIR spectra from the original window size to 2 cm-1:
+# Final preparation
+afsis2.mir.export <- afsis2.mir.metadata %>%
+  left_join(afsis2.mir, by = "id.layer_local_c")
 
-``` r
-sel.abs = names(afsis2.mir)[grep("^X", names(afsis2.mir))]
-## 1714
-afsis2.mir$id.scan_local_c = afsis2.mir$SSN
-afsis2.abs = afsis2.mir[,c("id.scan_uuid_c", "SSN", "id.scan_local_c", sel.abs)]
-dim(afsis2.abs)
-```
-
-    ## [1]  781 1717
-
-Check values:
-
-``` r
-wav.mir = as.numeric(gsub("X", "", sel.abs)) # Get wavelength only
-#summary(wav.mir)
-# Creating a matrix with only spectral values to resample it
-afsis2.mir.spec = as.matrix(afsis2.abs[,sel.abs])
-colnames(afsis2.mir.spec) = wav.mir
-rownames(afsis2.mir.spec) = afsis2.abs$id.scan_uuid_c
-samples.na.gaps = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
-samples.negative = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0, na.rm=TRUE)/length(j), 3) })
-sum(samples.negative>0)
-```
-
-    ## [1] 0
-
-``` r
-samples.extreme = apply(afsis2.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3, na.rm=TRUE)/length(j), 3) })
-sum(samples.extreme>0)
-```
-
-    ## [1] 64
-
-``` r
-afsis2.mir.f = prospectr::resample(afsis2.mir.spec, wav.mir, seq(600, 4000, 2)) 
-afsis2.mir.f = round(as.data.frame(afsis2.mir.f)*1000)
-mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
-colnames(afsis2.mir.f) = mir.n
-#summary(afsis2.mir.f$scan_mir.602_abs)
-afsis2.mir.f$id.scan_uuid_c = afsis2.abs$id.scan_uuid_c
-```
-
-Plotting MIR spectra to see if there are still maybe negative values in
-the table:
-
-``` r
-matplot(y=as.vector(t(afsis2.mir.f[250,mir.n])), x=seq(600, 4000, 2),
-        ylim = c(0,3000),
-        type = 'l', 
-        xlab = "Wavelength", 
-        ylab = "Absorbance"
-        )
-```
-
-![](README_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
-
-Export final MIR table:
-
-``` r
-afsis2.mir.f$id.layer_local_c = plyr::join(afsis2.mir.f["id.scan_uuid_c"], afsis2.abs[c("id.scan_uuid_c","SSN")])$SSN
-```
-
-    ## Joining by: id.scan_uuid_c
-
-``` r
-afsis2.mir.f$id.scan_local_c = plyr::join(afsis2.mir.f["id.scan_uuid_c"], afsis2.abs[c("id.scan_uuid_c","id.scan_local_c")])$id.scan_local_c
-```
-
-    ## Joining by: id.scan_uuid_c
-
-``` r
-afsis2.mir.f$id.layer_uuid_c = plyr::join(afsis2.mir.f["id.layer_local_c"], afsis2.site[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
-```
-
-    ## Joining by: id.layer_local_c
-
-``` r
-summary(is.na(afsis2.mir.f$id.layer_uuid_c))
-```
-
-    ##    Mode   FALSE 
-    ## logical     781
-
-``` r
-afsis2.mir.f$model.name_utf8_txt = "Bruker Alpha 1_FT-MIR_Zn Se"
-afsis2.mir.f$model.code_any_c = "Bruker_Alpha1_FT.MIR.Zn.Se"
-afsis2.mir.f$method.light.source_any_c = ""
-afsis2.mir.f$method.preparation_any_c = ""
-afsis2.mir.f$scan.file_any_c = ""
-afsis2.mir.f$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2019-01-01")
-afsis2.mir.f$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2019-12-31")
-afsis2.mir.f$scan.license.title_ascii_txt = "CC0"
-afsis2.mir.f$scan.license.address_idn_url = "https://creativecommons.org/publicdomain/zero/1.0/"
-afsis2.mir.f$scan.doi_idf_c = plyr::join(afsis2.mir.f["id.layer_local_c"], afsis2.soil[c("id.layer_local_c","sample.doi_idf_c")], match="first")$sample.doi_idf_c
-```
-
-    ## Joining by: id.layer_local_c
-
-``` r
-afsis2.mir.f$scan.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)"
-afsis2.mir.f$scan.contact.email_ietf_email = "L.A.WINOWIECKI@cgiar.org"
-afsis2.mir.f$scan.mir.nafreq_ossl_pct = samples.na.gaps
-afsis2.mir.f$scan.mir.negfreq_ossl_pct = samples.negative
-afsis2.mir.f$scan.mir.extfreq_ossl_pct = samples.extreme
-```
-
-Save to RDS file:
-
-``` r
-x.na = mir.name[which(!mir.name %in% names(afsis2.mir.f))]
-if(length(x.na)>0){ for(i in x.na){ afsis2.mir.f[,i] <- NA } }
-#str(afsis2.mir.f[,mir.name[1:24]])
-mir.rds = paste0(dir, "ossl_mir_v1.rds")
-if(!file.exists(mir.rds)){
-  saveRDS.gz(afsis2.mir.f[,mir.name], mir.rds)
-}
+# Saving version to dataset root dir
+soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
+qs::qsave(afsis2.mir.export, soilmir.qs, preset = "high")
 ```
 
 ### Quality control
 
-Check if some points don’t have any spectral scans:
+The final table must be joined as:
+
+-   MIR is used as first reference.
+-   Then it is left joined with the site and soil lab data. This drop
+    data without any scan.
+
+The availabilty of data is summarised below:
 
 ``` r
-str(afsis2.mir.f$id.scan_uuid_c)
+# Taking a few representative columns for checking the consistency of joins
+afsis2.availability <- afsis2.mir %>%
+  select(id.layer_local_c, scan_mir.600_abs) %>%
+  left_join({afsis2.sitedata %>%
+      select(id.layer_local_c, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
+  left_join({afsis2.soildata %>%
+      select(id.layer_local_c, ph.h2o_usda.a268_index)}, by = "id.layer_local_c") %>%
+  filter(!is.na(id.layer_local_c))
+
+# Availability of information from afsis2
+afsis2.availability %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
 ```
 
-    ##  'hash' chr [1:781] "f624677938a287dabe2ad8e8018dd7ac" "0c9923d2acb084006badb5035e36526f" "c81bc07e4cee41368c9e9363867e2006" ...
+    ## # A tibble: 4 × 2
+    ##   column                    count
+    ##   <chr>                     <int>
+    ## 1 id.layer_local_c            394
+    ## 2 layer.upper.depth_usda_cm    25
+    ## 3 ph.h2o_usda.a268_index      392
+    ## 4 scan_mir.600_abs            394
 
 ``` r
-summary(is.na(afsis2.mir.f$id.scan_uuid_c))
+# Repeats check - Duplicates are dropped
+afsis2.availability %>%
+  mutate_all(as.character) %>%
+  select(id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  group_by(column, value) %>%
+  summarise(repeats = n()) %>%
+  group_by(column, repeats) %>%
+  summarise(count = n())
 ```
 
-    ##    Mode   FALSE 
-    ## logical     781
+    ## # A tibble: 1 × 3
+    ## # Groups:   column [1]
+    ##   column           repeats count
+    ##   <chr>              <int> <int>
+    ## 1 id.layer_local_c       1   394
+
+This summary shows that, at total, about 2k observations are available
+without duplicates. Originally 20k MIR scans are available but only
+about 10% has reference data.
+
+Plotting sites map:
 
 ``` r
-mis.r = afsis2.mir.f$id.layer_uuid_c %in% afsis2.site$id.layer_uuid_c
-summary(mis.r)
+data("World")
+
+points <- afsis2.sitedata %>%
+  filter(!is.na(longitude.point_wgs84_dd)) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+
+tmap_mode("plot")
+
+tm_shape(World) +
+  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+  tm_shape(points) +
+  tm_dots()
 ```
 
-    ##    Mode    TRUE 
-    ## logical     781
+![](README_files/figure-gfm/map-1.png)<!-- -->
 
-### Distribution of points
-
-We can plot an world map showing distribution of the sampling locations
-for the AfSIS-2 points (only Tanzania has provided coordinates).
+Soil analytical data summary. Note: many scans could not be linked with
+the wetchem.
 
 ``` r
-afsis2.map = NULL
-library(maptools)
+afsis2.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
 ```
 
-    ## Checking rgeos availability: TRUE
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 819        |
+| Number of columns                                | 15         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| factor                                           | 1          |
+| numeric                                          | 14         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
 
-    ## 
-    ## Attaching package: 'maptools'
+Data summary
 
-    ## The following object is masked from 'package:Hmisc':
-    ## 
-    ##     label
+**Variable type: factor**
+
+| skim\_variable     | n\_missing | ordered | n\_unique | top\_counts                    |
+|:-------------------|-----------:|:--------|----------:|:-------------------------------|
+| id.layer\_local\_c |          0 | FALSE   |       819 | GHB: 1, GHB: 1, GHB: 1, GHB: 1 |
+
+**Variable type: numeric**
+
+| skim\_variable            | n\_missing |    mean |      sd |    p0 |    p25 |    p50 |     p75 |     p100 |
+|:--------------------------|-----------:|--------:|--------:|------:|-------:|-------:|--------:|---------:|
+| ph.h2o\_usda.a268\_index  |         11 |    6.31 |    0.80 |  4.10 |   5.80 |   6.34 |    6.76 |     8.72 |
+| al.ext\_usda.a1056\_mg.kg |          1 |  766.22 |  321.64 | 18.00 | 521.25 | 769.50 |  956.00 |  1851.00 |
+| b.ext\_mel3\_mg.kg        |        526 |    1.79 |    0.70 |  0.30 |   1.00 |   2.00 |    2.00 |     4.00 |
+| ca.ext\_usda.a1059\_mg.kg |          1 | 1484.03 | 1801.00 | 12.00 | 404.00 | 858.50 | 1961.50 | 21565.00 |
+| cu.ext\_usda.a1063\_mg.kg |         15 |    2.22 |    2.41 |  0.03 |   0.53 |   1.40 |    3.16 |    18.19 |
+| fe.ext\_usda.a1064\_mg.kg |          1 |  123.62 |   77.15 | 13.20 |  78.10 | 103.05 |  145.65 |   578.00 |
+| k.ext\_usda.a1065\_mg.kg  |          2 |  280.76 |  426.69 |  5.00 |  51.00 | 125.00 |  316.00 |  3600.00 |
+| mg.ext\_usda.a1066\_mg.kg |          1 |  304.29 |  365.74 |  2.00 |  89.00 | 190.00 |  368.75 |  3241.00 |
+| mn.ext\_usda.a1067\_mg.kg |          1 |  154.51 |  120.37 |  0.70 |  58.70 | 129.55 |  225.90 |   741.10 |
+| s.ext\_mel3\_mg.kg        |          9 |    8.57 |   18.51 |  1.00 |   3.00 |   5.00 |    8.00 |   266.00 |
+| zn.ext\_usda.a1073\_mg.kg |         29 |    1.79 |    3.17 |  0.06 |   0.40 |   0.90 |    2.10 |    48.79 |
+| n.tot\_usda.a623\_w.pct   |          0 |    0.10 |    0.08 |  0.01 |   0.05 |   0.08 |    0.13 |     0.53 |
+| c.tot\_usda.a622\_w.pct   |          0 |    1.28 |    1.04 |  0.10 |   0.58 |   0.99 |    1.66 |     7.15 |
+| oc\_usda.c1059\_w.pct     |          0 |    1.26 |    1.01 |  0.10 |   0.58 |   0.99 |    1.62 |     7.09 |
+
+MIR spectral visualization:
 
 ``` r
-data(wrld_simpl)
-afr = wrld_simpl[wrld_simpl$REGION==2,]
-mapWorld = borders(afr, colour = 'gray50', fill = 'gray50')
-afsis2.map = ggplot() + mapWorld
-afsis2.map = afsis2.map + geom_point(aes(x=afsis2.site$longitude_wgs84_dd, y=afsis2.site$latitude_wgs84_dd), color = 'blue', shape = 18, size=.9) + coord_fixed(ratio=1.1)
-afsis2.map
+afsis2.mir %>%
+  select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+                      names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1) +
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) +
+  labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
+  theme_light()
 ```
 
-    ## Warning: Removed 419 rows containing missing values (geom_point).
-
-![](README_files/figure-gfm/afsis2.pnts_sites-1.png)<!-- -->
-
-Fig. 1: AfSIS-2 locations of sites in Africa.
+![](README_files/figure-gfm/mir_plot-1.png)<!-- -->
 
 ``` r
-#save.image.pigz(file=paste0(dir, "AFSIS2.RData"), n.cores=32)
-#rmarkdown::render("dataset/AFSIS2/README.Rmd")
+toc()
 ```
+
+    ## 42.168 sec elapsed
+
+``` r
+rm(list = ls())
+gc()
+```
+
+    ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
+    ## Ncells  2611279 139.5   13566682  724.6  16958352  905.7
+    ## Vcells 55607542 424.3  186651123 1424.1 186651123 1424.1
 
 ## References
 

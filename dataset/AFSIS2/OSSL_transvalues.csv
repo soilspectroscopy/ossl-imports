@@ -1,0 +1,15 @@
+table,original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+GhanSIS;NiSIS;TanSIS,pH,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+GhanSIS;NiSIS;TanSIS,m3.Al,al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a1056_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.B,b.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",b.ext_mel3_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Ca,ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a1059_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Cu,cu.ext,usda.a1063,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cu.ext_usda.a1063_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Fe,fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",fe.ext_usda.a1064_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.K,k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a1065_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Mg,mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a1066_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Mn,mn.ext,usda.a1067,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mn.ext_usda.a1067_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.S,s.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",s.ext_mel3_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Zn,zn.ext,usda.a1073,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",zn.ext_usda.a1073_mg.kg
+GhanSIS;NiSIS;TanSIS,N,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_usda.a623_w.pct
+GhanSIS;NiSIS;TanSIS,TC,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_usda.a622_w.pct
+GhanSIS;NiSIS;TanSIS,SOC,oc,usda.c1059,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",oc_usda.c1059_w.pct

@@ -1,0 +1,19 @@
+table,original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+ICRAF_ISRIC_reference_data.csv,pH (H2O),ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+ICRAF_ISRIC_reference_data.csv,pH (CaCl2),ph.cacl2,usda.a481,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_usda.a481_index
+ICRAF_ISRIC_reference_data.csv,CaCO3,caco3,usda.a54,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",caco3_usda.a54_w.pct
+ICRAF_ISRIC_reference_data.csv,Org C,oc,usda.c1059,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",oc_usda.c1059_w.pct
+ICRAF_ISRIC_reference_data.csv,Ca,ca.ext,usda.a722,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a722_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Mg,mg.ext,usda.a724,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a724_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Na,na.ext,usda.a726,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a726_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,K,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a725_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Exch acid,acidity,usda.a795,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",acidity_usda.a795_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Exch Al,al.ext,usda.a69,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a69_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,CEC soil,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_usda.a723_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Tot S,sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct
+ICRAF_ISRIC_reference_data.csv,Tot Si,silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct
+ICRAF_ISRIC_reference_data.csv,Clay,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct
+ICRAF_ISRIC_reference_data.csv,BD,bd,usda.a21,g.cm3,"ifelse(as.numeric(x) < 0.05, NA, as.numeric(x)*1)",bd_usda.a21_g.cm3
+ICRAF_ISRIC_reference_data.csv,pF2.0,wr.10kPa,usda.a8,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.10kPa_usda.a8_w.pct
+ICRAF_ISRIC_reference_data.csv,pF2.7,wr.33kPa,usda.a9,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.33kPa_usda.a9_w.pct
+ICRAF_ISRIC_reference_data.csv,pF4.2,wr.1500kPa,usda.a417,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.1500kPa_usda.a417_w.pct

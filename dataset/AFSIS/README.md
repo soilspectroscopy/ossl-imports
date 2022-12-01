@@ -1,21 +1,19 @@
 Dataset import: Africa Soil Information Service (AfSIS-I) SSL
 ================
-Tomislav Hengl (<tom.hengl@opengeohub.org>) and Jonathan Sanderman
-(<jsanderman@woodwellclimate.org>)
-07 May, 2022
+Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
+(<tom.hengl@opengeohub.org>), Jonathan Sanderman
+(<jsanderman@woodwellclimate.org>) -
+30 November, 2022
 
 
 
 -   [AfSIS-1 inputs](#afsis-1-inputs)
 -   [Data import](#data-import)
-    -   [Soil site and laboratory data
-        import:](#soil-site-and-laboratory-data-import)
-        -   [Soil lab information](#soil-lab-information)
-        -   [Soil site information](#soil-site-information)
+    -   [Soil site information](#soil-site-information)
+    -   [Soil lab information](#soil-lab-information)
     -   [Mid-infrared spectroscopy
         data](#mid-infrared-spectroscopy-data)
     -   [Quality control](#quality-control)
-    -   [Distribution of points](#distribution-of-points)
 -   [References](#references)
 
 [<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
@@ -31,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-05-07  
+Last update: 2022-11-30  
 Dataset:
 [AFSIS1.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis1.ssl)
 
@@ -41,558 +39,543 @@ Described in detail in [Towett et al.](#ref-towett2015total)
 ([2015](#ref-towett2015total)) and [Vagen et al.](#ref-Vagen_2020)
 ([2020](#ref-Vagen_2020)).
 
+Input datasets:  
+- `AfSIS_reference.csv`: Database with site and soil analytes;  
+- `afsis_mir_2013`: folder with MIR soil spectral data;  
+- `Calibration_MPA_NIR.csv`: VNIR soil spectral data;
+
 The dataset has two versions one published via the [World Agroforestry
 website](https://doi.org/10.34725/DVN/QXCWP1), one via AWS
-(<https://registry.opendata.aws/afsis/>). A copy of AfSIS SSL data is
-also available via
-<https://github.com/laura-summerauer/ssl-central-africa>.
+(<https://registry.opendata.aws/afsis/>).
 
 Directory/folder path
 
 ``` r
 dir = "/mnt/soilspec4gg/ossl/dataset/AFSIS/"
+tic()
 ```
 
 ## Data import
 
-### Soil site and laboratory data import:
+### Soil site information
 
 ``` r
-afsis1.xy = read.csv("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/2009-2013/Georeferences/georeferences.csv")
-afsis1.xy$observation.date.begin_iso.8601_yyyy.mm.dd = "2011-12-01"
-afsis1.xy$observation.date.end_iso.8601_yyyy.mm.dd = "2013-12-01"
-#afsis1.lst = list.files("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/2009-2013/Wet_Chemistry", pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
-#afsis1.hor = plyr::rbind.fill(lapply(afsis1.lst, read.csv))
-afsis1.hor = read.csv(paste0(dir, "AFSIS_ICRAFwetchem.csv"))
-tansis.xy = read.csv("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/tansis/Georeferences/georeferences.csv")
-#summary(tansis.xy$Sampling.date)
-tansis.xy$observation.date.begin_iso.8601_yyyy.mm.dd = "2018-01-01"
-tansis.xy$observation.date.end_iso.8601_yyyy.mm.dd = "2018-12-01"
-tansis.lst = list.files("/mnt/diskstation/data/Soil_points/AF/AfSIS_SSL/tansis/Wet_Chemistry", pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
-tansis.hor = plyr::rbind.fill(lapply(tansis.lst, read.csv))
-## bind everything into single table
-afsis1t.df = plyr::rbind.fill(list(plyr::join(afsis1.hor, afsis1.xy, by="SSN"), plyr::join(tansis.hor, tansis.xy, by="SSN")))
-afsis1t.df$layer.upper.depth_usda_cm = ifelse(afsis1t.df$Depth=="sub", 20, 0)
-afsis1t.df$layer.lower.depth_usda_cm = ifelse(afsis1t.df$Depth=="sub", 50, 20)
-afsis1t.df$layer.sequence_usda_uint16 = ifelse(afsis1t.df$Depth=="sub", 2, 1)
-summary(afsis1t.df$Acidified.carbon)
+# AfIS1 site data
+afsis1.geo <- fread(paste0(dir, "/georeferences_2013.csv"))
+
+afsis1.geo <- afsis1.geo %>%
+  select(SSN, Latitude, Longitude, Depth, Scientist) %>%
+  rename(id.layer_local_c = SSN,
+         longitude.point_wgs84_dd = Longitude,
+         latitude.point_wgs84_dd = Latitude,
+         surveyor.title_utf8_txt = Scientist) %>%
+  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
+         layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
+         layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2011-01-01"),
+         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2013-12-31")) %>%
+  select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd,
+         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
+         observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
+         surveyor.title_utf8_txt)
+
+# Preparing dataset
+afsis1.sitedata <- afsis1.geo %>%
+  mutate(id.project_ascii_c = "Africa Soil Information Service (AfSIS-1)",
+         id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
+         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         layer.texture_usda_c = "",
+         horizon.designation_usda_c = "",
+         longitude.county_wgs84_dd = NA,
+         latitude.county_wgs84_dd = NA,
+         location.point.error_any_m = 30,
+         location.country_iso.3166_c = "",
+         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+         surveyor.contact_ietf_email = "afsis.info@africasoils.net",
+         surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya",
+         dataset.title_utf8_txt = "Africa Soil Information Service (AfSIS-1)",
+         dataset.owner_utf8_txt = "ICRAF), CROPNUTS, RRES",
+         dataset.code_ascii_c = "AFSIS1.SSL",
+         dataset.address_idn_url = "https://www.isric.org/explore/ISRIC-collections",
+         dataset.doi_idf_url = "https://doi.org/10.1016/j.geodrs.2015.06.002",
+         dataset.license.title_ascii_txt = "ODC Open Database License",
+         dataset.license.address_idn_url = "https://opendatacommons.org/licenses/odbl/",
+         dataset.contact.name_utf8_txt = "Keith Shepherd",
+         dataset.contact_ietf_email = "afsis.info@africasoils.net")
+
+# Removing duplicates
+afsis1.sitedata %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  group_by(repeats) %>%
+  summarise(count = n())
 ```
 
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##  0.0000  0.3935  0.7267  1.1756  1.4601 10.9342     224
+    ## # A tibble: 1 × 2
+    ##   repeats count
+    ##     <int> <int>
+    ## 1       1  1843
 
 ``` r
-## remove empty columns:
-afsis1t.df = afsis1t.df[,-which(sapply(afsis1t.df, function(i){sum(!is.na(i))<100}))]
-dim(afsis1t.df)
+dupli.ids <- afsis1.sitedata %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(id.layer_local_c)
+
+afsis1.sitedata <- afsis1.sitedata %>%
+  filter(!(id.layer_local_c %in% dupli.ids))
+
+# Removing rows without spatial coordinates
+afsis1.sitedata <- afsis1.sitedata %>%
+  filter(!(is.na(longitude.point_wgs84_dd) & is.na(latitude.point_wgs84_dd)))
+
+# Saving version to dataset root dir
+site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
+qs::qsave(afsis1.sitedata, site.qs, preset = "high")
 ```
 
-    ## [1] 2131   85
+### Soil lab information
 
-#### Soil lab information
+NOTE: The code chunk below this paragraph is hidden. Just run once for
+getting the original names of soil properties, descriptions, data types,
+and units. Run once and upload to Google Sheet for formatting and
+integrating with the OSSL. Requires Google authentication.
 
-Harmonization function:
+<!-- ```{r, eval=FALSE, echo=TRUE} -->
+<!-- # Getting soillab original variables -->
+<!-- variables.file = readr::read_csv(paste0(dir, "/AfSIS_reference.csv")) -->
+<!-- # They all have the same soil properties -->
+<!-- soillab.names <- variables.file %>% -->
+<!--   names(.) %>% -->
+<!--   tibble(original_name = .) %>% -->
+<!--   dplyr::mutate(table = 'AfSIS_reference.csv', .before = 1) %>% -->
+<!--   dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>% -->
+<!--   dplyr::mutate(comment = '') -->
+<!-- readr::write_csv(soillab.names, paste0(getwd(), "/afis_soillab_names.csv")) -->
+<!-- # Uploading to google sheet -->
+<!-- # FACT CIN folder. Get ID for soildata importing table -->
+<!-- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA")) -->
+<!-- OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM" -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Checking readme -->
+<!-- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme') -->
+<!-- # Preparing soillab.names -->
+<!-- upload <- dplyr::as_tibble(soillab.names) -->
+<!-- # Uploading -->
+<!-- googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "AFSIS") -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- ``` -->
+
+NOTE: The code chunk below this paragraph is hidden. Run once for
+importing the transformation rules. The table can be edited online at
+Google Sheets. A copy is downloaded to github for archiving.
+
+<!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # Downloading from google sheet -->
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
+<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Preparing soillab.names -->
+<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "AFSIS") %>% -->
+<!--   filter(import == TRUE) %>% -->
+<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
+<!-- # Saving to folder -->
+<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- ``` -->
+
+Reading AFSIS1-to-OSSL transformation values:
 
 ``` r
-in.name = c("Psa.w4clay", "Psa.w4silt", "Psa.w4sand", "ExAc",
-            "M3.P", "M3.Zn", "M3.Ca", "M3.Mg", "M3.Na", "M3.K", "EC", "Acidified.carbon", 
-            "Total.nitrogen", "PH", "layer.upper.depth_usda_cm", 
-            "layer.lower.depth_usda_cm", "layer.sequence_usda_uint16", "Latitude", "Longitude",
-            "Scientist")
-#in.name[which(!in.name %in% names(afsis1t.df))]
-afsis1.yw = as.data.frame(afsis1t.df[,in.name])
-out.name = c("clay.tot_usda.3a1_wpct", "silt.tot_usda.3a1_wpct",
-             "sand.tot_usda.3a1_wpct", "al.kcl_usda.4b3_cmolkg", "p.ext_usda.4d6_mgkg", 
-             "zn.meh3_usda.4d6_mgkg", "ca.meh3_usda.4d6_mgkg", "mg.meh3_usda.4d6_mgkg",
-             "na.meh3_usda.4d6_mgkg", "k.meh3_usda.4d6_mgkg", "ec.w_usda.4f1_dsm", "oc_usda.calc_wpct", 
-            "n.tot_usda.4h2_wpct", "ph.h2o_usda.4c1_index", "layer.upper.depth_usda_cm", 
-            "layer.lower.depth_usda_cm", "layer.sequence_usda_uint16", "latitude_wgs84_dd", "longitude_wgs84_dd",
-            "surveyor.title_utf8_txt")
-## compare values
-#summary(afsis1.yw$Latitude)
-fun.lst = as.list(rep("x*1", length(in.name)))
-fun.lst[[which(in.name=="Scientist")]] = "paste(x)"
-## save translation rules:
-#View(data.frame(in.name, out.name, unlist(fun.lst)))
-write.csv(data.frame(in.name, out.name, unlist(fun.lst)), "./afsis1_soilab_transvalues.csv")
-afsis1.soil = transvalues(afsis1.yw, out.name, in.name, fun.lst)
-afsis1.soil$id.layer_local_c = afsis1t.df$SSN
-#summary(duplicated(afsis1.soil$id.layer_local_c))
+transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv"))
+knitr::kable(transvalues)
 ```
 
-Exporting the table:
+| table                | original\_name   | ossl\_abbrev | ossl\_method | ossl\_unit | ossl\_convert                                      | ossl\_name                 |
+|:---------------------|:-----------------|:-------------|:-------------|:-----------|:---------------------------------------------------|:---------------------------|
+| AfSIS\_reference.csv | ECd              | ec           | usda.a364    | ds.m       | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ec\_usda.a364\_ds.m        |
+| AfSIS\_reference.csv | m3.Al            | al.ext       | usda.a1056   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | al.ext\_usda.a1056\_mg.kg  |
+| AfSIS\_reference.csv | m3.B             | b.ext        | mel3         | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | b.ext\_mel3\_mg.kg         |
+| AfSIS\_reference.csv | m3.Ca            | ca.ext       | usda.a1059   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ca.ext\_usda.a1059\_mg.kg  |
+| AfSIS\_reference.csv | m3.Cu            | cu.ext       | usda.a1063   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | cu.ext\_usda.a1063\_mg.kg  |
+| AfSIS\_reference.csv | m3.Fe            | fe.ext       | usda.a1064   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | fe.ext\_usda.a1064\_mg.kg  |
+| AfSIS\_reference.csv | m3.K             | k.ext        | usda.a1065   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | k.ext\_usda.a1065\_mg.kg   |
+| AfSIS\_reference.csv | m3.Mg            | mg.ext       | usda.a1066   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | mg.ext\_usda.a1066\_mg.kg  |
+| AfSIS\_reference.csv | m3.Mn            | mn.ext       | usda.a1067   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | mn.ext\_usda.a1067\_mg.kg  |
+| AfSIS\_reference.csv | m3.Na            | na.ext       | usda.a1068   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | na.ext\_usda.a1068\_mg.kg  |
+| AfSIS\_reference.csv | m3.P             | p.ext        | usda.a652    | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | p.ext\_usda.a652\_mg.kg    |
+| AfSIS\_reference.csv | m3.S             | s.ext        | mel3         | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | s.ext\_mel3\_mg.kg         |
+| AfSIS\_reference.csv | m3.Zn            | zn.ext       | usda.a1073   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | zn.ext\_usda.a1073\_mg.kg  |
+| AfSIS\_reference.csv | pH               | ph.h2o       | usda.a268    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ph.h2o\_usda.a268\_index   |
+| AfSIS\_reference.csv | Total.Nitrogen   | n.tot        | usda.a623    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | n.tot\_usda.a623\_w.pct    |
+| AfSIS\_reference.csv | Total.Carbon     | c.tot        | usda.a622    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | c.tot\_usda.a622\_w.pct    |
+| AfSIS\_reference.csv | Acidified.Carbon | oc           | usda.c1059   | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | oc\_usda.c1059\_w.pct      |
+| AfSIS\_reference.csv | Clay             | clay.tot     | usda.a334    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | clay.tot\_usda.a334\_w.pct |
+| AfSIS\_reference.csv | Silt             | silt.tot     | usda.c62     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | silt.tot\_usda.c62\_w.pct  |
+| AfSIS\_reference.csv | Sand             | sand.tot     | usda.c60     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | sand.tot\_usda.c60\_w.pct  |
+
+Preparing soil data from different files:
 
 ``` r
-afsis1.soil$id.layer_uuid_c = openssl::md5(make.unique(paste0(afsis1.soil$id.layer_local_c)))
-afsis1.soil$sample.doi_idf_c = "10.1016/j.geodrs.2015.06.002"
-afsis1.soil$sample.contact.name_utf8_txt = "Keith Shepherd"
-afsis1.soil$sample.contact.email_ietf_email = "afsis.info@africasoils.net"
-x.na = soilab.name[which(!soilab.name %in% names(afsis1.soil))]
-if(length(x.na)>0){ for(i in x.na){ afsis1.soil[,i] <- NA } }
-soilab.rds = paste0(dir, "ossl_soillab_v1.rds")
-if(!file.exists(soilab.rds)){
-  saveRDS.gz(afsis1.soil[,soilab.name], soilab.rds)
-}
+afsis1.reference = fread(paste0(dir, "/AfSIS_reference.csv"))
+
+# Harmonization of names and units
+analytes.old.names <- transvalues %>%
+  filter(table == "AfSIS_reference.csv") %>%
+  pull(original_name)
+
+analytes.new.names <- transvalues %>%
+  filter(table == "AfSIS_reference.csv") %>%
+  pull(ossl_name)
+
+# Selecting and renaming
+afsis1.soildata <- afsis1.reference %>%
+  rename(id.layer_local_c = SSN) %>%
+  select(id.layer_local_c, all_of(analytes.old.names)) %>%
+  rename_with(~analytes.new.names, analytes.old.names)
+
+# Removing duplicates
+# afsis1.soildata %>%
+#   group_by(id.layer_local_c) %>%
+#   summarise(repeats = n()) %>%
+#   group_by(repeats) %>%
+#   summarise(count = n())
+
+dupli.ids <- afsis1.soildata %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(id.layer_local_c)
+
+afsis1.soildata <- afsis1.soildata %>%
+  filter(!(id.layer_local_c %in% dupli.ids)) %>%
+  as.data.frame()
+
+# Getting the formulas
+functions.list <- transvalues %>%
+  filter(table == "AfSIS_reference.csv") %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(afsis1.soildata))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+afsis1.soildata.trans <- transform_values(df = afsis1.soildata,
+                                          out.name = names(afsis1.soildata),
+                                          in.name = names(afsis1.soildata),
+                                          fun.lst = functions.list)
+
+# Final soillab data
+afsis1.soildata <- afsis1.soildata.trans
+
+# Checking total number of observations
+afsis1.soildata %>%
+  distinct(id.layer_local_c) %>%
+  summarise(count = n())
 ```
 
-#### Soil site information
+    ##   count
+    ## 1  1907
 
 ``` r
-afsis1.site = as.data.frame(afsis1.soil[,c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm", 
-                                           "layer.sequence_usda_uint16", "latitude_wgs84_dd", "longitude_wgs84_dd",
-                                           "surveyor.title_utf8_txt", "id.layer_local_c")])
-afsis1.site$id.location_olc_c = olctools::encode_olc(afsis1.site$latitude_wgs84_dd, afsis1.site$longitude_wgs84_dd, 10)
-```
-
-Exporting the table:
-
-``` r
-afsis1.site$id.layer_uuid_c = openssl::md5(make.unique(paste0(afsis1.site$id.layer_local_c)))
-afsis1.site$observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library'
-afsis1.site$observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io'
-afsis1.site$dataset.title_utf8_txt = "Africa Soil Information Service (AfSIS-1)"
-afsis1.site$surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya"
-afsis1.site$dataset.code_ascii_c = "AFSIS1.SSL"
-afsis1.site$location.method_any_c = "GPS"
-afsis1.site$location.error_any_m = 30
-afsis1.site$observation.date.begin_iso.8601_yyyy.mm.dd = as.Date("1996-11-01")
-afsis1.site$observation.date.end_iso.8601_yyyy.mm.dd = as.Date("2006-11-01")
-afsis1.site$dataset.license.title_ascii_txt = "ODC Open Database License" 
-afsis1.site$dataset.license.address_idn_url = "https://opendatacommons.org/licenses/odbl/"
-afsis1.site$dataset.address_idn_url = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya"
-afsis1.site$dataset.owner_utf8_txt = "the World Agroforestry Centre (ICRAF), Crop Nutrition Laboratory Services Ltd. (CROPNUTS), and Rothamsted Research (RRES)"
-afsis1.site$dataset.contact.name_utf8_txt = "Keith Shepherd"
-afsis1.site$dataset.contact_ietf_email = "afsis.info@africasoils.net"
-x.na = site.name[which(!site.name %in% names(afsis1.site))]
-if(length(x.na)>0){ for(i in x.na){ afsis1.site[,i] <- NA } }
-soilsite.rds = paste0(dir, "ossl_soilsite_v1.rds")
-if(!file.exists(soilsite.rds)){
-  saveRDS.gz(afsis1.site[,site.name], soilsite.rds)
-}
+# Saving version to dataset root dir
+soillab.qs = paste0(dir, "/ossl_soillab_v1.2.qs")
+qs::qsave(afsis1.soildata, soillab.qs, preset = "high")
 ```
 
 ### Mid-infrared spectroscopy data
 
-Mid-infrared (MIR) soil spectroscopy raw data
-(<https://doi.org/10.34725/DVN/QXCWP1>):
-
 ``` r
-mir.afsis1.lst = list.files(paste0(dir, "afsis_mir_2013"), pattern=glob2rx("*.csv$"), full.names = TRUE, recursive = TRUE)
-afsis1.mir = plyr::rbind.fill(lapply(mir.afsis1.lst, vroom::vroom))
+# Floating wavenumbers
+mir.files <- list.files(paste0(dir, "/afsis_mir_2013"), pattern = "\\.csv$", full.names = T)
+
+mir.scans <- mir.files %>%
+  purrr::map_dfr(fread, header = TRUE) %>%
+  select(SSN, starts_with("m"))
+
+old.names <- names(mir.scans)
+new.names <- gsub("m", "", old.names)
+
+afsis1.mir <- mir.scans %>%
+  rename_with(~new.names, old.names) %>%
+  rename(id.layer_local_c = SSN)
+
+scans.na.gaps <- afsis1.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({afsis1.mir %>% select(id.layer_local_c)}, .)
+
+# Removing samples without spectra
+issue.ids <- scans.na.gaps %>%
+  filter(proportion_NA > 0) %>%
+  pull(id.layer_local_c)
+
+afsis1.mir <- afsis1.mir %>%
+  filter(!(id.layer_local_c %in% issue.ids))
+
+# Need to resample spectra
+old.wavenumber <- na.omit(as.numeric(names(afsis1.mir)))
+new.wavenumbers <- rev(seq(600, 4000, by = 2))
+
+afsis1.mir <- afsis1.mir %>%
+  select(-id.layer_local_c) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = old.wavenumber, new.wav = new.wavenumbers, interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({afsis1.mir %>%
+      select(id.layer_local_c)}, .) %>%
+  select(id.layer_local_c, as.character(rev(new.wavenumbers)))
+
+# Gaps
+scans.na.gaps <- afsis1.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({afsis1.mir %>% select(id.layer_local_c)}, .)
+
+# Extreme negative - irreversible erratic patterns
+scans.extreme.neg <- afsis1.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({afsis1.mir %>% select(id.layer_local_c)}, .)
+
+# Extreme positive, irreversible erratic patterns
+scans.extreme.pos <- afsis1.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols({afsis1.mir %>% select(id.layer_local_c)}, .)
+
+# Consistency summary - problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.layer_local_c")
+
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
 ```
 
-    ## Rows: 1,275
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 938
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 304
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 318
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 1,161
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 949
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 587
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 862
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 631
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 640
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 1,260
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 1,910
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 316
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 1,572
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 727
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 2,081
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 550
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 1,276
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
-
-    ## Rows: 900
-    ## Columns: 1,753
-    ## Delimiter: ","
-    ## chr [   3]: SSN, Depth, Country
-    ## dbl [1750]: Num, m4001.6, m3999.7, m3997.8, m3995.8, m3993.9, m3992, m3990, m3988.1, m3986.2, m3984.3, m3982.3, m3980.4, m3978.5, m3976.5, m3974.6, m3972.7, m3970.8, m39...
-    ## 
-    ## Use `spec()` to retrieve the guessed column specification
-    ## Pass a specification to the `col_types` argument to quiet this message
+    ## # A tibble: 0 × 2
+    ## # … with 2 variables: check <chr>, count <int>
 
 ``` r
-dim(afsis1.mir)
-```
+# Available ids, as only 10% of the database has analytical soil information
+selected.ids <- afsis1.soildata %>%
+  pull(id.layer_local_c)
 
-    ## [1] 18257  1753
+afsis1.mir <- afsis1.mir %>%
+  filter(id.layer_local_c %in% selected.ids)
 
-``` r
-## 18257  1753
-## an independent copy:
-#afsis1.mir2 = vroom::vroom("/mnt/diskstation/data/ossl/dataset/CASSL/spectra_data/afsis_sectra.csv")
-#str(which(!afsis1.mir2$sample_id %in% afsis1.mir$SSN))
-```
+# Renaming
+old.wavenumbers <- seq(600, 4000, by = 2)
+new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
 
-Add the [Universal Unique
-Identifier](https://cran.r-project.org/web/packages/uuid/) (UUI):
+afsis1.mir <- afsis1.mir %>%
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
 
-``` r
-afsis1.mir$id.scan_uuid_c = openssl::md5(make.unique(paste0("AFSIS.SSL", afsis1.mir$SSN)))
-```
+# Preparing metadata
+afsis1.mir.metadata <- afsis1.mir %>%
+  select(id.layer_local_c) %>%
+  mutate(id.scan_local_c = id.layer_local_c) %>%
+  mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2009-01-01"),
+         scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2013-12-31"),
+         scan.mir.model.name_utf8_txt = "Bruker Tensor 27 with HTS-XT accessory",
+         scan.mir.model.code_any_c = "Bruker_Tensor_27.HTS.XT",
+         scan.mir.method.light.source_any_c = "",
+         scan.mir.method.preparation_any_c = "",
+         scan.mir.license.title_ascii_txt = "CC-BY",
+         scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
+         scan.mir.doi_idf_c = "https://doi.org/10.34725/DVN/QXCWP1",
+         scan.mir.contact.name_utf8_txt = "Vagen, Tor-Gunnar (World Agroforestry)",
+         scan.mir.contact.email_ietf_email = "afsis.info@africasoils.net")
 
-Resampling the MIR spectra from the original window size to 2 cm-1 in
-`afsis1.abs`. This operation can be time-consuming:
+# Final preparation
+afsis1.mir.export <- afsis1.mir.metadata %>%
+  left_join(afsis1.mir, by = "id.layer_local_c")
 
-``` r
-sel.abs = names(afsis1.mir)[grep("^m", names(afsis1.mir))]
-## 1749
-afsis1.mir$id.scan_local_c = paste(afsis1.mir$Country, afsis1.mir$Num, sep="_")
-afsis1.abs = afsis1.mir[,c("id.scan_uuid_c", "SSN", "id.scan_local_c", sel.abs)]
-na.lst = rowSums(afsis1.abs[,sel.abs])
-str(which(is.na(na.lst)))
-```
-
-    ##  int [1:7] 2064 2193 8303 8613 15356 17318 18164
-
-``` r
-## several incomplete scans
-afsis1.abs = afsis1.abs[-which(is.na(na.lst)),]
-dim(afsis1.abs)
-```
-
-    ## [1] 18250  1752
-
-Detect all values out of range:
-
-``` r
-wav.mir = as.numeric(gsub("m", "", sel.abs)) # Get wavelength only
-#summary(wav.mir)
-# Creating a matrix with only spectral values to resample it
-afsis1.mir.spec = as.matrix(afsis1.abs[,sel.abs])
-colnames(afsis1.mir.spec) = wav.mir
-rownames(afsis1.mir.spec) = afsis1.abs$id.scan_uuid_c
-samples.na.gaps = apply(afsis1.mir.spec, 1, FUN=function(j){ round(100*sum(is.na(j))/length(j), 3)}) 
-samples.negative = apply(afsis1.mir.spec, 1, FUN=function(j){ round(100*sum(j <= 0)/length(j), 3) })
-sum(samples.negative>0)
-```
-
-    ## [1] 0
-
-``` r
-samples.extreme = apply(afsis1.mir.spec, 1, FUN=function(j){ round(100*sum(j >= 3)/length(j), 3) })
-sum(samples.extreme>0)
-```
-
-    ## [1] 1
-
-``` r
-## only 1 scan with extreme values
-```
-
-``` r
-## resample values
-afsis1.mir = prospectr::resample(afsis1.mir.spec, wav.mir, seq(600, 4000, 2)) 
-## Error in splinefun(x = wav, y = x) : zero non-NA points
-afsis1.mir = round(as.data.frame(afsis1.mir)*1000)
-mir.n = paste0("scan_mir.", seq(600, 4000, 2), "_abs")
-colnames(afsis1.mir) = mir.n
-#dim(afsis1.mir)
-#summary(afsis1.mir$scan_mir.602_abs)
-afsis1.mir$id.scan_uuid_c = rownames(afsis1.mir)
-```
-
-Plotting MIR spectra to see if there are still maybe negative values in
-the table:
-
-``` r
-matplot(y=as.vector(t(afsis1.mir[250,mir.n])), x=seq(600, 4000, 2),
-        ylim = c(0,3000),
-        type = 'l', 
-        xlab = "Wavelength", 
-        ylab = "Absorbance"
-        )
-```
-
-![](README_files/figure-gfm/unnamed-chunk-75-1.png)<!-- -->
-
-Export final MIR table:
-
-``` r
-afsis1.mir$id.layer_local_c = plyr::join(afsis1.mir["id.scan_uuid_c"], afsis1.abs[c("id.scan_uuid_c","SSN")])$SSN
-```
-
-    ## Joining by: id.scan_uuid_c
-
-``` r
-afsis1.mir$id.scan_local_c = plyr::join(afsis1.mir["id.scan_uuid_c"], afsis1.abs[c("id.scan_uuid_c","id.scan_local_c")])$id.scan_local_c
-```
-
-    ## Joining by: id.scan_uuid_c
-
-``` r
-afsis1.mir$id.layer_uuid_c = plyr::join(afsis1.mir["id.layer_local_c"], afsis1.soil[c("id.layer_local_c","id.layer_uuid_c")], match="first")$id.layer_uuid_c
-```
-
-    ## Joining by: id.layer_local_c
-
-``` r
-summary(is.na(afsis1.mir$id.layer_uuid_c))
-```
-
-    ##    Mode   FALSE    TRUE 
-    ## logical    1904   16346
-
-``` r
-## 16346 without soil data
-afsis1.mir$model.name_utf8_txt = "Bruker Tensor 27/HTs -XT_FT-IR"
-afsis1.mir$model.code_any_c = "Bruker_Tensor_27.HTS.XT"
-afsis1.mir$method.light.source_any_c = ""
-afsis1.mir$method.preparation_any_c = ""
-afsis1.mir$scan.file_any_c = ""
-afsis1.mir$scan.date.begin_iso.8601_yyyy.mm.dd = as.Date("2009-01-01")
-afsis1.mir$scan.date.end_iso.8601_yyyy.mm.dd = as.Date("2013-12-01")
-afsis1.mir$scan.license.title_ascii_txt = "CC-BY"
-afsis1.mir$scan.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/"
-afsis1.mir$scan.doi_idf_c = "10.34725/DVN/QXCWP1"
-afsis1.mir$scan.contact.name_utf8_txt = "Vagen, Tor-Gunnar (World Agroforestry)"
-afsis1.mir$scan.contact.email_ietf_email = "afsis.info@africasoils.net"
-#summary(is.na(afsis1.mir$id.scan_uuid_c))
-afsis1.mir$scan.mir.nafreq_ossl_pct = samples.na.gaps
-afsis1.mir$scan.mir.negfreq_ossl_pct = samples.negative
-afsis1.mir$scan.mir.extfreq_ossl_pct = samples.extreme
-```
-
-Save to RDS file:
-
-``` r
-x.na = mir.name[which(!mir.name %in% names(afsis1.mir))]
-if(length(x.na)>0){ for(i in x.na){ afsis1.mir[,i] <- NA } }
-str(afsis1.mir[,mir.name[1:24]])
-```
-
-    ## 'data.frame':    18250 obs. of  24 variables:
-    ##  $ id.scan_uuid_c                     : chr  "c0f4186e7659ca7b15db15528714b7ee" "4d564b285db0022c6de8ebfbdf1b2263" "59f841538f62af90df8e0c2a842017fe" "1b535a05e418cbff180ccf0b7eee5d23" ...
-    ##  $ id.scan_local_c                    : chr  "Angola_1" "Angola_2" "Angola_3" "Angola_4" ...
-    ##  $ id.layer_uuid_c                    : chr  "31629cced41962b96bb4e36784738321" "185a8b487871e6ab2cbd6260c586985d" NA NA ...
-    ##  $ id.layer_local_c                   : chr  "icr072246" "icr072247" "icr072248" "icr072249" ...
-    ##  $ model.name_utf8_txt                : chr  "Bruker Tensor 27/HTs -XT_FT-IR" "Bruker Tensor 27/HTs -XT_FT-IR" "Bruker Tensor 27/HTs -XT_FT-IR" "Bruker Tensor 27/HTs -XT_FT-IR" ...
-    ##  $ model.code_any_c                   : chr  "Bruker_Tensor_27.HTS.XT" "Bruker_Tensor_27.HTS.XT" "Bruker_Tensor_27.HTS.XT" "Bruker_Tensor_27.HTS.XT" ...
-    ##  $ method.light.source_any_c          : chr  "" "" "" "" ...
-    ##  $ method.preparation_any_c           : chr  "" "" "" "" ...
-    ##  $ scan.file_any_c                    : chr  "" "" "" "" ...
-    ##  $ scan.date.begin_iso.8601_yyyy.mm.dd: Date, format: "2009-01-01" "2009-01-01" "2009-01-01" "2009-01-01" ...
-    ##  $ scan.date.end_iso.8601_yyyy.mm.dd  : Date, format: "2013-12-01" "2013-12-01" "2013-12-01" "2013-12-01" ...
-    ##  $ scan.license.title_ascii_txt       : chr  "CC-BY" "CC-BY" "CC-BY" "CC-BY" ...
-    ##  $ scan.license.address_idn_url       : chr  "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" "https://creativecommons.org/licenses/by/4.0/" ...
-    ##  $ scan.doi_idf_c                     : chr  "10.34725/DVN/QXCWP1" "10.34725/DVN/QXCWP1" "10.34725/DVN/QXCWP1" "10.34725/DVN/QXCWP1" ...
-    ##  $ scan.contact.name_utf8_txt         : chr  "Vagen, Tor-Gunnar (World Agroforestry)" "Vagen, Tor-Gunnar (World Agroforestry)" "Vagen, Tor-Gunnar (World Agroforestry)" "Vagen, Tor-Gunnar (World Agroforestry)" ...
-    ##  $ scan.contact.email_ietf_email      : chr  "afsis.info@africasoils.net" "afsis.info@africasoils.net" "afsis.info@africasoils.net" "afsis.info@africasoils.net" ...
-    ##  $ scan.mir.nafreq_ossl_pct           : num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ scan.mir.negfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ scan.mir.extfreq_ossl_pct          : num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ scan_mir.600_abs                   : num  1528 1538 1586 1536 1531 ...
-    ##  $ scan_mir.602_abs                   : num  1532 1544 1588 1536 1530 ...
-    ##  $ scan_mir.604_abs                   : num  1532 1546 1591 1540 1531 ...
-    ##  $ scan_mir.606_abs                   : num  1531 1547 1595 1547 1534 ...
-    ##  $ scan_mir.608_abs                   : num  1531 1549 1599 1553 1539 ...
-
-``` r
-mir.rds = paste0(dir, "ossl_mir_v1.rds")
-if(!file.exists(mir.rds)){
-  saveRDS.gz(afsis1.mir[,mir.name], mir.rds)
-  #arrow::write_parquet(afsis1.mir[,mir.name], paste0(dir, "ossl_mir_v1.parquet"))
-}
-#rm(afsis1.mir.spec); rm(afsis1.abs)
-#gc()
+# Saving version to dataset root dir
+soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
+qs::qsave(afsis1.mir.export, soilmir.qs, preset = "high")
 ```
 
 ### Quality control
 
-Check if some points don’t have any spectral scans:
+The final table must be joined as:
+
+-   MIR is used as first reference.
+-   Then it is left joined with the site and soil lab data. This drop
+    data without any scan.
+
+The availabilty of data is summarised below:
 
 ``` r
-summary(is.na(afsis1.mir$id.scan_uuid_c))
+# Taking a few representative columns for checking the consistency of joins
+afsis1.availability <- afsis1.mir %>%
+  select(id.layer_local_c, scan_mir.600_abs) %>%
+  left_join({afsis1.sitedata %>%
+      select(id.layer_local_c, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
+  left_join({afsis1.soildata %>%
+      select(id.layer_local_c, ph.h2o_usda.a268_index)}, by = "id.layer_local_c") %>%
+  filter(!is.na(id.layer_local_c))
+
+# Availability of information from afsis1
+afsis1.availability %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
 ```
 
-    ##    Mode   FALSE 
-    ## logical   18250
+    ## # A tibble: 4 × 2
+    ##   column                    count
+    ##   <chr>                     <int>
+    ## 1 id.layer_local_c           1904
+    ## 2 layer.upper.depth_usda_cm  1838
+    ## 3 ph.h2o_usda.a268_index     1904
+    ## 4 scan_mir.600_abs           1904
 
 ``` r
-mis.r = afsis1.mir$id.layer_uuid_c %in% afsis1.site$id.layer_uuid_c
-summary(mis.r)
+# Repeats check - Duplicates are dropped
+afsis1.availability %>%
+  mutate_all(as.character) %>%
+  select(id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  group_by(column, value) %>%
+  summarise(repeats = n()) %>%
+  group_by(column, repeats) %>%
+  summarise(count = n())
 ```
 
-    ##    Mode   FALSE    TRUE 
-    ## logical   16346    1904
+    ## # A tibble: 1 × 3
+    ## # Groups:   column [1]
+    ##   column           repeats count
+    ##   <chr>              <int> <int>
+    ## 1 id.layer_local_c       1  1904
+
+This summary shows that, at total, about 2k observations are available
+without duplicates. Originally 20k MIR scans are available but only
+about 10% has reference data.
+
+Plotting sites map:
 
 ``` r
-## some 16,346 scans have no soil data attached to it
-summary(duplicated(afsis1.mir$id.scan_uuid_c))
+data("World")
+
+points <- afsis1.sitedata %>%
+  filter(!is.na(longitude.point_wgs84_dd)) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+
+tmap_mode("plot")
+
+tm_shape(World) +
+  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+  tm_shape(points) +
+  tm_dots()
 ```
 
-    ##    Mode   FALSE 
-    ## logical   18250
+![](README_files/figure-gfm/map-1.png)<!-- -->
 
-### Distribution of points
-
-We can plot an world map showing distribution of the sampling locations
-for the AfSIS-1 points.
+Soil analytical data summary:
 
 ``` r
-afsis1.map = NULL
-library(maptools)
-data(wrld_simpl)
-afr = wrld_simpl[wrld_simpl$REGION==2,]
-mapWorld = borders(afr, colour = 'gray50', fill = 'gray50')
-afsis1.map = ggplot() + mapWorld
-afsis1.map = afsis1.map + geom_point(aes(x=afsis1.site$longitude_wgs84_dd, y=afsis1.site$latitude_wgs84_dd), color = 'blue', shape = 18, size=.9) + coord_fixed(ratio=1.1)
-afsis1.map
+afsis1.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
 ```
 
-    ## Warning: Removed 68 rows containing missing values (geom_point).
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 1907       |
+| Number of columns                                | 21         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| factor                                           | 1          |
+| numeric                                          | 20         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
 
-![](README_files/figure-gfm/afsis1.pnts_sites-1.png)<!-- -->
+Data summary
 
-Fig. 1: afsis1-ISRIC locations of sites across the globe.
+**Variable type: factor**
 
-Warning: Removed 167 rows containing missing values (geom\_point).
+| skim\_variable     | n\_missing | ordered | n\_unique | top\_counts                    |
+|:-------------------|-----------:|:--------|----------:|:-------------------------------|
+| id.layer\_local\_c |          0 | FALSE   |      1907 | icr: 1, icr: 1, icr: 1, icr: 1 |
+
+**Variable type: numeric**
+
+| skim\_variable             | n\_missing |    mean |      sd |   p0 |    p25 |    p50 |     p75 |     p100 |
+|:---------------------------|-----------:|--------:|--------:|-----:|-------:|-------:|--------:|---------:|
+| ec\_usda.a364\_ds.m        |          0 |    0.13 |    0.39 | 0.01 |   0.03 |   0.06 |    0.11 |     8.73 |
+| al.ext\_usda.a1056\_mg.kg  |          0 |  821.58 |  466.22 | 1.67 | 457.00 | 733.00 | 1109.50 |  3041.00 |
+| b.ext\_mel3\_mg.kg         |          2 |    0.44 |    1.79 | 0.00 |   0.00 |   0.10 |    0.36 |    55.09 |
+| ca.ext\_usda.a1059\_mg.kg  |          0 | 1841.05 | 3438.81 | 0.00 | 290.00 | 634.00 | 1693.50 | 35200.00 |
+| cu.ext\_usda.a1063\_mg.kg  |          0 |    1.77 |    2.06 | 0.00 |   0.50 |   1.12 |    2.42 |    23.70 |
+| fe.ext\_usda.a1064\_mg.kg  |          0 |  112.11 |   81.46 | 1.26 |  60.05 |  91.90 |  139.10 |   981.00 |
+| k.ext\_usda.a1065\_mg.kg   |          0 |  173.99 |  289.98 | 0.00 |  51.48 |  91.41 |  177.85 |  5047.00 |
+| mg.ext\_usda.a1066\_mg.kg  |          0 |  311.58 |  416.64 | 0.00 |  79.15 | 159.00 |  383.95 |  4740.00 |
+| mn.ext\_usda.a1067\_mg.kg  |          0 |   98.93 |  100.63 | 0.57 |  24.00 |  69.40 |  139.00 |   686.60 |
+| na.ext\_usda.a1068\_mg.kg  |          6 |  140.34 | 1169.35 | 0.00 |  22.30 |  34.30 |   50.92 | 31800.00 |
+| p.ext\_usda.a652\_mg.kg    |          0 |   12.30 |   28.75 | 0.00 |   2.55 |   4.97 |   10.09 |   396.00 |
+| s.ext\_mel3\_mg.kg         |          2 |   24.87 |  165.80 | 0.62 |   5.00 |   7.62 |   12.40 |  3940.00 |
+| zn.ext\_usda.a1073\_mg.kg  |          0 |    1.53 |    1.77 | 0.00 |   0.71 |   1.10 |    1.75 |    36.51 |
+| ph.h2o\_usda.a268\_index   |          0 |    6.21 |    1.07 | 3.61 |   5.44 |   6.08 |    6.69 |     9.86 |
+| n.tot\_usda.a623\_w.pct    |          2 |    0.08 |    0.08 | 0.00 |   0.03 |   0.05 |    0.10 |     0.66 |
+| c.tot\_usda.a622\_w.pct    |          2 |    1.24 |    1.34 | 0.08 |   0.42 |   0.78 |    1.51 |    11.29 |
+| oc\_usda.c1059\_w.pct      |          2 |    1.18 |    1.28 | 0.07 |   0.39 |   0.73 |    1.46 |    10.93 |
+| clay.tot\_usda.a334\_w.pct |          8 |   42.99 |   24.09 | 0.32 |  22.16 |  40.16 |   63.13 |   100.00 |
+| silt.tot\_usda.c62\_w.pct  |         14 |   17.73 |   10.05 | 0.34 |  10.00 |  16.48 |   23.42 |    57.27 |
+| sand.tot\_usda.c60\_w.pct  |         13 |   39.50 |   26.20 | 0.12 |  15.72 |  36.96 |   60.31 |   100.00 |
+
+MIR spectral visualization:
 
 ``` r
-#save.image.pigz(file=paste0(dir, "afsis1.RData"), n.cores=32)
-#rmarkdown::render("dataset/AFSIS/README.Rmd")
+set.seed(1993)
+afsis1.mir %>%
+  sample_n(500) %>%
+  select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+                      names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1) +
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) +
+  labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
+  theme_light()
 ```
+
+![](README_files/figure-gfm/mir_plot-1.png)<!-- -->
+
+``` r
+toc()
+```
+
+    ## 30.285 sec elapsed
+
+``` r
+rm(list = ls())
+gc()
+```
+
+    ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
+    ## Ncells  2609470 139.4    4940952  263.9   4940952  263.9
+    ## Vcells 10071851  76.9  211081685 1610.5 263851731 2013.1
 
 ## References
 
