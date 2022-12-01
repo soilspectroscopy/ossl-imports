@@ -1,0 +1,16 @@
+table,original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+cssl_refdata_all,tc,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",c.tot_usda.a622_w.pct
+cssl_refdata_all,tn,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_usda.a623_w.pct
+cssl_refdata_all,ph_h2o,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+cssl_refdata_all,ph_cacl2,ph.cacl2,usda.a481,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_usda.a481_index
+cssl_refdata_all,clay_0-0.002,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct
+cssl_refdata_all,silt_0.002-0.05,silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct
+cssl_refdata_all,sand_0.05-2,sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct
+cssl_refdata_all,al_icp,al.ext,aquaregia,g.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_aquaregia_g.kg
+cssl_refdata_all,fe_icp,fe.ext,aquaregia,g.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",fe.ext_aquaregia_g.kg
+cssl_refdata_all,ca_icp,ca.ext,aquaregia,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_aquaregia_mg.kg
+cssl_refdata_all,mg_icp,mg.ext,aquaregia,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_aquaregia_mg.kg
+cssl_refdata_all,k_icp,k.ext,aquaregia,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_aquaregia_mg.kg
+cssl_refdata_all,mn_icp,mn.ext,aquaregia,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mn.ext_aquaregia_mg.kg
+cssl_refdata_all,na_icp,na.ext,aquaregia,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_aquaregia_mg.kg
+cssl_refdata_all,p_icp,p.ext,aquaregia,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_aquaregia_mg.kg
