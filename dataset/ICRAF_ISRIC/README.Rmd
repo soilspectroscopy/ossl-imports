@@ -85,6 +85,7 @@ icraf.isric.reference <- icraf.isric.reference %>%
          layer.sequence_usda_uint16 = HORI,
          layer.upper.depth_usda_cm = BTOP,
          layer.lower.depth_usda_cm = BBOT) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(`Long: sec` = ifelse(is.na(`Long: sec`), 0, `Long: sec`),
          `Lat: sec` = ifelse(is.na(`Lat: sec`), 0, `Lat: sec`)) %>%
   mutate(lat = ifelse(`N / S`=="South",
@@ -161,6 +162,7 @@ icraf.isric.sitedata <- icraf.isric.reference %>%
          site_obsdate = lubridate::ymd(paste0(site_obsdate, "-01-01"))) %>%
   rename(id.dataset.site_ascii_c = Plotcode,
          observation.date.begin_iso.8601_yyyy.mm.dd = site_obsdate) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(observation.date.end_iso.8601_yyyy.mm.dd = observation.date.begin_iso.8601_yyyy.mm.dd) %>%
   select(id.layer_local_c, latitude.point_wgs84_dd, longitude.point_wgs84_dd,
          id.dataset.site_ascii_c, observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
@@ -354,7 +356,8 @@ new.names <- gsub("m", "", old.names)
 
 icraf.isric.mir <- mir.scans %>%
   rename_with(~new.names, old.names) %>%
-  rename(id.layer_local_c = SSN)
+  rename(id.layer_local_c = SSN) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Need to resample spectra
 old.wavenumber <- na.omit(as.numeric(names(icraf.isric.mir)))
@@ -470,7 +473,8 @@ new.names <- gsub("W", "", old.names)
 
 icraf.isric.visnir <- visnir.scans %>%
   rename_with(~new.names, old.names) %>%
-  rename(id.layer_local_c = Batch.Labid)
+  rename(id.layer_local_c = Batch.Labid) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Need to resample spectra
 old.wavelengths <- na.omit(as.numeric(names(icraf.isric.visnir)))

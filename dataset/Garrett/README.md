@@ -2,7 +2,7 @@ Dataset import: Garrett et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-01 December, 2022
+06 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-01  
+Last update: 2022-12-06  
 Dataset:
 [GARRETT.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#garrett.ssl)
 
@@ -76,6 +76,7 @@ garrett.ids <- garrett.chemical %>%
          id.dataset.site_ascii_c = `Trial ID`,
          layer.upper.depth_usda_cm = `Horizon top (cm)`,
          layer.lower.depth_usda_cm = `Horizon base (cm)`) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   filter(!is.na(id.layer_local_c)) %>%
   mutate(id.dataset.site_ascii_c = gsub("\\s", "", id.dataset.site_ascii_c))
 
@@ -299,6 +300,7 @@ garrett.soil.chemical <- garrett.chemical %>%
   rename(id.layer_local_c = `Scion_Sample ID`,
          layer.upper.depth_usda_cm = `Horizon top (cm)`,
          layer.lower.depth_usda_cm = `Horizon base (cm)`) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   select(id.layer_local_c, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, all_of(analytes.old.names)) %>%
   rename_with(~analytes.new.names, analytes.old.names) %>%
   mutate_at(vars(-id.layer_local_c), as.numeric) %>%
@@ -434,7 +436,8 @@ garrett.mir <- mir.allspectra %>%
   mutate(id.scan_local_c = scan.file_any_c, .after = scan.file_any_c) %>%
   separate(id.scan_local_c, into = c("id.scan_local_c", "table_code"), sep = "_") %>%
   select(-table_code) %>%
-  mutate(id.layer_local_c = str_sub(id.scan_local_c, 1, -3), .before = 1)
+  mutate(id.layer_local_c = str_sub(id.scan_local_c, 1, -3), .before = 1) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # The spectra is already formatted between 600-4000 cm-1
 # But it is necessary to average them
@@ -632,7 +635,7 @@ garrett.mir %>%
 toc()
 ```
 
-    ## 12.65 sec elapsed
+    ## 12.68 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -640,8 +643,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2600430 138.9    4720252 252.1  4720252 252.1
-    ## Vcells 5321546  40.7   24283900 185.3 30349552 231.6
+    ## Ncells 2600255 138.9    4722400 252.3  4722400 252.3
+    ## Vcells 5321128  40.6   25913420 197.8 32359314 246.9
 
 ## References
 

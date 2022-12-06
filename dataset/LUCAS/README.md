@@ -4,7 +4,7 @@ Dataset import: The Land-Use/Cover Area Survey Soil and Spectral Library
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Leandro Parente
 (<leandro.parente@opengeohub.org>) -
-30 November, 2022
+06 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-30  
+Last update: 2022-12-06  
 Dataset:
 [LUCAS.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#lucas.ssl)
 
@@ -122,6 +122,7 @@ lucas.2009 = Reduce(dplyr::bind_rows, lucas.2009) %>%
   rename(id.layer_local_c = POINT_ID,
          longitude.point_wgs84_dd = lon,
          latitude.point_wgs84_dd = lat) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(layer.upper.depth_usda_cm = 0,
          layer.lower.depth_usda_cm = 20,
          observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2009-05-01"),
@@ -152,6 +153,7 @@ lucas.2015 <- lucas.2015 %>%
   rename(id.layer_local_c = Point_ID,
          longitude.point_wgs84_dd = lon,
          latitude.point_wgs84_dd = lat) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(layer.upper.depth_usda_cm = 0,
          layer.lower.depth_usda_cm = 20,
          observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2015-03-01"),
@@ -461,7 +463,8 @@ lucas.2015.trans <- transform_values(df = lucas.2015,
                                      fun.lst = functions.list)
 
 # Final soillab data
-lucas.soildata <- bind_rows(lucas.2009.trans, lucas.2015.trans)
+lucas.soildata <- bind_rows(lucas.2009.trans, lucas.2015.trans) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Checking total number of observations
 lucas.soildata %>%
@@ -575,7 +578,8 @@ new.wavelengths <- paste0("scan_visnir.", old.wavelengths, "_ref")
 
 lucas.visnir <- lucas.visnir %>%
   mutate_at(all_of(old.wavelengths), ~1/10^(.)) %>%
-  rename_with(~new.wavelengths, as.character(old.wavelengths))
+  rename_with(~new.wavelengths, as.character(old.wavelengths)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Spectral consistency analysis
 
@@ -646,7 +650,8 @@ lucas.mir <- lucas.mir %>%
   as_tibble() %>%
   bind_cols({lucas.mir %>%
       select(id.layer_local_c)}, .) %>%
-  select(id.layer_local_c, as.character(rev(new.wavenumbers)))
+  select(id.layer_local_c, as.character(rev(new.wavenumbers))) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Spectral consistency analysis
 
@@ -722,6 +727,7 @@ lucas.mir.metadata <- mir.scans %>%
   select(POINT_ID, WHRC_ID, run_date) %>%
   rename(id.layer_local_c = POINT_ID, id.scan_local_c = WHRC_ID,
          scan.date.begin_iso.8601_yyyy.mm.dd = run_date) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(id.layer_local_c = paste0("2009.", id.layer_local_c),
          scan.date.begin_iso.8601_yyyy.mm.dd = dmy(scan.date.begin_iso.8601_yyyy.mm.dd)) %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
@@ -925,7 +931,7 @@ lucas.visnir %>%
 toc()
 ```
 
-    ## 453.536 sec elapsed
+    ## 455.739 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -933,8 +939,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells 2632849 140.7   26813084 1432.0  41895442 2237.5
-    ## Vcells 9732428  74.3  403815238 3080.9 985876765 7521.7
+    ## Ncells 2632851 140.7   26813075 1432.0  41895428 2237.5
+    ## Vcells 9732825  74.3  403815523 3080.9 985877247 7521.7
 
 ## References
 

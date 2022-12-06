@@ -3,7 +3,7 @@ Dataset import: The Central African soil spectral library
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-01 December, 2022
+06 December, 2022
 
 
 
@@ -30,7 +30,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-01  
+Last update: 2022-12-06  
 Dataset:
 [CAF.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#caf.ssl)
 
@@ -58,13 +58,13 @@ tic()
 ``` r
 caf.metadata <- fread(paste0(dir, "field_metadata/cssl_metadata_all.csv"), header = T)
 
-
 caf.sitedata <- caf.metadata %>%
   select(sample_id, sample_location, country_code,
          sampling_date, sampling_layer, gps_long, gps_lat, gps_true) %>%
   rename(id.layer_local_c = sample_id,
          longitude.point_wgs84_dd = gps_long,
          latitude.point_wgs84_dd = gps_lat) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   separate(sampling_layer, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>%
   mutate(layer.sequence_usda_uint16 = ifelse(layer.upper.depth_usda_cm == 0, 1, 2),
          location.point.error_any_m = ifelse(gps_true == "yes", 30, 1000)) %>%
@@ -207,6 +207,7 @@ caf.soildata <- caf.reference %>%
   rename(id.layer_local_c = sample_id) %>%
   select(id.layer_local_c, all_of(analytes.old.names)) %>%
   rename_with(~analytes.new.names, analytes.old.names) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   as.data.frame()
 
 # Removing duplicates
@@ -259,6 +260,7 @@ old.names <- names(caf.spectra)
 
 caf.mir <- caf.spectra %>%
   rename(id.layer_local_c = sample_id) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate_at(vars(all_of(old.names[-1])), as.numeric)
 
 # Need to resample spectra
@@ -399,10 +401,6 @@ caf.availability %>%
     ##   <chr>              <int> <int>
     ## 1 id.layer_local_c       1  1578
 
-This summary shows that, at total, about 2k observations are available
-without duplicates. Originally 20k MIR scans are available but only
-about 10% has reference data.
-
 Plotting sites map:
 
 ``` r
@@ -502,7 +500,7 @@ caf.mir %>%
 toc()
 ```
 
-    ## 14.665 sec elapsed
+    ## 16.349 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -510,8 +508,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2614644 139.7    4883038 260.8  4883038 260.8
-    ## Vcells 6752353  51.6   70095720 534.8 87449127 667.2
+    ## Ncells 2614644 139.7    4882427 260.8  4882427 260.8
+    ## Vcells 6752343  51.6   70095708 534.8 87449604 667.2
 
 ## References
 

@@ -3,7 +3,7 @@ Dataset import: Africa Soil Information Service (AfSIS-I) SSL
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-30 November, 2022
+06 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-30  
+Last update: 2022-12-06  
 Dataset:
 [AFSIS1.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis1.ssl)
 
@@ -69,7 +69,8 @@ afsis1.geo <- afsis1.geo %>%
          longitude.point_wgs84_dd = Longitude,
          latitude.point_wgs84_dd = Latitude,
          surveyor.title_utf8_txt = Scientist) %>%
-  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
+  mutate(id.layer_local_c = as.character(id.layer_local_c),
+         layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
          layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
          layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2011-01-01"),
@@ -95,7 +96,7 @@ afsis1.sitedata <- afsis1.geo %>%
          surveyor.contact_ietf_email = "afsis.info@africasoils.net",
          surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya",
          dataset.title_utf8_txt = "Africa Soil Information Service (AfSIS-1)",
-         dataset.owner_utf8_txt = "ICRAF), CROPNUTS, RRES",
+         dataset.owner_utf8_txt = "ICRAF, CROPNUTS, RRES",
          dataset.code_ascii_c = "AFSIS1.SSL",
          dataset.address_idn_url = "https://www.isric.org/explore/ISRIC-collections",
          dataset.doi_idf_url = "https://doi.org/10.1016/j.geodrs.2015.06.002",
@@ -272,7 +273,8 @@ afsis1.soildata.trans <- transform_values(df = afsis1.soildata,
                                           fun.lst = functions.list)
 
 # Final soillab data
-afsis1.soildata <- afsis1.soildata.trans
+afsis1.soildata <- afsis1.soildata.trans %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Checking total number of observations
 afsis1.soildata %>%
@@ -383,7 +385,8 @@ old.wavenumbers <- seq(600, 4000, by = 2)
 new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
 
 afsis1.mir <- afsis1.mir %>%
-  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Preparing metadata
 afsis1.mir.metadata <- afsis1.mir %>%
@@ -566,7 +569,7 @@ afsis1.mir %>%
 toc()
 ```
 
-    ## 30.285 sec elapsed
+    ## 30.43 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -574,8 +577,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells  2609470 139.4    4940952  263.9   4940952  263.9
-    ## Vcells 10071851  76.9  211081685 1610.5 263851731 2013.1
+    ## Ncells  2609496 139.4    4941110  263.9   4941110  263.9
+    ## Vcells 10071948  76.9  211623999 1614.6 264529998 2018.3
 
 ## References
 

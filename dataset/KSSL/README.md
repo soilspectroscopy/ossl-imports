@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>), Develyn Bloom
 (<develyn.bloom@ufl.edu>) -
-30 November, 2022
+06 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-30  
+Last update: 2022-12-06  
 Dataset:
 [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
@@ -397,6 +397,7 @@ kssl.sitedata <- kssl.sitedata %>%
          latitude.point_wgs84_dd = latitude.std.decimal.degrees,
          longitude.county_wgs84_dd = long.xcntr,
          latitude.county_wgs84_dd = lat.ycntr) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   select(id.layer_local_c, id.project_ascii_c, id.dataset.site_ascii_c,
          layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, layer.texture_usda_c,
          horizon.designation_usda_c, observation.date.end_iso.8601_yyyy.mm.dd,
@@ -671,7 +672,8 @@ kssl.soildata.class.bind <- kssl.soildata.class %>%
 
 # Final soillab data
 kssl.soildata <- left_join(kssl.soildata.numeric.bind, kssl.soildata.class.bind, by = "lay.id") %>%
-  rename(id.layer_local_c = lay.id)
+  rename(id.layer_local_c = lay.id) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Checking total number of observations
 kssl.soildata %>%
@@ -829,7 +831,8 @@ kssl.mir.metadata <- metadata %>%
   summarise_all(first)
 
 # Final table
-kssl.mir.export <- right_join(kssl.mir.metadata, kssl.mir, by = "id.scan_local_c")
+kssl.mir.export <- right_join(kssl.mir.metadata, kssl.mir, by = "id.scan_local_c") %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Saving version to dataset root dir
 # soilmir.rds = paste0(dirname(dir.files), "/ossl_mir_v1.2.rds")
@@ -946,7 +949,8 @@ kssl.visnir.metadata <- visnir.scans %>%
          scan.visnir.contact.email_ietf_email = "Scarlett.Murphy@usda.gov")
 
 # Final table
-kssl.visnir.export <- right_join(kssl.visnir.metadata, kssl.visnir, by = "id.scan_local_c")
+kssl.visnir.export <- right_join(kssl.visnir.metadata, kssl.visnir, by = "id.scan_local_c") %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Saving version to dataset root dir
 # soilvisnir.rds = paste0(dirname(dir.files), "/ossl_visnir_v1.2.rds")
@@ -973,9 +977,9 @@ The availabilty of data is summarised below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-kssl.availability <- kssl.mir %>%
+kssl.availability <- kssl.mir.export %>%
   select(id.scan_local_c, id.layer_local_c, scan_mir.600_abs) %>%
-  full_join({kssl.visnir %>%
+  full_join({kssl.visnir.export %>%
       select(id.scan_local_c, id.layer_local_c, scan_visnir.350_ref)}, by = "id.layer_local_c") %>%
   mutate(id.scan_local_c = coalesce(id.scan_local_c.x, id.scan_local_c.y, NA), .before = 1) %>%
   select(-id.scan_local_c.x, -id.scan_local_c.y) %>%
@@ -1087,7 +1091,7 @@ Data summary
 
 | skim\_variable     | n\_missing | ordered | n\_unique | top\_counts                  |
 |:-------------------|-----------:|:--------|----------:|:-----------------------------|
-| id.layer\_local\_c |          0 | FALSE   |     98138 | 1: 1, 123: 1, 124: 1, 125: 1 |
+| id.layer\_local\_c |          0 | FALSE   |     98138 | 1: 1, 100: 1, 100: 1, 100: 1 |
 
 **Variable type: numeric**
 
@@ -1187,7 +1191,7 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 234.923 sec elapsed
+    ## 228.875 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1195,8 +1199,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2621722 140.1   15468060  826.1   19335074 1032.7
-    ## Vcells 35785389 273.1  801992528 6118.8 1002490655 7648.4
+    ## Ncells  2621724 140.1   15869204  847.6   19836504 1059.4
+    ## Vcells 35785455 273.1  802222664 6120.5 1002778232 7650.6
 
 ## References
 

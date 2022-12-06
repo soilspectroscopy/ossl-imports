@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Wanderson Mendes de Sousa
 (<wanderson.mendes@zalf.de>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-30 November, 2022
+06 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-30  
+Last update: 2022-12-06  
 Dataset:
 [ICRAF.ISRIC](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#icraf.isric)
 
@@ -78,6 +78,7 @@ icraf.isric.reference <- icraf.isric.reference %>%
          layer.sequence_usda_uint16 = HORI,
          layer.upper.depth_usda_cm = BTOP,
          layer.lower.depth_usda_cm = BBOT) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(`Long: sec` = ifelse(is.na(`Long: sec`), 0, `Long: sec`),
          `Lat: sec` = ifelse(is.na(`Lat: sec`), 0, `Lat: sec`)) %>%
   mutate(lat = ifelse(`N / S`=="South",
@@ -154,6 +155,7 @@ icraf.isric.sitedata <- icraf.isric.reference %>%
          site_obsdate = lubridate::ymd(paste0(site_obsdate, "-01-01"))) %>%
   rename(id.dataset.site_ascii_c = Plotcode,
          observation.date.begin_iso.8601_yyyy.mm.dd = site_obsdate) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(observation.date.end_iso.8601_yyyy.mm.dd = observation.date.begin_iso.8601_yyyy.mm.dd) %>%
   select(id.layer_local_c, latitude.point_wgs84_dd, longitude.point_wgs84_dd,
          id.dataset.site_ascii_c, observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
@@ -365,7 +367,8 @@ new.names <- gsub("m", "", old.names)
 
 icraf.isric.mir <- mir.scans %>%
   rename_with(~new.names, old.names) %>%
-  rename(id.layer_local_c = SSN)
+  rename(id.layer_local_c = SSN) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Need to resample spectra
 old.wavenumber <- na.omit(as.numeric(names(icraf.isric.mir)))
@@ -488,7 +491,8 @@ new.names <- gsub("W", "", old.names)
 
 icraf.isric.visnir <- visnir.scans %>%
   rename_with(~new.names, old.names) %>%
-  rename(id.layer_local_c = Batch.Labid)
+  rename(id.layer_local_c = Batch.Labid) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Need to resample spectra
 old.wavelengths <- na.omit(as.numeric(names(icraf.isric.visnir)))
@@ -773,7 +777,7 @@ icraf.isric.visnir %>%
 toc()
 ```
 
-    ## 100.985 sec elapsed
+    ## 99.868 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -781,8 +785,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb)  max used  (Mb)
-    ## Ncells 2632462 140.6    8872248 473.9  14388424 768.5
-    ## Vcells 7601480  58.0   89867007 685.7 112280410 856.7
+    ## Ncells 2632464 140.6    7106628 379.6  14406384 769.4
+    ## Vcells 7601540  58.0   89867076 685.7 112295044 856.8
 
 ## References
 

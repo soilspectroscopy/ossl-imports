@@ -83,6 +83,7 @@ garrett.ids <- garrett.chemical %>%
          id.dataset.site_ascii_c = `Trial ID`,
          layer.upper.depth_usda_cm = `Horizon top (cm)`,
          layer.lower.depth_usda_cm = `Horizon base (cm)`) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   filter(!is.na(id.layer_local_c)) %>%
   mutate(id.dataset.site_ascii_c = gsub("\\s", "", id.dataset.site_ascii_c))
 
@@ -285,6 +286,7 @@ garrett.soil.chemical <- garrett.chemical %>%
   rename(id.layer_local_c = `Scion_Sample ID`,
          layer.upper.depth_usda_cm = `Horizon top (cm)`,
          layer.lower.depth_usda_cm = `Horizon base (cm)`) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   select(id.layer_local_c, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, all_of(analytes.old.names)) %>%
   rename_with(~analytes.new.names, analytes.old.names) %>%
   mutate_at(vars(-id.layer_local_c), as.numeric) %>%
@@ -403,7 +405,8 @@ garrett.mir <- mir.allspectra %>%
   mutate(id.scan_local_c = scan.file_any_c, .after = scan.file_any_c) %>%
   separate(id.scan_local_c, into = c("id.scan_local_c", "table_code"), sep = "_") %>%
   select(-table_code) %>%
-  mutate(id.layer_local_c = str_sub(id.scan_local_c, 1, -3), .before = 1)
+  mutate(id.layer_local_c = str_sub(id.scan_local_c, 1, -3), .before = 1) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # The spectra is already formatted between 600-4000 cm-1
 # But it is necessary to average them

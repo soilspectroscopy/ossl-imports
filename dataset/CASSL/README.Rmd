@@ -71,13 +71,13 @@ tic()
 ```{r}
 caf.metadata <- fread(paste0(dir, "field_metadata/cssl_metadata_all.csv"), header = T)
 
-
 caf.sitedata <- caf.metadata %>%
   select(sample_id, sample_location, country_code,
          sampling_date, sampling_layer, gps_long, gps_lat, gps_true) %>%
   rename(id.layer_local_c = sample_id,
          longitude.point_wgs84_dd = gps_long,
          latitude.point_wgs84_dd = gps_lat) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   separate(sampling_layer, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>%
   mutate(layer.sequence_usda_uint16 = ifelse(layer.upper.depth_usda_cm == 0, 1, 2),
          location.point.error_any_m = ifelse(gps_true == "yes", 30, 1000)) %>%
@@ -210,6 +210,7 @@ caf.soildata <- caf.reference %>%
   rename(id.layer_local_c = sample_id) %>%
   select(id.layer_local_c, all_of(analytes.old.names)) %>%
   rename_with(~analytes.new.names, analytes.old.names) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   as.data.frame()
 
 # Removing duplicates
@@ -257,6 +258,7 @@ old.names <- names(caf.spectra)
 
 caf.mir <- caf.spectra %>%
   rename(id.layer_local_c = sample_id) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate_at(vars(all_of(old.names[-1])), as.numeric)
 
 # Need to resample spectra

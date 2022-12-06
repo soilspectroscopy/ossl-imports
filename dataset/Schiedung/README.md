@@ -2,7 +2,7 @@ Dataset import: Schiedung et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-01 December, 2022
+06 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-01  
+Last update: 2022-12-06  
 Dataset:
 [SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#schiedung.ssl)
 
@@ -64,6 +64,7 @@ schiedung.info <- read_xlsx(paste0(dir, "/ID_DRIFT_all.xlsx"), sheet = 1)
 # Formatting to OSSL standard
 schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sample_point, and increment
   dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>%
+  dplyr::mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   dplyr::rename(longitude.point_wgs84_dd = Latitute_DD, latitude.point_wgs84_dd = Longitute_DD) %>% # Author confused columns
   dplyr::mutate(id.dataset.site_ascii_c = paste(EUP, sample_point, sep = ".")) %>%
   dplyr::select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd, id.dataset.site_ascii_c) %>%
@@ -253,7 +254,8 @@ schiedung.soildata.trans <- transform_values(df = schiedung.soildata,
                                              fun.lst = functions.list)
 
 # Final soillab data
-schiedung.soildata <- schiedung.soildata.trans
+schiedung.soildata <- schiedung.soildata.trans %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Checking total number of observations
 schiedung.soildata %>%
@@ -374,7 +376,8 @@ old.wavenumbers <- seq(600, 4000, by = 2)
 new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
 
 schiedung.mir <- schiedung.mir %>%
-  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Preparing metadata
 schiedung.mir.metadata <- schiedung.mir %>%
@@ -543,7 +546,7 @@ schiedung.mir %>%
 toc()
 ```
 
-    ## 9.401 sec elapsed
+    ## 9.561 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -551,8 +554,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2579362 137.8    4659674 248.9  4659674 248.9
-    ## Vcells 5477864  41.8   32023565 244.4 40029456 305.5
+    ## Ncells 2579364 137.8    4659871 248.9  4659871 248.9
+    ## Vcells 5477930  41.8   32023680 244.4 40029598 305.5
 
 ## References
 

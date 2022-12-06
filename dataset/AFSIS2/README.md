@@ -3,7 +3,7 @@ Dataset import: TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-30 November, 2022
+06 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-11-30  
+Last update: 2022-12-06  
 Dataset:
 [AFSIS2.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis2.ssl)
 
@@ -83,6 +83,7 @@ afsis1.geo <- afsis1.geo %>%
          longitude.point_wgs84_dd = Longitude,
          latitude.point_wgs84_dd = Latitude,
          surveyor.title_utf8_txt = Scientist) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
          layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
          layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
@@ -100,6 +101,7 @@ tansis.geo <- tansis.geo %>%
          longitude.point_wgs84_dd = Longitude,
          latitude.point_wgs84_dd = Latitude,
          surveyor.title_utf8_txt = Scientist) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
          layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
          layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
@@ -128,6 +130,7 @@ afsis2.sitedata <- samples %>%
   left_join(afsis2.geo, by = c("SSN" = "id.layer_local_c")) %>%
   mutate(SSN = str_to_upper(SSN)) %>%
   rename(id.layer_local_c = SSN) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   filter(id.layer_local_c %in% reference.ids) %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-01-01"),
          observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-12-31")) %>%
@@ -279,6 +282,7 @@ analytes.new.names <- transvalues %>%
 # Selecting and renaming
 afsis2.soildata <- afsis2.reference %>%
   rename(id.layer_local_c = SSN) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   select(id.layer_local_c, all_of(analytes.old.names)) %>%
   rename_with(~analytes.new.names, analytes.old.names) %>%
   as.data.frame()
@@ -385,6 +389,7 @@ new.names <- gsub("X", "", old.names)
 afsis2.mir <- mir.scans %>%
   rename_with(~new.names, old.names) %>%
   rename(id.layer_local_c = SSN) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate_at(vars(all_of(new.names[-1])), as.numeric)
 
 # Need to resample spectra
@@ -619,7 +624,7 @@ afsis2.mir %>%
 toc()
 ```
 
-    ## 42.168 sec elapsed
+    ## 43.625 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -627,8 +632,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells  2611279 139.5   13566682  724.6  16958352  905.7
-    ## Vcells 55607542 424.3  186651123 1424.1 186651123 1424.1
+    ## Ncells  2611103 139.5   13566694  724.6  16958367  905.7
+    ## Vcells 55609186 424.3  186406364 1422.2 186121256 1420.0
 
 ## References
 

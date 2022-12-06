@@ -75,6 +75,7 @@ schiedung.info <- read_xlsx(paste0(dir, "/ID_DRIFT_all.xlsx"), sheet = 1)
 # Formatting to OSSL standard
 schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sample_point, and increment
   dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>%
+  dplyr::mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   dplyr::rename(longitude.point_wgs84_dd = Latitute_DD, latitude.point_wgs84_dd = Longitute_DD) %>% # Author confused columns
   dplyr::mutate(id.dataset.site_ascii_c = paste(EUP, sample_point, sep = ".")) %>%
   dplyr::select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd, id.dataset.site_ascii_c) %>%
@@ -255,7 +256,8 @@ schiedung.soildata.trans <- transform_values(df = schiedung.soildata,
                                              fun.lst = functions.list)
 
 # Final soillab data
-schiedung.soildata <- schiedung.soildata.trans
+schiedung.soildata <- schiedung.soildata.trans %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Checking total number of observations
 schiedung.soildata %>%
@@ -363,7 +365,8 @@ old.wavenumbers <- seq(600, 4000, by = 2)
 new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
 
 schiedung.mir <- schiedung.mir %>%
-  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Preparing metadata
 schiedung.mir.metadata <- schiedung.mir %>%

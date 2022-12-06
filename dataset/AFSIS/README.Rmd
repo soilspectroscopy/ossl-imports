@@ -79,7 +79,8 @@ afsis1.geo <- afsis1.geo %>%
          longitude.point_wgs84_dd = Longitude,
          latitude.point_wgs84_dd = Latitude,
          surveyor.title_utf8_txt = Scientist) %>%
-  mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
+  mutate(id.layer_local_c = as.character(id.layer_local_c),
+         layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
          layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
          layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2011-01-01"),
@@ -260,7 +261,8 @@ afsis1.soildata.trans <- transform_values(df = afsis1.soildata,
                                           fun.lst = functions.list)
 
 # Final soillab data
-afsis1.soildata <- afsis1.soildata.trans
+afsis1.soildata <- afsis1.soildata.trans %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Checking total number of observations
 afsis1.soildata %>%
@@ -361,7 +363,8 @@ old.wavenumbers <- seq(600, 4000, by = 2)
 new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
 
 afsis1.mir <- afsis1.mir %>%
-  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
 
 # Preparing metadata
 afsis1.mir.metadata <- afsis1.mir %>%

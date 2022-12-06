@@ -87,6 +87,7 @@ afsis1.geo <- afsis1.geo %>%
          longitude.point_wgs84_dd = Longitude,
          latitude.point_wgs84_dd = Latitude,
          surveyor.title_utf8_txt = Scientist) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
          layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
          layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
@@ -104,6 +105,7 @@ tansis.geo <- tansis.geo %>%
          longitude.point_wgs84_dd = Longitude,
          latitude.point_wgs84_dd = Latitude,
          surveyor.title_utf8_txt = Scientist) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(layer.upper.depth_usda_cm = ifelse(Depth == "top", 0, 20),
          layer.lower.depth_usda_cm = ifelse(Depth == "top", 20, 50),
          layer.sequence_usda_uint16 = ifelse(Depth == "top", 1, 2)) %>%
@@ -132,6 +134,7 @@ afsis2.sitedata <- samples %>%
   left_join(afsis2.geo, by = c("SSN" = "id.layer_local_c")) %>%
   mutate(SSN = str_to_upper(SSN)) %>%
   rename(id.layer_local_c = SSN) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   filter(id.layer_local_c %in% reference.ids) %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-01-01"),
          observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-12-31")) %>%
@@ -277,6 +280,7 @@ analytes.new.names <- transvalues %>%
 # Selecting and renaming
 afsis2.soildata <- afsis2.reference %>%
   rename(id.layer_local_c = SSN) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   select(id.layer_local_c, all_of(analytes.old.names)) %>%
   rename_with(~analytes.new.names, analytes.old.names) %>%
   as.data.frame()
@@ -378,6 +382,7 @@ new.names <- gsub("X", "", old.names)
 afsis2.mir <- mir.scans %>%
   rename_with(~new.names, old.names) %>%
   rename(id.layer_local_c = SSN) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate_at(vars(all_of(new.names[-1])), as.numeric)
 
 # Need to resample spectra
