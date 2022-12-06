@@ -118,16 +118,17 @@ lucas.2015 <- lucas.2015 %>%
 lucas.sitedata <- bind_rows(lucas.2009, lucas.2015) %>% 
   mutate(longitude.point_wgs84_dd = longitude.point_wgs84_dd + rnorm(n(), 0, 0.005),
          latitude.point_wgs84_dd = latitude.point_wgs84_dd + rnorm(n(), 0, 0.005)) %>% 
-  mutate(id.project_ascii_c = "Land Use and Coverage Area frame Survey (LUCAS) topsoil data",
+  mutate(id.project_ascii_txt = "Land Use and Coverage Area frame Survey (LUCAS) topsoil data",
          id.dataset.site_ascii_c = str_sub(id.layer_local_c, 6, -1),
-         id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         layer.texture_usda_c = "",
-         horizon.designation_usda_c = "",
+         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         layer.texture_usda_txt = "",
+         pedon.taxa_usda_txt = "",
+         horizon.designation_usda_txt = "",
          longitude.county_wgs84_dd = NA,
          latitude.county_wgs84_dd = NA,
          location.point.error_any_m = 1000,
-         location.country_iso.3166_c = "",
+         location.country_iso.3166_txt = "",
          observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
          observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
          surveyor.title_utf8_txt = "Institute for Environment and Sustainability (Joint Research Centre)",
@@ -135,7 +136,7 @@ lucas.sitedata <- bind_rows(lucas.2009, lucas.2015) %>%
          surveyor.address_utf8_txt = "",
          dataset.title_utf8_txt = "LUCAS 2009, 2015 topsoil data",
          dataset.owner_utf8_txt = "European Soil Data Centre (ESDAC), European Commission, Joint Research Centre",
-         dataset.code_ascii_c = "LUCAS.SSL",
+         dataset.code_ascii_txt = "LUCAS.SSL",
          dataset.address_idn_url = "https://esdac.jrc.ec.europa.eu/resource-type/soil-point-data",
          dataset.license.title_ascii_txt = "JRC License Agreement",
          dataset.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/resource-type/soil-point-data",
@@ -403,7 +404,7 @@ visnir.metadata.2009 <- visnir.scans.2009 %>%
          scan.visnir.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2012-08-01")) %>%
   mutate(scan.visnir.license.title_ascii_txt = "JRC License Agreement",
          scan.visnir.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/content/lucas-2009-topsoil-data",
-         scan.visnir.doi_idf_c = "https://data.europa.eu/doi/10.2788/97922")
+         scan.visnir.doi_idf_url = "https://data.europa.eu/doi/10.2788/97922")
 
 lucas.visnir.2009 <- left_join(visnir.metadata.2009, visnir.scans.2009, by = "id.scan_local_c") %>%
   left_join(lucas.2009.keys, ., by = "id.scan_local_c")
@@ -439,7 +440,7 @@ visnir.metadata.2015 <- visnir.scans.2015 %>%
          scan.visnir.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2015-12-01")) %>%
   mutate(scan.visnir.license.title_ascii_txt = "JRC License Agreement",
          scan.visnir.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/content/lucas-2015-topsoil-data",
-         scan.visnir.doi_idf_c = "https://data.europa.eu/doi/10.2760/616084")
+         scan.visnir.doi_idf_url = "https://data.europa.eu/doi/10.2760/616084")
 
 lucas.visnir.2015 <- left_join(visnir.metadata.2015, visnir.scans.2015, by = "id.layer_local_c")
 
@@ -451,12 +452,12 @@ lucas.visnir.2015 <- lucas.visnir.2015 %>%
 lucas.visnir <- bind_rows(lucas.visnir.2009, lucas.visnir.2015) %>%
   mutate(id.scan_local_c = id.layer_local_c, .after = id.layer_local_c) %>%
   mutate(scan.visnir.model.name_utf8_txt = "XDS Rapid Content Analyzer",
-         scan.visnir.model.code_any_c = "XDS_Rapid_Content_Analyzer",
-         scan.visnir.method.light.source_any_c = "",
-         scan.visnir.method.preparation_any_c = "",
+         scan.visnir.model.code_any_txt = "XDS_Rapid_Content_Analyzer",
+         scan.visnir.method.light.source_any_txt = "",
+         scan.visnir.method.preparation_any_txt = "",
          scan.visnir.contact.name_utf8_txt = "ESDAC - European Commission",
-         scan.visnir.contact.email_ietf_email = "ec-esdac@jrc.ec.europa.eu",
-         .after = scan.visnir.doi_idf_c)
+         scan.visnir.contact.email_ietf_txt = "ec-esdac@jrc.ec.europa.eu",
+         .after = scan.visnir.doi_idf_url)
 
 old.wavelengths <- as.character(seq(400, 2500, by = 2))
 new.wavelengths <- paste0("scan_visnir.", old.wavelengths, "_ref")
@@ -602,22 +603,22 @@ lucas.mir <- lucas.mir.clean %>%
 lucas.mir.metadata <- mir.scans %>%
   select(POINT_ID, WHRC_ID, run_date) %>%
   rename(id.layer_local_c = POINT_ID, id.scan_local_c = WHRC_ID,
-         scan.date.begin_iso.8601_yyyy.mm.dd = run_date) %>%
+         scan.mir.date.begin_iso.8601_yyyy.mm.dd = run_date) %>%
   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(id.layer_local_c = paste0("2009.", id.layer_local_c),
-         scan.date.begin_iso.8601_yyyy.mm.dd = dmy(scan.date.begin_iso.8601_yyyy.mm.dd)) %>%
+         scan.mir.date.begin_iso.8601_yyyy.mm.dd = dmy(scan.mir.date.begin_iso.8601_yyyy.mm.dd)) %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
-  mutate(dataset.code_ascii_c = "LUCAS.WOODWELL.SSL",
-         scan.date.end_iso.8601_yyyy.mm.dd = scan.date.begin_iso.8601_yyyy.mm.dd,
+  mutate(dataset.code_ascii_txt = "LUCAS.WOODWELL.SSL",
+         scan.mir.date.end_iso.8601_yyyy.mm.dd = scan.mir.date.begin_iso.8601_yyyy.mm.dd,
          scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
-         scan.mir.model.code_any_c = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.light.source_any_c = "",
-         scan.mir.method.preparation_any_c = "",
+         scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
+         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         scan.mir.doi_idf_c = "https://doi.org/10.3390/s20236729",
+         scan.mir.doi_idf_url = "https://doi.org/10.3390/s20236729",
          scan.mir.contact.name_utf8_txt = "Jonathan Sanderman",
-         scan.mir.contact.email_ietf_email = "jsanderman@woodwellclimate.org")
+         scan.mir.contact.email_ietf_txt = "jsanderman@woodwellclimate.org")
 
 # Final preparation
 lucas.mir.export <- lucas.mir.metadata %>%
@@ -643,14 +644,14 @@ The availabilty of data is summarised below:
 lucas.availability <- lucas.visnir.export %>%
   select(id.layer_local_c, scan_visnir.450_ref) %>%
   full_join({lucas.mir.export %>%
-      select(id.layer_local_c, dataset.code_ascii_c, scan_mir.600_abs)}, by = "id.layer_local_c") %>%
+      select(id.layer_local_c, dataset.code_ascii_txt, scan_mir.600_abs)}, by = "id.layer_local_c") %>%
   left_join({lucas.sitedata %>%
-      select(id.layer_local_c, dataset.code_ascii_c, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
+      select(id.layer_local_c, dataset.code_ascii_txt, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
   left_join({lucas.soildata %>%
       select(id.layer_local_c, oc_ISO.10694_w.pct)}, by = "id.layer_local_c") %>%
-  mutate(dataset.code_ascii_c = coalesce(dataset.code_ascii_c.x, dataset.code_ascii_c.y, NA),
+  mutate(dataset.code_ascii_txt = coalesce(dataset.code_ascii_txt.x, dataset.code_ascii_txt.y, NA),
          .before = 1) %>%
-  select(-dataset.code_ascii_c.x, -dataset.code_ascii_c.y) %>%
+  select(-dataset.code_ascii_txt.x, -dataset.code_ascii_txt.y) %>%
   filter(!is.na(id.layer_local_c))
 
 # Availability of information from lucas

@@ -160,15 +160,16 @@ icraf.isric.sitedata <- icraf.isric.reference %>%
   select(id.layer_local_c, latitude.point_wgs84_dd, longitude.point_wgs84_dd,
          id.dataset.site_ascii_c, observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
          layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, pedon.taxa_usda_c) %>% 
-  mutate(id.project_ascii_c = "ICRAF-ISRIC Soil Spectral Library",
-         id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         layer.texture_usda_c = "",
-         horizon.designation_usda_c = "",
+  mutate(id.project_ascii_txt = "ICRAF-ISRIC Soil Spectral Library",
+         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         layer.texture_usda_txt = "",
+         pedon.taxa_usda_txt = "",
+         horizon.designation_usda_txt = "",
          longitude.county_wgs84_dd = NA,
          latitude.county_wgs84_dd = NA,
          location.point.error_any_m = 30,
-         location.country_iso.3166_c = "",
+         location.country_iso.3166_txt = "",
          observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
          observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
          surveyor.title_utf8_txt = "Stephan Mantel",
@@ -176,7 +177,7 @@ icraf.isric.sitedata <- icraf.isric.reference %>%
          surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya",
          dataset.title_utf8_txt = "ICRAF-ISRIC Soil Spectral Library",
          dataset.owner_utf8_txt = "World Agroforestry Centre (ICRAF) / ISRIC - World Soil Information",
-         dataset.code_ascii_c = "ICRAF.ISRIC",
+         dataset.code_ascii_txt = "ICRAF.ISRIC",
          dataset.address_idn_url = "https://www.isric.org/explore/ISRIC-collections",
          dataset.doi_idf_url = "https://doi.org/10.34725/DVN/MFHA9C",
          dataset.license.title_ascii_txt = "CC-BY",
@@ -461,14 +462,14 @@ icraf.isric.mir.metadata <- icraf.isric.mir %>%
   mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2004-02-01"),
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2004-11-01"),
          scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
-         scan.mir.model.code_any_c = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.light.source_any_c = "",
-         scan.mir.method.preparation_any_c = "",
+         scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
+         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         scan.mir.doi_idf_c = "https://doi.org/10.34725/DVN/MFHA9C",
+         scan.mir.doi_idf_url = "https://doi.org/10.34725/DVN/MFHA9C",
          scan.mir.contact.name_utf8_txt = "Keith Shepherd",
-         scan.mir.contact.email_ietf_email = "afsis.info@africasoils.net")
+         scan.mir.contact.email_ietf_txt = "afsis.info@africasoils.net")
 
 # Final preparation
 icraf.isric.mir.export <- icraf.isric.mir.metadata %>%
@@ -581,14 +582,14 @@ icraf.isric.visnir.metadata <- icraf.isric.visnir %>%
   mutate(scan.visnir.date.begin_iso.8601_yyyy.mm.dd = ymd("2004-02-01"),
          scan.visnir.date.end_iso.8601_yyyy.mm.dd = ymd("2004-11-01"),
          scan.visnir.model.name_utf8_txt = "ASD FieldSpec Pro FR",
-         scan.visnir.model.code_any_c = "ASD_FieldSpec_FR",
-         scan.visnir.method.light.source_any_c = "4.5 W halogen lamp",
-         scan.visnir.method.preparation_any_c = "",
+         scan.visnir.model.code_any_txt = "ASD_FieldSpec_FR",
+         scan.visnir.method.light.source_any_txt = "4.5 W halogen lamp",
+         scan.visnir.method.preparation_any_txt = "",
          scan.visnir.license.title_ascii_txt = "CC-BY",
          scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         scan.visnir.doi_idf_c = "https://doi.org/10.34725/DVN/MFHA9C",
+         scan.visnir.doi_idf_url = "https://doi.org/10.34725/DVN/MFHA9C",
          scan.visnir.contact.name_utf8_txt = "Keith Shepherd",
-         scan.visnir.contact.email_ietf_email = "afsis.info@africasoils.net")
+         scan.visnir.contact.email_ietf_txt = "afsis.info@africasoils.net")
 
 # Final preparation
 icraf.isric.visnir.export <- icraf.isric.visnir.metadata %>%
@@ -781,7 +782,7 @@ icraf.isric.visnir %>%
 toc()
 ```
 
-    ## 100.646 sec elapsed
+    ## 100.934 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -789,8 +790,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb)  max used  (Mb)
-    ## Ncells 2632508 140.6    7101248 379.3  14395440 768.8
-    ## Vcells 7601770  58.0   89861607 685.6 112295295 856.8
+    ## Ncells 2632515 140.6    7102794 379.4  14398585 769.0
+    ## Vcells 7601803  58.0   89870965 685.7 112303419 856.9
 
 ## References
 

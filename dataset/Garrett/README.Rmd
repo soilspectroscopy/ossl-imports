@@ -97,7 +97,7 @@ garrett.soilprofile <- readxl::read_xlsx(paste0(dir, "/FR380_soilprofile.xlsx"),
 garrett.sitedata <- garrett.sitedescription %>%
   select(`Trial ID`, `Date observed`, `Latitude (°)`, `Longitude (°)`, `Soil type`) %>%
   rename(longitude.point_wgs84_dd = `Longitude (°)`, latitude.point_wgs84_dd = `Latitude (°)`,
-         id.dataset.site_ascii_c = `Trial ID`, layer.texture_usda_c = `Soil type`) %>%
+         id.dataset.site_ascii_c = `Trial ID`, layer.texture_usda_txt = `Soil type`) %>%
   mutate(id.dataset.site_ascii_c = gsub("\\s", "", id.dataset.site_ascii_c)) %>%
   mutate(`Date observed` = lubridate::ymd(`Date observed`)) %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = stringr::str_c(lubridate::year(`Date observed`),
@@ -112,21 +112,20 @@ garrett.sitedata <- garrett.sitedescription %>%
          longitude.point_wgs84_dd, latitude.point_wgs84_dd,
          observation.date.begin_iso.8601_yyyy.mm.dd,
          observation.date.end_iso.8601_yyyy.mm.dd,
-         layer.texture_usda_c) %>%
+         layer.texture_usda_txt) %>%
   left_join({garrett.ids %>%
       select(-contains("LCR"))}, ., by = "id.dataset.site_ascii_c") %>%
-  mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c), # Adding missing metadata
-         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         id.project_ascii_c = "Forest soil data from New Zealand (Scion Research)",
+  mutate(id.layer_uuid_txt = openssl::md5(id.layer_local_c), # Adding missing metadata
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         id.project_ascii_txt = "Forest soil data from New Zealand (Scion Research)",
          observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library',
          observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io',
-         pedon.taxa_usda_c = "",
-         horizon.designation_usda_c = "",
+         pedon.taxa_usda_txt = "",
+         horizon.designation_usda_txt = "",
          longitude.county_wgs84_dd = NA,
          latitude.county_wgs84_dd = NA,
-         location.address_utf8_txt = "New Zealand",
-         location.country_iso.3166_c = "NZL",
-         location.error_any_m = 1111, # Only two decimal places in lat long
+         location.country_iso.3166_txt = "NZL",
+         location.point.error_any_m = 1111, # Only two decimal places in lat long
          surveyor.title_utf8_txt = "Loretta Garrett",
          surveyor.contact_ietf_email = "loretta.garrett@scionresearch.com",
          surveyor.address_utf8_txt = 'Scion, Private Bag 3020, Rotorua 3046, New Zealand',
@@ -136,26 +135,25 @@ garrett.sitedata <- garrett.sitedescription %>%
          dataset.address_idn_url = 'https://doi.org/10.6084/m9.figshare.20506587.v2',
          dataset.license.title_ascii_txt = 'CC-BY',
          dataset.license.address_idn_url = 'https://creativecommons.org/licenses/by/4.0/legalcode',
-         dataset.doi_idf_c = 'https://doi.org/10.6084/m9.figshare.20506587.v2',
+         dataset.doi_idf_url = 'https://doi.org/10.6084/m9.figshare.20506587.v2',
          dataset.contact.name_utf8_txt = "Loretta Garrett",
-         dataset.contact.email_ietf_email = "loretta.garrett@scionresearch.com") %>%
-  select(id.layer_uuid_c, # Following the sequence from ossl-manual
+         dataset.contact_ietf_email = "loretta.garrett@scionresearch.com") %>%
+  select(id.layer_uuid_txt, # Following the sequence from ossl-manual
          id.layer_local_c,
-         id.location_olc_c,
+         id.location_olc_txt,
          id.dataset.site_ascii_c,
-         id.project_ascii_c,
+         id.project_ascii_txt,
          observation.date.begin_iso.8601_yyyy.mm.dd,
          observation.date.end_iso.8601_yyyy.mm.dd,
          longitude.point_wgs84_dd,
          latitude.point_wgs84_dd,
-         pedon.taxa_usda_c,
-         layer.texture_usda_c,
-         horizon.designation_usda_c,
+         pedon.taxa_usda_txt,
+         layer.texture_usda_txt,
+         horizon.designation_usda_txt,
          longitude.county_wgs84_dd,
          latitude.county_wgs84_dd,
-         location.address_utf8_txt,
-         location.country_iso.3166_c,
-         location.error_any_m,
+         location.country_iso.3166_txt,
+         location.point.error_any_m,
          observation.ogc.schema.title_ogc_txt,
          observation.ogc.schema_idn_url,
          surveyor.title_utf8_txt,
@@ -167,9 +165,9 @@ garrett.sitedata <- garrett.sitedescription %>%
          dataset.address_idn_url,
          dataset.license.title_ascii_txt,
          dataset.license.address_idn_url,
-         dataset.doi_idf_c,
+         dataset.doi_idf_url,
          dataset.contact.name_utf8_txt,
-         dataset.contact.email_ietf_email) %>%
+         dataset.contact_ietf_email) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
@@ -428,14 +426,14 @@ garrett.mir.metadata <- garrett.mir %>%
   mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2019-07-01"),
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2019-08-31"),
          scan.mir.model.name_utf8_txt = "Bruker Invenio-S with HTS-XT",
-         scan.mir.model.code_any_c = "Bruker_InvenioS_HTS.XT",
-         scan.mir.method.light.source_any_c = "",
-         scan.mir.method.preparation_any_c = "",
+         scan.mir.model.code_any_txt = "Bruker_InvenioS_HTS.XT",
+         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         scan.mir.doi_idf_c = "https://doi.org/10.6084/m9.figshare.20506587.v2",
+         scan.mir.doi_idf_url = "https://doi.org/10.6084/m9.figshare.20506587.v2",
          scan.mir.contact.name_utf8_txt = "Loretta Garrett",
-         scan.mir.contact.email_ietf_email = "loretta.garrett@scionresearch.com")
+         scan.mir.contact.email_ietf_txt = "loretta.garrett@scionresearch.com")
 
 # Final preparation
 garrett.mir.export <- garrett.mir.metadata %>%

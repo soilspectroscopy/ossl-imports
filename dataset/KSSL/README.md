@@ -385,30 +385,31 @@ sitedata.summary
 # Formatting to OSSL names
 kssl.sitedata <- kssl.sitedata %>%
   rename(id.layer_local_c = lay.id,
-         id.project_ascii_c = submit.proj.name,
+         id.project_ascii_txt = submit.proj.name,
          id.dataset.site_ascii_c = lims.pedon.id,
          layer.upper.depth_usda_cm = lay.depth.to.top,
          layer.lower.depth_usda_cm = lay.depth.to.bottom,
-         layer.texture_usda_c = texture.description,
-         pedon.taxa_usda_c = taxonomic.classification.name,
-         horizon.designation_usda_c = horizon.designation,
+         layer.texture_usda_txt = texture.description,
+         pedon.taxa_usda_txt = taxonomic.classification.name,
+         horizon.designation_usda_txt = horizon.designation,
          observation.date.end_iso.8601_yyyy.mm.dd = fiscal.year,
          longitude.point_wgs84_dd = longitude.std.decimal.degrees,
          latitude.point_wgs84_dd = latitude.std.decimal.degrees,
          longitude.county_wgs84_dd = long.xcntr,
          latitude.county_wgs84_dd = lat.ycntr) %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
-  select(id.layer_local_c, id.project_ascii_c, id.dataset.site_ascii_c,
-         layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, layer.texture_usda_c,
-         horizon.designation_usda_c, observation.date.end_iso.8601_yyyy.mm.dd,
+  mutate(id.layer_local_c = as.character(id.layer_local_c),
+         id.project_ascii_txt = paste0("KSSL: ", id.project_ascii_txt)) %>%
+  select(id.layer_local_c, id.project_ascii_txt, id.dataset.site_ascii_c,
+         layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, layer.texture_usda_txt,
+         horizon.designation_usda_txt, observation.date.end_iso.8601_yyyy.mm.dd,
          longitude.point_wgs84_dd, latitude.point_wgs84_dd,
          longitude.county_wgs84_dd, latitude.county_wgs84_dd) %>%
   mutate(observation.date.end_iso.8601_yyyy.mm.dd = ymd(paste0(observation.date.end_iso.8601_yyyy.mm.dd, "-12-31"))) %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = floor_date(observation.date.end_iso.8601_yyyy.mm.dd, "year"),
          .before = observation.date.end_iso.8601_yyyy.mm.dd) %>%
-  mutate(layer.sequence_usda_uint16 = NA, .after = layer.texture_usda_c) %>%
+  mutate(layer.sequence_usda_uint16 = NA, .after = layer.texture_usda_txt) %>%
   mutate(location.point.error_any_m = 30,
-         location.country_iso.3166_c = "USA",
+         location.country_iso.3166_txt = "USA",
          observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
          observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
          surveyor.title_utf8_txt = "USDA NRCS staff",
@@ -416,15 +417,15 @@ kssl.sitedata <- kssl.sitedata %>%
          surveyor.address_utf8_txt = "USDA-NRCS-NSSC, Federal Building, Room 152, Mail Stop, 100 Centennial Mall North, Lincoln, NE",
          dataset.title_utf8_txt = "Kellogg Soil Survey Laboratory database",
          dataset.owner_utf8_txt = "USDA, Soil and Plant Science Division, National Soil Survey Center",
-         dataset.code_ascii_c = "KSSL.SSL",
+         dataset.code_ascii_txt = "KSSL.SSL",
          dataset.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/",
          dataset.license.title_ascii_txt = "CC-BY",
          dataset.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx",
          dataset.doi_idf_url = "",
          dataset.contact.name_utf8_txt = "Scarlett Murphy",
          dataset.contact_ietf_email = "Scarlett.Murphy@usda.gov") %>%
-  mutate(id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10), 
+  mutate(id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10), 
          .after = id.dataset.site_ascii_c) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
@@ -820,14 +821,14 @@ metadata <- bind_rows(metadata1, metadata2)
 kssl.mir.metadata <- metadata %>%
   mutate(scan.mir.date.end_iso.8601_yyyy.mm.dd = scan.mir.date.begin_iso.8601_yyyy.mm.dd,
          scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
-         scan.mir.model.code_any_c = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.light.source_any_c = "KBr",
-         scan.mir.method.preparation_any_c = str_sub(id.scan_local_c, -2, -1),
+         scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
+         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.preparation_any_txt = str_sub(id.scan_local_c, -2, -1),
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx",
-         scan.mir.doi_idf_c = "",
+         scan.mir.doi_idf_url = "",
          scan.mir.contact.name_utf8_txt = "Scarlett Murphy",
-         scan.mir.contact.email_ietf_email = "Scarlett.Murphy@usda.gov") %>%
+         scan.mir.contact.email_ietf_txt = "Scarlett.Murphy@usda.gov") %>%
   group_by(id.scan_local_c) %>%
   summarise_all(first)
 
@@ -940,14 +941,14 @@ kssl.visnir.metadata <- visnir.scans %>%
   mutate(scan.visnir.date.begin_iso.8601_yyyy.mm.dd = ymd(mdy(scan.visnir.date.begin_iso.8601_yyyy.mm.dd)),
          scan.visnir.date.end_iso.8601_yyyy.mm.dd = scan.visnir.date.begin_iso.8601_yyyy.mm.dd) %>%
   mutate(scan.visnir.model.name_utf8_txt = "ASD Labspec 2500 with Muglight accessory",
-         scan.visnir.model.code_any_c = "ASD_Labspec_2500_MA",
-         scan.visnir.method.light.source_any_c = "",
-         scan.visnir.method.preparation_any_c = "",
+         scan.visnir.model.code_any_txt = "ASD_Labspec_2500_MA",
+         scan.visnir.method.light.source_any_txt = "",
+         scan.visnir.method.preparation_any_txt = "",
          scan.visnir.license.title_ascii_txt = "CC-BY",
          scan.visnir.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx",
-         scan.visnir.doi_idf_c = "",
+         scan.visnir.doi_idf_url = "",
          scan.visnir.contact.name_utf8_txt = "Scarlett Murphy",
-         scan.visnir.contact.email_ietf_email = "Scarlett.Murphy@usda.gov")
+         scan.visnir.contact.email_ietf_txt = "Scarlett.Murphy@usda.gov")
 
 # Final table
 kssl.visnir.export <- right_join(kssl.visnir.metadata, kssl.visnir, by = "id.scan_local_c") %>%
@@ -1192,7 +1193,7 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 233.26 sec elapsed
+    ## 231.023 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1200,8 +1201,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2621749 140.1   15856040  846.9   19820050 1058.6
-    ## Vcells 35783533 273.1  802290223 6121.0 1002862666 7651.3
+    ## Ncells  2621758 140.1   15910282  849.8   19887852 1062.2
+    ## Vcells 35785674 273.1  802700860 6124.2 1003376075 7655.2
 
 ## References
 

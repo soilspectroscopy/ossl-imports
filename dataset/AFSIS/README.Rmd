@@ -92,22 +92,23 @@ afsis1.geo <- afsis1.geo %>%
 
 # Preparing dataset
 afsis1.sitedata <- afsis1.geo %>%
-  mutate(id.project_ascii_c = "Africa Soil Information Service (AfSIS-1)",
-         id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         layer.texture_usda_c = "",
-         horizon.designation_usda_c = "",
+  mutate(id.project_ascii_txt = "Africa Soil Information Service (AfSIS-1)",
+         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         layer.texture_usda_txt = "",
+         pedon.taxa_usda_txt = "",
+         horizon.designation_usda_txt = "",
          longitude.county_wgs84_dd = NA,
          latitude.county_wgs84_dd = NA,
          location.point.error_any_m = 30,
-         location.country_iso.3166_c = "",
+         location.country_iso.3166_txt = "",
          observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
          observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
          surveyor.contact_ietf_email = "afsis.info@africasoils.net",
          surveyor.address_utf8_txt = "ICRAF, PO Box 30677, Nairobi, 00100, Kenya",
          dataset.title_utf8_txt = "Africa Soil Information Service (AfSIS-1)",
          dataset.owner_utf8_txt = "ICRAF, CROPNUTS, RRES",
-         dataset.code_ascii_c = "AFSIS1.SSL",
+         dataset.code_ascii_txt = "AFSIS1.SSL",
          dataset.address_idn_url = "https://www.isric.org/explore/ISRIC-collections",
          dataset.doi_idf_url = "https://doi.org/10.1016/j.geodrs.2015.06.002",
          dataset.license.title_ascii_txt = "ODC Open Database License",
@@ -374,14 +375,14 @@ afsis1.mir.metadata <- afsis1.mir %>%
   mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2009-01-01"),
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2013-12-31"),
          scan.mir.model.name_utf8_txt = "Bruker Tensor 27 with HTS-XT accessory",
-         scan.mir.model.code_any_c = "Bruker_Tensor_27.HTS.XT",
-         scan.mir.method.light.source_any_c = "",
-         scan.mir.method.preparation_any_c = "",
+         scan.mir.model.code_any_txt = "Bruker_Tensor_27.HTS.XT",
+         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         scan.mir.doi_idf_c = "https://doi.org/10.34725/DVN/QXCWP1",
+         scan.mir.doi_idf_url = "https://doi.org/10.34725/DVN/QXCWP1",
          scan.mir.contact.name_utf8_txt = "Vagen, Tor-Gunnar (World Agroforestry)",
-         scan.mir.contact.email_ietf_email = "afsis.info@africasoils.net")
+         scan.mir.contact.email_ietf_txt = "afsis.info@africasoils.net")
 
 # Final preparation
 afsis1.mir.export <- afsis1.mir.metadata %>%

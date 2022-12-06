@@ -68,21 +68,20 @@ schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
   dplyr::rename(longitude.point_wgs84_dd = Latitute_DD, latitude.point_wgs84_dd = Longitute_DD) %>% # Author confused columns
   dplyr::mutate(id.dataset.site_ascii_c = paste(EUP, sample_point, sep = ".")) %>%
   dplyr::select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd, id.dataset.site_ascii_c) %>%
-  dplyr::mutate(id.layer_uuid_c = openssl::md5(id.layer_local_c),
-                id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-                id.project_ascii_c = "High-latitude forest soil data",
+  dplyr::mutate(id.layer_uuid_txt = openssl::md5(id.layer_local_c),
+                id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+                id.project_ascii_c.txt = "High-latitude forest soil data",
                 observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library',
                 observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io',
                 observation.date.begin_iso.8601_yyyy.mm.dd = "2019-07-01",
                 observation.date.end_iso.8601_yyyy.mm.dd = "2019-08-31",
-                pedon.taxa_usda_c = "",
-                layer.texture_usda_c = "",
-                horizon.designation_usda_c = "",
+                pedon.taxa_usda_txt = "",
+                layer.texture_usda_txt = "",
+                horizon.designation_usda_txt = "",
                 longitude.county_wgs84_dd = NA,
                 latitude.county_wgs84_dd = NA,
-                location.address_utf8_txt = "North Canada",
-                location.country_iso.3166_c = "CAN",
-                location.error_any_m = 30,
+                location.country_iso.3166_txt = "CAN",
+                location.point.error_any_m = 30,
                 surveyor.title_utf8_txt = "Marcus Schiedung",
                 surveyor.contact_ietf_email = "marcus.schiedung@geo.uzh.ch",
                 surveyor.address_utf8_txt = 'University of Zurich, Winterthurerstrasse 190, 8057 Zurich, Switzerland',
@@ -92,26 +91,25 @@ schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
                 dataset.address_idn_url = 'https://zenodo.org/record/6024831',
                 dataset.license.title_ascii_txt = 'CC-BY',
                 dataset.license.address_idn_url = 'https://creativecommons.org/licenses/by/4.0/legalcode',
-                dataset.doi_idf_c = 'https://doi.org/10.5281/zenodo.6024831',
+                dataset.doi_idf_url = 'https://doi.org/10.5281/zenodo.6024831',
                 dataset.contact.name_utf8_txt = "Marcus Schiedung",
-                dataset.contact.email_ietf_email = "marcus.schiedung@geo.uzh.ch") %>%
-  dplyr::select(id.layer_uuid_c, # Following the sequence from ossl-manual
+                dataset.contact_ietf_email = "marcus.schiedung@geo.uzh.ch") %>%
+  dplyr::select(id.layer_uuid_txt, # Following the sequence from ossl-manual
                 id.layer_local_c,
-                id.location_olc_c,
+                id.location_olc_txt,
                 id.dataset.site_ascii_c,
-                id.project_ascii_c,
+                id.project_ascii_c.txt,
                 observation.date.begin_iso.8601_yyyy.mm.dd,
                 observation.date.end_iso.8601_yyyy.mm.dd,
                 longitude.point_wgs84_dd,
                 latitude.point_wgs84_dd,
-                pedon.taxa_usda_c,
-                layer.texture_usda_c,
-                horizon.designation_usda_c,
+                pedon.taxa_usda_txt,
+                layer.texture_usda_txt,
+                horizon.designation_usda_txt,
                 longitude.county_wgs84_dd,
                 latitude.county_wgs84_dd,
-                location.address_utf8_txt,
-                location.country_iso.3166_c,
-                location.error_any_m,
+                location.country_iso.3166_txt,
+                location.point.error_any_m,
                 observation.ogc.schema.title_ogc_txt,
                 observation.ogc.schema_idn_url,
                 surveyor.title_utf8_txt,
@@ -123,9 +121,9 @@ schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
                 dataset.address_idn_url,
                 dataset.license.title_ascii_txt,
                 dataset.license.address_idn_url,
-                dataset.doi_idf_c,
+                dataset.doi_idf_url,
                 dataset.contact.name_utf8_txt,
-                dataset.contact.email_ietf_email) %>%
+                dataset.contact_ietf_email) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
@@ -387,14 +385,14 @@ schiedung.mir.metadata <- schiedung.mir %>%
   mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2019-07-01"),
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2019-08-31"),
          scan.mir.model.name_utf8_txt = "Bruker Tensor 27",
-         scan.mir.model.code_any_c = "Bruker_Tensor_27",
-         scan.mir.method.light.source_any_c = "",
-         scan.mir.method.preparation_any_c = "",
+         scan.mir.model.code_any_txt = "Bruker_Tensor_27",
+         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         scan.mir.doi_idf_c = 'https://doi.org/10.5281/zenodo.6024831',
+         scan.mir.doi_idf_url = 'https://doi.org/10.5281/zenodo.6024831',
          scan.mir.contact.name_utf8_txt = "Marcus Schiedung",
-         scan.mir.contact.email_ietf_email = "marcus.schiedung@geo.uzh.ch")
+         scan.mir.contact.email_ietf_txt = "marcus.schiedung@geo.uzh.ch")
 
 # Final preparation
 schiedung.mir.export <- schiedung.mir.metadata %>%
@@ -548,7 +546,7 @@ schiedung.mir %>%
 toc()
 ```
 
-    ## 9.679 sec elapsed
+    ## 9.463 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -556,8 +554,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2579395 137.8    4660052 248.9  4660052 248.9
-    ## Vcells 5478121  41.8   32023941 244.4 40029926 305.5
+    ## Ncells 2579390 137.8    4659977 248.9  4659977 248.9
+    ## Vcells 5478077  41.8   32023077 244.4 40028832 305.4
 
 ## References
 

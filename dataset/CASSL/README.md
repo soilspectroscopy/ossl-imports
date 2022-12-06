@@ -83,14 +83,15 @@ caf.sitedata <- caf.metadata %>%
   select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd, location.point.error_any_m,
          layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
          observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd) %>%
-  mutate(id.project_ascii_c = "The Central African Soil Spectral Library",
-         id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         layer.texture_usda_c = "",
-         horizon.designation_usda_c = "",
+  mutate(id.project_ascii_txt = "The Central African Soil Spectral Library",
+         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         layer.texture_usda_txt = "",
+         pedon.taxa_usda_txt = "",
+         horizon.designation_usda_txt = "",
          longitude.county_wgs84_dd = NA,
          latitude.county_wgs84_dd = NA,
-         location.country_iso.3166_c = "",
+         location.country_iso.3166_txt = "",
          observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
          observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
          surveyor.title_utf8_txt = "Department of Environmental Systems Science, ETH Zurich, Zurich Switzerland",
@@ -98,7 +99,7 @@ caf.sitedata <- caf.metadata %>%
          surveyor.address_utf8_txt = "Department of Environmental Systems Science, ETH Zurich, Zurich Switzerland",
          dataset.title_utf8_txt = "The Central African Soil Spectral Library",
          dataset.owner_utf8_txt = "ETH Zurich",
-         dataset.code_ascii_c = "CAF.SSL",
+         dataset.code_ascii_txt = "CAF.SSL",
          dataset.address_idn_url = "https://www.isric.org/explore/ISRIC-collections",
          dataset.doi_idf_url = "https://doi.org/10.5281/zenodo.4351254",
          dataset.license.title_ascii_txt = "CC-BY",
@@ -330,14 +331,14 @@ caf.mir.metadata <- caf.mir %>%
   mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2014-01-01"),
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2018-12-31"),
          scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
-         scan.mir.model.code_any_c = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.light.source_any_c = "",
-         scan.mir.method.preparation_any_c = "",
+         scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
+         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         scan.mir.doi_idf_c = "https://doi.org/10.5281/zenodo.4351254",
+         scan.mir.doi_idf_url = "https://doi.org/10.5281/zenodo.4351254",
          scan.mir.contact.name_utf8_txt = "Laura Summerauer",
-         scan.mir.contact.email_ietf_email = "laura.summerauer@usys.ethz.ch")
+         scan.mir.contact.email_ietf_txt = "laura.summerauer@usys.ethz.ch")
 
 # Final preparation
 caf.mir.export <- caf.mir.metadata %>%
@@ -503,7 +504,7 @@ caf.mir %>%
 toc()
 ```
 
-    ## 14.511 sec elapsed
+    ## 14.577 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -511,8 +512,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2614675 139.7    4815207 257.2  4815207 257.2
-    ## Vcells 6752549  51.6   67146877 512.3 83597112 637.8
+    ## Ncells 2614682 139.7    4814485 257.2  4814485 257.2
+    ## Vcells 6752581  51.6   67152048 512.4 83600853 637.9
 
 ## References
 
