@@ -66,11 +66,11 @@ schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
   dplyr::mutate(id.layer_local_c = paste0(EUP, ".", sample_point, "_", increment), .before = 1) %>%
   dplyr::mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   dplyr::rename(longitude.point_wgs84_dd = Latitute_DD, latitude.point_wgs84_dd = Longitute_DD) %>% # Author confused columns
-  dplyr::mutate(id.dataset.site_ascii_c = paste(EUP, sample_point, sep = ".")) %>%
-  dplyr::select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd, id.dataset.site_ascii_c) %>%
+  dplyr::mutate(id.dataset.site_ascii_txt = paste(EUP, sample_point, sep = ".")) %>%
+  dplyr::select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd, id.dataset.site_ascii_txt) %>%
   dplyr::mutate(id.layer_uuid_txt = openssl::md5(id.layer_local_c),
                 id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-                id.project_ascii_c.txt = "High-latitude forest soil data",
+                id.project_ascii_txt = "High-latitude forest soil data",
                 observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library',
                 observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io',
                 observation.date.begin_iso.8601_yyyy.mm.dd = "2019-07-01",
@@ -97,8 +97,8 @@ schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
   dplyr::select(id.layer_uuid_txt, # Following the sequence from ossl-manual
                 id.layer_local_c,
                 id.location_olc_txt,
-                id.dataset.site_ascii_c,
-                id.project_ascii_c.txt,
+                id.dataset.site_ascii_txt,
+                id.project_ascii_txt,
                 observation.date.begin_iso.8601_yyyy.mm.dd,
                 observation.date.end_iso.8601_yyyy.mm.dd,
                 longitude.point_wgs84_dd,
@@ -546,7 +546,7 @@ schiedung.mir %>%
 toc()
 ```
 
-    ## 9.463 sec elapsed
+    ## 9.555 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -554,8 +554,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2579390 137.8    4659977 248.9  4659977 248.9
-    ## Vcells 5478077  41.8   32023077 244.4 40028832 305.4
+    ## Ncells 2579390 137.8    4658437 248.8  4658437 248.8
+    ## Vcells 5478082  41.8   32023080 244.4 40014706 305.3
 
 ## References
 

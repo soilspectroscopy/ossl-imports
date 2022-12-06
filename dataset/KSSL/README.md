@@ -386,7 +386,7 @@ sitedata.summary
 kssl.sitedata <- kssl.sitedata %>%
   rename(id.layer_local_c = lay.id,
          id.project_ascii_txt = submit.proj.name,
-         id.dataset.site_ascii_c = lims.pedon.id,
+         id.dataset.site_ascii_txt = lims.pedon.id,
          layer.upper.depth_usda_cm = lay.depth.to.top,
          layer.lower.depth_usda_cm = lay.depth.to.bottom,
          layer.texture_usda_txt = texture.description,
@@ -399,7 +399,7 @@ kssl.sitedata <- kssl.sitedata %>%
          latitude.county_wgs84_dd = lat.ycntr) %>%
   mutate(id.layer_local_c = as.character(id.layer_local_c),
          id.project_ascii_txt = paste0("KSSL: ", id.project_ascii_txt)) %>%
-  select(id.layer_local_c, id.project_ascii_txt, id.dataset.site_ascii_c,
+  select(id.layer_local_c, id.project_ascii_txt, id.dataset.site_ascii_txt,
          layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, layer.texture_usda_txt,
          horizon.designation_usda_txt, observation.date.end_iso.8601_yyyy.mm.dd,
          longitude.point_wgs84_dd, latitude.point_wgs84_dd,
@@ -426,7 +426,7 @@ kssl.sitedata <- kssl.sitedata %>%
          dataset.contact_ietf_email = "Scarlett.Murphy@usda.gov") %>%
   mutate(id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10), 
-         .after = id.dataset.site_ascii_c) %>%
+         .after = id.dataset.site_ascii_txt) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
@@ -1193,7 +1193,7 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 231.023 sec elapsed
+    ## 229.913 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1201,8 +1201,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2621758 140.1   15910282  849.8   19887852 1062.2
-    ## Vcells 35785674 273.1  802700860 6124.2 1003376075 7655.2
+    ## Ncells  2621758 140.1   15865214  847.3   19831517 1059.2
+    ## Vcells 35785675 273.1  802301108 6121.1 1002876268 7651.4
 
 ## References
 

@@ -73,12 +73,12 @@ garrett.ids <- garrett.chemical %>%
          `LCR_Lab letter`, `LCR_Horizon number`,
          `Horizon top (cm)`, `Horizon base (cm)`,) %>%
   rename(id.layer_local_c = `Scion_Sample ID`,
-         id.dataset.site_ascii_c = `Trial ID`,
+         id.dataset.site_ascii_txt = `Trial ID`,
          layer.upper.depth_usda_cm = `Horizon top (cm)`,
          layer.lower.depth_usda_cm = `Horizon base (cm)`) %>%
   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   filter(!is.na(id.layer_local_c)) %>%
-  mutate(id.dataset.site_ascii_c = gsub("\\s", "", id.dataset.site_ascii_c))
+  mutate(id.dataset.site_ascii_txt = gsub("\\s", "", id.dataset.site_ascii_txt))
 
 # Getting FR380_sitedescription
 garrett.sitedescription <- readxl::read_xlsx(paste0(dir, "/FR380_sitedescription.xlsx"), sheet = "FR380_site description")
@@ -90,8 +90,8 @@ garrett.soilprofile <- readxl::read_xlsx(paste0(dir, "/FR380_soilprofile.xlsx"),
 garrett.sitedata <- garrett.sitedescription %>%
   select(`Trial ID`, `Date observed`, `Latitude (°)`, `Longitude (°)`, `Soil type`) %>%
   rename(longitude.point_wgs84_dd = `Longitude (°)`, latitude.point_wgs84_dd = `Latitude (°)`,
-         id.dataset.site_ascii_c = `Trial ID`, layer.texture_usda_txt = `Soil type`) %>%
-  mutate(id.dataset.site_ascii_c = gsub("\\s", "", id.dataset.site_ascii_c)) %>%
+         id.dataset.site_ascii_txt = `Trial ID`, layer.texture_usda_txt = `Soil type`) %>%
+  mutate(id.dataset.site_ascii_txt = gsub("\\s", "", id.dataset.site_ascii_txt)) %>%
   mutate(`Date observed` = lubridate::ymd(`Date observed`)) %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = stringr::str_c(lubridate::year(`Date observed`),
                                                                      lubridate::month(`Date observed`),
@@ -101,13 +101,13 @@ garrett.sitedata <- garrett.sitedescription %>%
                                                                    lubridate::month(`Date observed`),
                                                                    lubridate::day(`Date observed`),
                                                                    sep = ".")) %>%
-  select(id.dataset.site_ascii_c,
+  select(id.dataset.site_ascii_txt,
          longitude.point_wgs84_dd, latitude.point_wgs84_dd,
          observation.date.begin_iso.8601_yyyy.mm.dd,
          observation.date.end_iso.8601_yyyy.mm.dd,
          layer.texture_usda_txt) %>%
   left_join({garrett.ids %>%
-      select(-contains("LCR"))}, ., by = "id.dataset.site_ascii_c") %>%
+      select(-contains("LCR"))}, ., by = "id.dataset.site_ascii_txt") %>%
   mutate(id.layer_uuid_txt = openssl::md5(id.layer_local_c), # Adding missing metadata
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          id.project_ascii_txt = "Forest soil data from New Zealand (Scion Research)",
@@ -134,7 +134,7 @@ garrett.sitedata <- garrett.sitedescription %>%
   select(id.layer_uuid_txt, # Following the sequence from ossl-manual
          id.layer_local_c,
          id.location_olc_txt,
-         id.dataset.site_ascii_c,
+         id.dataset.site_ascii_txt,
          id.project_ascii_txt,
          observation.date.begin_iso.8601_yyyy.mm.dd,
          observation.date.end_iso.8601_yyyy.mm.dd,
@@ -636,7 +636,7 @@ garrett.mir %>%
 toc()
 ```
 
-    ## 12.645 sec elapsed
+    ## 12.634 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -644,8 +644,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2600281 138.9    4718644 252.1  4718644 252.1
-    ## Vcells 5321308  40.6   25913231 197.8 32359150 246.9
+    ## Ncells 2600281 138.9    4722058 252.2  4722058 252.2
+    ## Vcells 5321311  40.6   25913240 197.8 32359153 246.9
 
 ## References
 

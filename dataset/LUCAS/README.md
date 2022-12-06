@@ -166,7 +166,7 @@ lucas.sitedata <- bind_rows(lucas.2009, lucas.2015) %>%
   mutate(longitude.point_wgs84_dd = longitude.point_wgs84_dd + rnorm(n(), 0, 0.005),
          latitude.point_wgs84_dd = latitude.point_wgs84_dd + rnorm(n(), 0, 0.005)) %>% 
   mutate(id.project_ascii_txt = "Land Use and Coverage Area frame Survey (LUCAS) topsoil data",
-         id.dataset.site_ascii_c = str_sub(id.layer_local_c, 6, -1),
+         id.dataset.site_ascii_txt = str_sub(id.layer_local_c, 6, -1),
          id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          layer.texture_usda_txt = "",
@@ -936,7 +936,7 @@ lucas.visnir %>%
 toc()
 ```
 
-    ## 450.001 sec elapsed
+    ## 450.684 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -944,8 +944,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells 2632854 140.7   25240667 1348.0  39438541 2106.3
-    ## Vcells 9733161  74.3  404335928 3084.9 986084975 7523.3
+    ## Ncells 2632854 140.7   25239744 1348.0  39437099 2106.2
+    ## Vcells 9733162  74.3  404335933 3084.9 986084976 7523.3
 
 ## References
 

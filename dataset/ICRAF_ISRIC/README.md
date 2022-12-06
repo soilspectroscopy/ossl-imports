@@ -138,10 +138,10 @@ isis.tax <- isis.tax %>%
 isis.sitedata <- full_join(isis.site, isis.tax, by = "SampleId") %>%
   select(-SiteId, -SampleId) %>%
   mutate(site_obsdate = ifelse(site_obsdate == 0, NA, site_obsdate),
-         pedon.taxa_usda_c = paste0(ifelse(is.na(USSG_99), USSG_75, USSG_99),
+         pedon.taxa_usda_txt = paste0(ifelse(is.na(USSG_99), USSG_75, USSG_99),
                                     " ",
                                     ifelse(is.na(USGG_99), USGG_75, USGG_99))) %>%
-  mutate(pedon.taxa_usda_c = gsub("NA| NA | NA|NA ", "", pedon.taxa_usda_c)) %>%
+  mutate(pedon.taxa_usda_txt = gsub("NA| NA | NA|NA ", "", pedon.taxa_usda_txt)) %>%
   select(-any_of(nm0.lst)) %>%
   arrange(Plotcode, site_obsdate) %>%
   group_by(Plotcode) %>%
@@ -153,13 +153,13 @@ icraf.isric.sitedata <- icraf.isric.reference %>%
   mutate(longitude.point_wgs84_dd = ifelse(is.na(lon), as.numeric(long2), as.numeric(lon)),
          latitude.point_wgs84_dd = ifelse(is.na(lat), as.numeric(lat2), as.numeric(lat)),
          site_obsdate = lubridate::ymd(paste0(site_obsdate, "-01-01"))) %>%
-  rename(id.dataset.site_ascii_c = Plotcode,
+  rename(id.dataset.site_ascii_txt = Plotcode,
          observation.date.begin_iso.8601_yyyy.mm.dd = site_obsdate) %>%
   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   mutate(observation.date.end_iso.8601_yyyy.mm.dd = observation.date.begin_iso.8601_yyyy.mm.dd) %>%
   select(id.layer_local_c, latitude.point_wgs84_dd, longitude.point_wgs84_dd,
-         id.dataset.site_ascii_c, observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
-         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, pedon.taxa_usda_c) %>% 
+         id.dataset.site_ascii_txt, observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
+         layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, pedon.taxa_usda_txt) %>% 
   mutate(id.project_ascii_txt = "ICRAF-ISRIC Soil Spectral Library",
          id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
@@ -782,7 +782,7 @@ icraf.isric.visnir %>%
 toc()
 ```
 
-    ## 100.934 sec elapsed
+    ## 99.598 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -790,8 +790,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb)  max used  (Mb)
-    ## Ncells 2632515 140.6    7102794 379.4  14398585 769.0
-    ## Vcells 7601803  58.0   89870965 685.7 112303419 856.9
+    ## Ncells 2632512 140.6    8864653 473.5  14376061 767.8
+    ## Vcells 7601800  58.0   90050552 687.1 112390039 857.5
 
 ## References
 

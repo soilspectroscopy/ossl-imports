@@ -67,72 +67,195 @@ Listing, reading and row binding `qs` files
 ```{r qs, include=TRUE, echo=TRUE, eval=TRUE}
 qs.files <- dir_ls(dir, recurse = T, regexp = glob2rx("*v1.2.qs"))
 
-qs.mir <- as.vector(grep("_mir_", qs.files, value = T))
-qs.mir.ids <- tibble(file_sequence = as.character(1:length(qs.mir)), code = basename(dirname(qs.mir)))
-
-qs.visnir <- as.vector(grep("_visnir_", qs.files, value = T))
-qs.visnir.ids <- tibble(file_sequence = as.character(1:length(qs.visnir)), code = basename(dirname(qs.visnir)))
+qs.soilsite <- as.vector(grep("_soilsite_", qs.files, value = T))
+qs.soilsite.ids <- tibble(file_sequence = as.character(1:length(qs.soilsite)), code = basename(dirname(qs.soilsite)))
 
 qs.soillab <- as.vector(grep("_soillab_", qs.files, value = T))
 qs.soillab.ids <- tibble(file_sequence = as.character(1:length(qs.soillab)), code = basename(dirname(qs.soillab)))
 
-qs.soilsite <- as.vector(grep("_soilsite_", qs.files, value = T))
-qs.soilsite.ids <- tibble(file_sequence = as.character(1:length(qs.soilsite)), code = basename(dirname(qs.soilsite)))
+qs.visnir <- as.vector(grep("_visnir_", qs.files, value = T))
+qs.visnir.ids <- tibble(file_sequence = as.character(1:length(qs.visnir)), code = basename(dirname(qs.visnir)))
 
-## Reading visnir files
-ossl.visnir <- map_dfr(.x = qs.visnir,
-                       .f = qread,
-                       .id= "file_sequence") %>%
-  left_join(qs.visnir.ids, by = "file_sequence") %>%
-  relocate(contains("_ref"), .after = last_col()) %>%
-  relocate(code, .before = 1)
-
-head(names(ossl.visnir), 20)
-tail(names(ossl.visnir), 20)
-
-## Reading mir files
-ossl.mir <- map_dfr(.x = qs.mir,
-                       .f = qread,
-                       .id= "file_sequence") %>%
-  left_join(qs.mir.ids, by = "file_sequence") %>%
-  relocate(contains("_abs"), .after = last_col()) %>%
-  relocate(code, .before = 1)
-
-head(names(ossl.mir), 20)
-tail(names(ossl.mir), 20)
-
-View(ossl.mir %>% select(!contains("_abs")))
-## Reading soillab files
-ossl.soillab <- map_dfr(.x = qs.soillab,
-                       .f = qread,
-                       .id= "file_sequence") %>%
-  left_join(qs.soillab.ids, by = "file_sequence") %>%
-  relocate(code, .before = 1)
-
-names(ossl.soillab)
+qs.mir <- as.vector(grep("_mir_", qs.files, value = T))
+qs.mir.ids <- tibble(file_sequence = as.character(1:length(qs.mir)), code = basename(dirname(qs.mir)))
 
 ## Reading soilsite files
 ossl.soilsite <- map_dfr(.x = qs.soilsite,
                        .f = function(.x) {
                          qread(.x) %>%
                            mutate_all(as.character)},
-                       .id= "file_sequence") %>%
+                       .id = "file_sequence") %>%
   left_join(qs.soilsite.ids, by = "file_sequence") %>%
   relocate(code, .before = 1)
 
-names(ossl.soilsite)
-# Remove dataset.doi_idf_c, dataset.code_ascii_txt, dataset.contact.email_ietf_email, location.error_any_m, location.address_utf8_txt
+ossl.soilsite %>%
+  glimpse()
+
+## Reading soillab files
+ossl.soillab <- map_dfr(.x = qs.soillab,
+                       .f = qread,
+                       .id = "file_sequence") %>%
+  left_join(qs.soillab.ids, by = "file_sequence") %>%
+  relocate(code, .before = 1)
+
+ossl.soillab %>%
+  glimpse()
+
+## Reading visnir files
+ossl.visnir <- map_dfr(.x = qs.visnir,
+                       .f = qread,
+                       .id = "file_sequence") %>%
+  left_join(qs.visnir.ids, by = "file_sequence") %>%
+  relocate(contains("_ref"), .after = last_col()) %>%
+  relocate(code, .before = 1)
+
+ossl.visnir %>%
+  select(!contains("_ref"), scan_visnir.1000_ref) %>%
+  glimpse()
+
+## Reading mir files
+ossl.mir <- map_dfr(.x = qs.mir,
+                       .f = qread,
+                       .id = "file_sequence") %>%
+  left_join(qs.mir.ids, by = "file_sequence") %>%
+  relocate(contains("_abs"), .after = last_col()) %>%
+  relocate(code, .before = 1)
+
+ossl.mir %>%
+  select(!contains("_abs"), scan_mir.1000_abs) %>%
+  glimpse()
+
 ```
 
 Joining data files
 ```{r join, include=TRUE, echo=TRUE, eval=TRUE}
+# First full joining mir and visnir as some observation might not have both spectra
 ossl.spectra <- full_join(ossl.mir, ossl.visnir, by = "id.layer_local_c")
-names(ossl.spectra)
 
+ossl.spectra %>%
+  select(ends_with(".x")) %>%
+  names()
+
+# Coalescing repeated columns, especially because we have LUCAS.WOODWELL code
+ossl.spectra <- ossl.spectra %>%
+  mutate(id.scan_local_c = coalesce(id.scan_local_c.x, id.scan_local_c.y, NA),
+         .after = id.scan_local_c.x) %>%
+  mutate(code = coalesce(code.x, code.y, NA),
+         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
+         .after = code.x) %>%
+  select(-id.scan_local_c.x, -id.scan_local_c.y,
+         -code.x, -code.y,
+         -file_sequence.x, -file_sequence.y)
+
+ossl.spectra %>%
+  select(ends_with(".x")) %>%
+  names()
+
+# View(ossl.spectra %>% select(!contains("_ref|_abs")))
+
+# Joining site info to soil, as some site does not have lab data
 ossl.info <- left_join(ossl.soillab, ossl.soilsite, by = "id.layer_local_c")
 
+ossl.info %>%
+  select(ends_with(".x")) %>%
+  names()
+
+# Coalescing repeated columns, especially because some depth info was available from soillab data
+ossl.info <- ossl.info %>%
+  mutate_at(vars(contains(c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"))), as.numeric) %>%
+  mutate(layer.upper.depth_usda_cm = coalesce(layer.upper.depth_usda_cm.x, layer.upper.depth_usda_cm.y, NA),
+         layer.lower.depth_usda_cm = coalesce(layer.lower.depth_usda_cm.x, layer.lower.depth_usda_cm.y, NA),
+         .after = layer.lower.depth_usda_cm.x) %>%
+  mutate(code = coalesce(code.x, code.y, NA),
+         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
+         .after = code.x) %>%
+  select(-layer.upper.depth_usda_cm.x, -layer.upper.depth_usda_cm.y,
+         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y,
+         -code.x, -code.y,
+         -file_sequence.x, -file_sequence.y)
+
+ossl.info %>%
+  select(ends_with(".x")) %>%
+  names()
+
+# Producing level 0
 ossl.level0 <- ossl.spectra %>%
   right_join(ossl.info, by = "id.layer_local_c")
+
+ossl.level0 %>%
+  select(ends_with(".x")) %>%
+  names()
+
+# Coalescing repeated columns, especially because we have LUCAS.WOODWELL code
+ossl.level0 <- ossl.level0 %>%
+  mutate(dataset.code_ascii_txt = coalesce(dataset.code_ascii_txt.x, dataset.code_ascii_txt.y, NA),
+         .after = dataset.code_ascii_txt.x) %>%
+  mutate(code = coalesce(code.x, code.y, NA),
+         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
+         .after = code.x) %>%
+  select(-dataset.code_ascii_txt.x, -dataset.code_ascii_txt.y,
+         -code.x, -code.y,
+         -file_sequence.x, -file_sequence.y)
+
+ossl.level0 %>%
+  select(ends_with(".x")) %>%
+  names()
+
+# For some reason, especially the AFSIS1 and AFSIS2 datasets, some layers have soillab and spectral measurements, but not site data
+# Therefore we will automatically fill them
+ossl.level0 %>%
+  count(dataset.code_ascii_txt)
+
+# ossl.level0 %>%
+#   select(!contains(c("_ref", "_abs"))) %>%
+#   filter(is.na(dataset.code_ascii_txt)) %>%
+#   View()
+
+soilsite.columns <- names(ossl.soilsite)
+
+ossl.level0 <- ossl.level0 %>%
+  group_by(code) %>%
+  fill(all_of(soilsite.columns)) %>%
+  ungroup()
+
+# Removing duplicates
+ossl.level0 %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  group_by(repeats) %>%
+  summarise(count = n())
+
+dupli.ids <- ossl.level0 %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(id.layer_local_c)
+
+# Check for NAs on latitude
+# Export as gpkg
+# Make world map
+# Save separate files
+# Save level 0
+# Overlay with covariates
+# Export golden dataset
+
+# Preparing final table
+ossl.level0.export <- ossl.level0 %>%
+  filter(!(id.layer_local_c %in% dupli.ids)) %>%
+  select(any_of(names(ossl.soilsite)), any_of(names(ossl.soillab)), any_of(names(ossl.spectra))) %>%
+  select(dataset.code_ascii_txt, contains("id."), everything()) %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(as.numeric(latitude.point_wgs84_dd),
+                                                    as.numeric(longitude.point_wgs84_dd), 10))
+
+ossl.level0.export %>%
+  select(!contains(c("_ref", "_abs"))) %>%
+  View()
+
+# Final count
+ossl.level0.export %>%
+  count(dataset.code_ascii_txt)
+
 ```
 
 ```{r old, include=FALSE, echo=FALSE, eval=FALSE}
