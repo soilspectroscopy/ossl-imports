@@ -248,9 +248,9 @@ ossl.level0.export <- ossl.level0 %>%
          id.location_olc_txt = olctools::encode_olc(as.numeric(latitude.point_wgs84_dd),
                                                     as.numeric(longitude.point_wgs84_dd), 10))
 
-ossl.level0.export %>%
-  select(!contains(c("_ref", "_abs"))) %>%
-  View()
+# ossl.level0.export %>%
+#   select(!contains(c("_ref", "_abs"))) %>%
+#   View()
 
 # Final count
 ossl.level0.export %>%
