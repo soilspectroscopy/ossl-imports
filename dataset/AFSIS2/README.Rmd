@@ -169,7 +169,8 @@ afsis2.sitedata <- samples %>%
          dataset.license.address_idn_url = "https://creativecommons.org/publicdomain/zero/1.0/",
          dataset.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)",
          dataset.contact_ietf_email = "L.A.WINOWIECKI@cgiar.org") %>%
-  select(-Country)
+  select(-Country) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
@@ -308,7 +309,7 @@ afsis2.soildata.trans <- transform_values(df = afsis2.soildata,
 
 # Final soillab data
 afsis2.soildata <- afsis2.soildata.trans %>%
-  mutate(id.layer_local_c = str_to_upper(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 afsis2.soildata %>%
@@ -456,7 +457,8 @@ afsis2.mir.metadata <- afsis2.mir %>%
 
 # Final preparation
 afsis2.mir.export <- afsis2.mir.metadata %>%
-  left_join(afsis2.mir, by = "id.layer_local_c")
+  left_join(afsis2.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")

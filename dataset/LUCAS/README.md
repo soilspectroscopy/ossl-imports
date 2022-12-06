@@ -212,7 +212,7 @@ dupli.ids <- lucas.sitedata %>%
 
 lucas.sitedata <- lucas.sitedata %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
-  as.data.frame()
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
@@ -464,7 +464,7 @@ lucas.2015.trans <- transform_values(df = lucas.2015,
 
 # Final soillab data
 lucas.soildata <- bind_rows(lucas.2009.trans, lucas.2015.trans) %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 lucas.soildata %>%
@@ -621,9 +621,12 @@ scans.summary %>%
     ## # … with 2 variables: check <chr>, count <int>
 
 ``` r
+lucas.visnir.export <- lucas.visnir %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
 # Saving version to dataset root dir
 soilvisnir.qs = paste0(dir, "/ossl_visnir_v1.2.qs")
-qs::qsave(lucas.visnir, soilvisnir.qs)
+qs::qsave(lucas.visnir.export, soilvisnir.qs)
 ```
 
 ### Mid-infrared spectroscopy data
@@ -745,7 +748,8 @@ lucas.mir.metadata <- mir.scans %>%
 
 # Final preparation
 lucas.mir.export <- lucas.mir.metadata %>%
-  left_join(lucas.mir, by = "id.layer_local_c")
+  left_join(lucas.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
@@ -765,7 +769,7 @@ The availabilty of data is summarised below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-lucas.availability <- lucas.visnir %>%
+lucas.availability <- lucas.visnir.export %>%
   select(id.layer_local_c, scan_visnir.450_ref) %>%
   full_join({lucas.mir.export %>%
       select(id.layer_local_c, dataset.code_ascii_c, scan_mir.600_abs)}, by = "id.layer_local_c") %>%
@@ -931,16 +935,16 @@ lucas.visnir %>%
 toc()
 ```
 
-    ## 451.787 sec elapsed
+    ## 449.555 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-    ##           used  (Mb) gc trigger (Mb)  max used   (Mb)
-    ## Ncells 2632847 140.7   26813157 1432  41895557 2237.5
-    ## Vcells 9732825  74.3  403826894 3081 985877247 7521.7
+    ##           used  (Mb) gc trigger   (Mb)  max used   (Mb)
+    ## Ncells 2632847 140.7   25240848 1348.1  39438824 2106.3
+    ## Vcells 9733077  74.3  404231342 3084.1 986020988 7522.8
 
 ## References
 

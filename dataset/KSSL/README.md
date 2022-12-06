@@ -425,7 +425,8 @@ kssl.sitedata <- kssl.sitedata %>%
          dataset.contact_ietf_email = "Scarlett.Murphy@usda.gov") %>%
   mutate(id.layer_uuid_c = openssl::md5(as.character(id.layer_local_c)),
          id.location_olc_c = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10), 
-         .after = id.dataset.site_ascii_c)
+         .after = id.dataset.site_ascii_c) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 # site.rds = paste0(dirname(dir.files), "/ossl_soilsite_v1.2.rds")
@@ -673,7 +674,7 @@ kssl.soildata.class.bind <- kssl.soildata.class %>%
 # Final soillab data
 kssl.soildata <- left_join(kssl.soildata.numeric.bind, kssl.soildata.class.bind, by = "lay.id") %>%
   rename(id.layer_local_c = lay.id) %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 kssl.soildata %>%
@@ -832,7 +833,7 @@ kssl.mir.metadata <- metadata %>%
 
 # Final table
 kssl.mir.export <- right_join(kssl.mir.metadata, kssl.mir, by = "id.scan_local_c") %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 # soilmir.rds = paste0(dirname(dir.files), "/ossl_mir_v1.2.rds")
@@ -950,7 +951,7 @@ kssl.visnir.metadata <- visnir.scans %>%
 
 # Final table
 kssl.visnir.export <- right_join(kssl.visnir.metadata, kssl.visnir, by = "id.scan_local_c") %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 # soilvisnir.rds = paste0(dirname(dir.files), "/ossl_visnir_v1.2.rds")
@@ -1191,7 +1192,7 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 228.875 sec elapsed
+    ## 233.26 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1199,8 +1200,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2621724 140.1   15869204  847.6   19836504 1059.4
-    ## Vcells 35785455 273.1  802222664 6120.5 1002778232 7650.6
+    ## Ncells  2621749 140.1   15856040  846.9   19820050 1058.6
+    ## Vcells 35783533 273.1  802290223 6121.0 1002862666 7651.3
 
 ## References
 

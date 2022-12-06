@@ -125,7 +125,8 @@ schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
                 dataset.license.address_idn_url,
                 dataset.doi_idf_c,
                 dataset.contact.name_utf8_txt,
-                dataset.contact.email_ietf_email)
+                dataset.contact.email_ietf_email) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
@@ -255,7 +256,7 @@ schiedung.soildata.trans <- transform_values(df = schiedung.soildata,
 
 # Final soillab data
 schiedung.soildata <- schiedung.soildata.trans %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 schiedung.soildata %>%
@@ -397,7 +398,8 @@ schiedung.mir.metadata <- schiedung.mir %>%
 
 # Final preparation
 schiedung.mir.export <- schiedung.mir.metadata %>%
-  left_join(schiedung.mir, by = "id.layer_local_c")
+  left_join(schiedung.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
@@ -416,7 +418,7 @@ The availabilty of data is summarised below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-schiedung.availability <- schiedung.mir %>%
+schiedung.availability <- schiedung.mir.export %>%
   select(id.layer_local_c, scan_mir.600_abs) %>%
   left_join({schiedung.sitedata %>%
       select(id.layer_local_c, latitude.point_wgs84_dd)}, by = "id.layer_local_c") %>%
@@ -546,7 +548,7 @@ schiedung.mir %>%
 toc()
 ```
 
-    ## 9.561 sec elapsed
+    ## 9.679 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -554,8 +556,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2579364 137.8    4659871 248.9  4659871 248.9
-    ## Vcells 5477930  41.8   32023680 244.4 40029598 305.5
+    ## Ncells 2579395 137.8    4660052 248.9  4660052 248.9
+    ## Vcells 5478121  41.8   32023941 244.4 40029926 305.5
 
 ## References
 

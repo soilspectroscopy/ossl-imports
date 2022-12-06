@@ -165,7 +165,8 @@ afsis2.sitedata <- samples %>%
          dataset.license.address_idn_url = "https://creativecommons.org/publicdomain/zero/1.0/",
          dataset.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)",
          dataset.contact_ietf_email = "L.A.WINOWIECKI@cgiar.org") %>%
-  select(-Country)
+  select(-Country) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
@@ -310,7 +311,7 @@ afsis2.soildata.trans <- transform_values(df = afsis2.soildata,
 
 # Final soillab data
 afsis2.soildata <- afsis2.soildata.trans %>%
-  mutate(id.layer_local_c = str_to_upper(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 afsis2.soildata %>%
@@ -468,7 +469,8 @@ afsis2.mir.metadata <- afsis2.mir %>%
 
 # Final preparation
 afsis2.mir.export <- afsis2.mir.metadata %>%
-  left_join(afsis2.mir, by = "id.layer_local_c")
+  left_join(afsis2.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
@@ -504,13 +506,12 @@ afsis2.availability %>%
   summarise(count = n())
 ```
 
-    ## # A tibble: 4 × 2
-    ##   column                    count
-    ##   <chr>                     <int>
-    ## 1 id.layer_local_c            394
-    ## 2 layer.upper.depth_usda_cm    25
-    ## 3 ph.h2o_usda.a268_index      392
-    ## 4 scan_mir.600_abs            394
+    ## # A tibble: 3 × 2
+    ##   column                 count
+    ##   <chr>                  <int>
+    ## 1 id.layer_local_c         151
+    ## 2 ph.h2o_usda.a268_index   151
+    ## 3 scan_mir.600_abs         151
 
 ``` r
 # Repeats check - Duplicates are dropped
@@ -528,7 +529,7 @@ afsis2.availability %>%
     ## # Groups:   column [1]
     ##   column           repeats count
     ##   <chr>              <int> <int>
-    ## 1 id.layer_local_c       1   394
+    ## 1 id.layer_local_c       1   151
 
 This summary shows that, at total, about 2k observations are available
 without duplicates. Originally 20k MIR scans are available but only
@@ -624,7 +625,7 @@ afsis2.mir %>%
 toc()
 ```
 
-    ## 43.625 sec elapsed
+    ## 38.991 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -632,8 +633,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells  2611103 139.5   13566694  724.6  16958367  905.7
-    ## Vcells 55609186 424.3  186406364 1422.2 186121256 1420.0
+    ## Ncells  2610914 139.5   13570993  724.8  16963741  906.0
+    ## Vcells 54368448 414.8  186417480 1422.3 175428598 1338.5
 
 ## References
 

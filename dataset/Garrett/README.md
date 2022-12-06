@@ -162,7 +162,8 @@ garrett.sitedata <- garrett.sitedescription %>%
          dataset.license.address_idn_url,
          dataset.doi_idf_c,
          dataset.contact.name_utf8_txt,
-         dataset.contact.email_ietf_email)
+         dataset.contact.email_ietf_email) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
@@ -366,7 +367,8 @@ garrett.soildata.trans <- transform_values(df = garrett.soildata,
                                            fun.lst = functions.list)
 
 # Final soillab data
-garrett.soildata <- garrett.soildata.trans
+garrett.soildata <- garrett.soildata.trans %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 garrett.soildata %>%
@@ -468,7 +470,8 @@ garrett.mir.metadata <- garrett.mir %>%
 
 # Final preparation
 garrett.mir.export <- garrett.mir.metadata %>%
-  left_join(garrett.mir, by = "id.layer_local_c")
+  left_join(garrett.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
@@ -487,7 +490,7 @@ The availabilty of data is summarised below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-garrett.availability <- garrett.mir %>%
+garrett.availability <- garrett.mir.export %>%
   select(id.layer_local_c, scan_mir.600_abs) %>%
   left_join({garrett.sitedata %>%
       select(id.layer_local_c, latitude.point_wgs84_dd)}, by = "id.layer_local_c") %>%
@@ -635,7 +638,7 @@ garrett.mir %>%
 toc()
 ```
 
-    ## 12.68 sec elapsed
+    ## 12.938 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -643,8 +646,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2600255 138.9    4722400 252.3  4722400 252.3
-    ## Vcells 5321128  40.6   25913420 197.8 32359314 246.9
+    ## Ncells 2600286 138.9    4718518 252.0  4718518 252.0
+    ## Vcells 5321330  40.6   25913686 197.8 32359505 246.9
 
 ## References
 

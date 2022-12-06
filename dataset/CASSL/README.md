@@ -104,7 +104,8 @@ caf.sitedata <- caf.metadata %>%
          dataset.license.title_ascii_txt = "CC-BY",
          dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          dataset.contact.name_utf8_txt = "Laura Summerauer",
-         dataset.contact_ietf_email = "laura.summerauer@usys.ethz.ch")
+         dataset.contact_ietf_email = "laura.summerauer@usys.ethz.ch") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
@@ -232,7 +233,8 @@ caf.soildata.trans <- transform_values(df = caf.soildata,
                                        fun.lst = functions.list)
 
 # Final soillab data
-caf.soildata <- caf.soildata.trans
+caf.soildata <- caf.soildata.trans %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 caf.soildata %>%
@@ -339,7 +341,8 @@ caf.mir.metadata <- caf.mir %>%
 
 # Final preparation
 caf.mir.export <- caf.mir.metadata %>%
-  left_join(caf.mir, by = "id.layer_local_c")
+  left_join(caf.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
@@ -358,7 +361,7 @@ The availabilty of data is summarised below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-caf.availability <- caf.mir %>%
+caf.availability <- caf.mir.export %>%
   select(id.layer_local_c, scan_mir.600_abs) %>%
   left_join({caf.sitedata %>%
       select(id.layer_local_c, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
@@ -500,7 +503,7 @@ caf.mir %>%
 toc()
 ```
 
-    ## 16.349 sec elapsed
+    ## 14.511 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -508,8 +511,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2614644 139.7    4882427 260.8  4882427 260.8
-    ## Vcells 6752343  51.6   70095708 534.8 87449604 667.2
+    ## Ncells 2614675 139.7    4815207 257.2  4815207 257.2
+    ## Vcells 6752549  51.6   67146877 512.3 83597112 637.8
 
 ## References
 

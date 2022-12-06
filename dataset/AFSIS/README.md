@@ -130,7 +130,8 @@ afsis1.sitedata <- afsis1.sitedata %>%
 
 # Removing rows without spatial coordinates
 afsis1.sitedata <- afsis1.sitedata %>%
-  filter(!(is.na(longitude.point_wgs84_dd) & is.na(latitude.point_wgs84_dd)))
+  filter(!(is.na(longitude.point_wgs84_dd) & is.na(latitude.point_wgs84_dd))) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
@@ -274,7 +275,7 @@ afsis1.soildata.trans <- transform_values(df = afsis1.soildata,
 
 # Final soillab data
 afsis1.soildata <- afsis1.soildata.trans %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 afsis1.soildata %>%
@@ -406,7 +407,8 @@ afsis1.mir.metadata <- afsis1.mir %>%
 
 # Final preparation
 afsis1.mir.export <- afsis1.mir.metadata %>%
-  left_join(afsis1.mir, by = "id.layer_local_c")
+  left_join(afsis1.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
@@ -425,7 +427,7 @@ The availabilty of data is summarised below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-afsis1.availability <- afsis1.mir %>%
+afsis1.availability <- afsis1.mir.export %>%
   select(id.layer_local_c, scan_mir.600_abs) %>%
   left_join({afsis1.sitedata %>%
       select(id.layer_local_c, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
@@ -569,7 +571,7 @@ afsis1.mir %>%
 toc()
 ```
 
-    ## 30.43 sec elapsed
+    ## 30.529 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -577,8 +579,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells  2609496 139.4    4941110  263.9   4941110  263.9
-    ## Vcells 10071948  76.9  211623999 1614.6 264529998 2018.3
+    ## Ncells  2610285 139.5    4944630  264.1   4944630  264.1
+    ## Vcells 10073834  76.9  211655744 1614.9 264569680 2018.6
 
 ## References
 

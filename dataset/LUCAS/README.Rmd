@@ -157,7 +157,7 @@ dupli.ids <- lucas.sitedata %>%
 
 lucas.sitedata <- lucas.sitedata %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
-  as.data.frame()
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
@@ -356,7 +356,7 @@ lucas.2015.trans <- transform_values(df = lucas.2015,
 
 # Final soillab data
 lucas.soildata <- bind_rows(lucas.2009.trans, lucas.2015.trans) %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c))
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 lucas.soildata %>%
@@ -501,9 +501,12 @@ scans.summary %>%
   group_by(check) %>%
   summarise(count = n())
 
+lucas.visnir.export <- lucas.visnir %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
 # Saving version to dataset root dir
 soilvisnir.qs = paste0(dir, "/ossl_visnir_v1.2.qs")
-qs::qsave(lucas.visnir, soilvisnir.qs)
+qs::qsave(lucas.visnir.export, soilvisnir.qs)
 ```
 
 ### Mid-infrared spectroscopy data
@@ -618,7 +621,8 @@ lucas.mir.metadata <- mir.scans %>%
 
 # Final preparation
 lucas.mir.export <- lucas.mir.metadata %>%
-  left_join(lucas.mir, by = "id.layer_local_c")
+  left_join(lucas.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
@@ -636,7 +640,7 @@ The final table must be joined as:
 The availabilty of data is summarised below:
 ```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
 # Taking a few representative columns for checking the consistency of joins
-lucas.availability <- lucas.visnir %>%
+lucas.availability <- lucas.visnir.export %>%
   select(id.layer_local_c, scan_visnir.450_ref) %>%
   full_join({lucas.mir.export %>%
       select(id.layer_local_c, dataset.code_ascii_c, scan_mir.600_abs)}, by = "id.layer_local_c") %>%

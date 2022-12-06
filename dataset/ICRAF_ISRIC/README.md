@@ -199,6 +199,7 @@ dupli.ids <- icraf.isric.sitedata %>%
 
 icraf.isric.sitedata <- icraf.isric.sitedata %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
+  mutate_at(vars(starts_with("id.")), as.character) %>%
   as.data.frame()
 
 # Saving version to dataset root dir
@@ -339,7 +340,8 @@ icraf.isric.soildata.trans <- transform_values(df = icraf.isric.soildata,
                                                fun.lst = functions.list)
 
 # Final soillab data
-icraf.isric.soildata <- icraf.isric.soildata.trans
+icraf.isric.soildata <- icraf.isric.soildata.trans %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Checking total number of observations
 icraf.isric.soildata %>%
@@ -470,7 +472,8 @@ icraf.isric.mir.metadata <- icraf.isric.mir %>%
 
 # Final preparation
 icraf.isric.mir.export <- icraf.isric.mir.metadata %>%
-  left_join(icraf.isric.mir, by = "id.layer_local_c")
+  left_join(icraf.isric.mir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
@@ -589,7 +592,8 @@ icraf.isric.visnir.metadata <- icraf.isric.visnir %>%
 
 # Final preparation
 icraf.isric.visnir.export <- icraf.isric.visnir.metadata %>%
-  left_join(icraf.isric.visnir, by = "id.layer_local_c")
+  left_join(icraf.isric.visnir, by = "id.layer_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 soilvisnir.qs = paste0(dir, "/ossl_visnir_v1.2.qs")
@@ -609,9 +613,9 @@ The availabilty of data is summarised below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-icraf.isric.availability <- icraf.isric.visnir %>%
+icraf.isric.availability <- icraf.isric.visnir.export %>%
   select(id.layer_local_c, scan_visnir.450_ref) %>%
-  full_join({icraf.isric.mir %>%
+  full_join({icraf.isric.mir.export %>%
       select(id.layer_local_c, scan_mir.600_abs)}, by = "id.layer_local_c") %>%
   left_join({icraf.isric.sitedata %>%
       select(id.layer_local_c, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
@@ -777,7 +781,7 @@ icraf.isric.visnir %>%
 toc()
 ```
 
-    ## 99.868 sec elapsed
+    ## 100.646 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -785,8 +789,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb)  max used  (Mb)
-    ## Ncells 2632464 140.6    7106628 379.6  14406384 769.4
-    ## Vcells 7601540  58.0   89867076 685.7 112295044 856.8
+    ## Ncells 2632508 140.6    7101248 379.3  14395440 768.8
+    ## Vcells 7601770  58.0   89861607 685.6 112295295 856.8
 
 ## References
 
