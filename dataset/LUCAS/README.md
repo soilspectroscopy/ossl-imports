@@ -706,7 +706,7 @@ lucas.mir <- lucas.mir %>%
   filter(!(id.layer_local_c %in% dupli.ids))
 
 # These few scans with extreme values are filled with interpolation
-target.wavenumbers <- rev(seq(600, 4000, by = 2))
+target.wavenumbers <- seq(600, 4000, by = 2)
 
 lucas.mir.clean <- lucas.mir %>%
   pivot_longer(-id.layer_local_c, names_to = "wavenumber", values_to = "absorbance") %>%
@@ -731,7 +731,7 @@ lucas.mir.metadata <- mir.scans %>%
   mutate(id.layer_local_c = paste0("2009.", id.layer_local_c),
          scan.date.begin_iso.8601_yyyy.mm.dd = dmy(scan.date.begin_iso.8601_yyyy.mm.dd)) %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
-  mutate(dataset.code_ascii_c = "WOODWELL.LUCAS.SSL",
+  mutate(dataset.code_ascii_c = "LUCAS.WOODWELL.SSL",
          scan.date.end_iso.8601_yyyy.mm.dd = scan.date.begin_iso.8601_yyyy.mm.dd,
          scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
          scan.mir.model.code_any_c = "Bruker_Vertex_70.HTS.XT",
@@ -931,16 +931,16 @@ lucas.visnir %>%
 toc()
 ```
 
-    ## 455.739 sec elapsed
+    ## 451.787 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-    ##           used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells 2632851 140.7   26813075 1432.0  41895428 2237.5
-    ## Vcells 9732825  74.3  403815523 3080.9 985877247 7521.7
+    ##           used  (Mb) gc trigger (Mb)  max used   (Mb)
+    ## Ncells 2632847 140.7   26813157 1432  41895557 2237.5
+    ## Vcells 9732825  74.3  403826894 3081 985877247 7521.7
 
 ## References
 

@@ -579,7 +579,7 @@ lucas.mir <- lucas.mir %>%
   filter(!(id.layer_local_c %in% dupli.ids))
 
 # These few scans with extreme values are filled with interpolation
-target.wavenumbers <- rev(seq(600, 4000, by = 2))
+target.wavenumbers <- seq(600, 4000, by = 2)
 
 lucas.mir.clean <- lucas.mir %>%
   pivot_longer(-id.layer_local_c, names_to = "wavenumber", values_to = "absorbance") %>%
