@@ -32,9 +32,10 @@ ossl.visnir.columns <- as.character(paste0("scan_visnir.", seq(400, 2500, by = 2
 id.columns <- c("code", "id.layer_local_c")
 
 ossl.visnir <- map_dfr(.x = qs.visnir,
-                       .f = function(.x) {
-                         qread(.x) %>%
-                           mutate_all(as.character)},
+                       .f = qread,
+                       # .f = function(.x) {
+                       #   qread(.x) %>%
+                       #     mutate_all(as.character)},
                        .id= "file_sequence") %>%
   left_join(qs.visnir.ids, by = "file_sequence") %>%
   select(all_of(id.columns), all_of(ossl.visnir.columns)) %>%
@@ -85,7 +86,7 @@ visnir.pca.scores.train <- juice(visnir.pca.model) %>%
 
 p.visnir.scores.pc1.pc2 <- visnir.pca.scores.train %>%
   ggplot(aes(x = PC1, y = PC2, color = code)) +
-  geom_point(size = 0.25, alpha = 0.15) +
+  geom_point(size = 0.25, alpha = 0.25) +
   labs(x = "PC1", y = "PC2", color = "") +
   theme_light() +
   theme(legend.position = "bottom")
@@ -128,7 +129,8 @@ visnir.pca.scores.test <- bake(visnir.pca.model, new_data = visnir.test.spectra)
 
 p.visnir.scores.projected.pc1.pc2 <- p.visnir.scores.pc1.pc2 +
   geom_point(data = visnir.pca.scores.test,
-             aes(x = PC1, y = PC2, color = code), size = 0.25, alpha = 0.15) +
+             aes(x = PC1, y = PC2, color = code), size = 0.50, alpha = 0.25) +
+  scale_color_manual(values = c("salmon", "black", "green")) +
   labs(x = paste0("PC1 (", visnir.pca.xve[1], "%)"),
        y = paste0("PC2 (", visnir.pca.xve[2], "%)")) +
   theme_light() +
@@ -150,10 +152,11 @@ ossl.mir.columns <- as.character(paste0("scan_mir.", seq(600, 4000, by = 2), "_a
 id.columns <- c("code", "id.layer_local_c")
 
 ossl.mir <- map_dfr(.x = qs.mir,
-                       .f = function(.x) {
-                         qread(.x) %>%
-                           mutate_all(as.character)},
-                       .id= "file_sequence") %>%
+                    .f = qread,
+                    # .f = function(.x) {
+                    #   qread(.x) %>%
+                    #     mutate_all(as.character)},
+                    .id= "file_sequence") %>%
   left_join(qs.mir.ids, by = "file_sequence") %>%
   select(all_of(id.columns), all_of(ossl.mir.columns)) %>%
   mutate_at(vars(all_of(ossl.mir.columns)), as.numeric)
