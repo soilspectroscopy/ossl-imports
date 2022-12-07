@@ -2,7 +2,7 @@ Dataset import: Garrett et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-06 December, 2022
+07 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-06  
+Last update: 2022-12-07  
 Dataset:
 [GARRETT.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#garrett.ssl)
 
@@ -108,9 +108,7 @@ garrett.sitedata <- garrett.sitedescription %>%
          layer.texture_usda_txt) %>%
   left_join({garrett.ids %>%
       select(-contains("LCR"))}, ., by = "id.dataset.site_ascii_txt") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(id.layer_local_c), # Adding missing metadata
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         id.project_ascii_txt = "Forest soil data from New Zealand (Scion Research)",
+  mutate(id.project_ascii_txt = "Forest soil data from New Zealand (Scion Research)",
          observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library',
          observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io',
          pedon.taxa_usda_txt = "",
@@ -131,6 +129,9 @@ garrett.sitedata <- garrett.sitedescription %>%
          dataset.doi_idf_url = 'https://doi.org/10.6084/m9.figshare.20506587.v2',
          dataset.contact.name_utf8_txt = "Loretta Garrett",
          dataset.contact_ietf_email = "loretta.garrett@scionresearch.com") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt) %>%
   select(id.layer_uuid_txt, # Following the sequence from ossl-manual
          id.layer_local_c,
          id.location_olc_txt,
@@ -636,7 +637,7 @@ garrett.mir %>%
 toc()
 ```
 
-    ## 12.634 sec elapsed
+    ## 12.932 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -644,8 +645,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2600281 138.9    4722058 252.2  4722058 252.2
-    ## Vcells 5321311  40.6   25913240 197.8 32359153 246.9
+    ## Ncells 2600279 138.9    4724340 252.4  4724340 252.4
+    ## Vcells 5321327  40.6   25913260 197.8 32359171 246.9
 
 ## References
 

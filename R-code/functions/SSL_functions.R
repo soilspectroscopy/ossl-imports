@@ -128,13 +128,16 @@ hor2xyd <- function(x, U="UHDICM", L="LHDICM", treshold.T=15){
   return(y)
 }
 
-plot_gh <- function(pnts, out.pdf, world, lats, longs, crs_goode = "+proj=igh", fill.col="yellow"){
+plot_gh <- function(pnts, output, world, lats, longs, crs_goode = "+proj=igh", fill.col = "yellow"){
+
   # https://wilkelab.org/practicalgg/articles/goode.html
   require(cowplot)
   require(sf)
   require(rworldmap)
   require(ggplot2)
+
   if(missing(world)){ world <- sf::st_as_sf(rworldmap::getMap(resolution = "low")) }
+
   if(missing(lats)){
     lats <- c(
       90:-90, # right side down
@@ -146,6 +149,7 @@ plot_gh <- function(pnts, out.pdf, world, lats, longs, crs_goode = "+proj=igh", 
       90 # close
     )
   }
+
   if(missing(longs)){
     longs <- c(
       rep(180, 181), # right side down
@@ -157,17 +161,21 @@ plot_gh <- function(pnts, out.pdf, world, lats, longs, crs_goode = "+proj=igh", 
       180 # close
     )
   }
+
   goode_outline <-
     list(cbind(longs, lats)) %>%
     st_polygon() %>%
     st_sfc(
       crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
     )
+
   # now we need to work in transformed coordinates, not in long-lat coordinates
   goode_outline <- st_transform(goode_outline, crs = crs_goode)
+
   # get the bounding box in transformed coordinates and expand by 10%
   xlim <- st_bbox(goode_outline)[c("xmin", "xmax")]*1.1
   ylim <- st_bbox(goode_outline)[c("ymin", "ymax")]*1.1
+
   # turn into enclosing rectangle
   goode_encl_rect <-
     list(
@@ -178,16 +186,24 @@ plot_gh <- function(pnts, out.pdf, world, lats, longs, crs_goode = "+proj=igh", 
     ) %>%
     st_polygon() %>%
     st_sfc(crs = crs_goode)
+
   # calculate the area outside the earth outline as the difference
   # between the enclosing rectangle and the earth outline
   goode_without <- st_difference(goode_encl_rect, goode_outline)
-  m <- ggplot(world) + geom_sf(fill = "gray80", color = "black", size = 0.5/.pt) +
+
+  m <- ggplot(world) +
+    geom_sf(fill = "gray80", color = "black", size = 0.5/.pt) +
     geom_sf(data = goode_without, fill = "white", color = "NA") +
     geom_sf(data = goode_outline, fill = NA, color = "gray30", size = 0.5/.pt) +
-    cowplot::theme_minimal_grid() + theme(panel.background = element_rect(fill = "#56B4E950", color = "white", size = 1),  panel.grid.major = element_line(color = "gray30", size = 0.25)) +
-    geom_sf(data = pnts, size = 0.8, shape = 21, fill = fill.col, color="black") +
-    #geom_sf(data = pnts, size = 1, pch="+", color="black") +
-    coord_sf(crs = crs_goode, xlim = 0.95*xlim, ylim = 0.95*ylim, expand = FALSE)
-  ggsave(out.pdf, m, dpi=150, height = 5.35, width = 9)
+    geom_sf(data = pnts, fill = fill.col, color = "black", size = 0.8, shape = 21, stroke = 0.12) +
+    # geom_sf(data = pnts, size = 0.8, shape = 21, fill = fill.col, color = "black") +
+    # geom_sf(data = pnts, size = 1, pch="+", color="black") +
+    coord_sf(crs = crs_goode, xlim = 0.95*xlim, ylim = 0.95*ylim, expand = FALSE) +
+    cowplot::theme_minimal_grid() +
+    theme(panel.background = element_rect(fill = "#56B4E950", color = "white", size = 1),
+          panel.grid.major = element_line(color = "gray30", size = 0.25))
+
+  ggsave(output, m, dpi = 200, units = "in", height = 4.5, width = 10)
+
 }
 

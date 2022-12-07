@@ -3,7 +3,7 @@ Dataset import: Africa Soil Information Service (AfSIS-I) SSL
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-06 December, 2022
+07 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-06  
+Last update: 2022-12-07  
 Dataset:
 [AFSIS1.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis1.ssl)
 
@@ -83,8 +83,6 @@ afsis1.geo <- afsis1.geo %>%
 # Preparing dataset
 afsis1.sitedata <- afsis1.geo %>%
   mutate(id.project_ascii_txt = "Africa Soil Information Service (AfSIS-1)",
-         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          layer.texture_usda_txt = "",
          pedon.taxa_usda_txt = "",
          horizon.designation_usda_txt = "",
@@ -104,7 +102,10 @@ afsis1.sitedata <- afsis1.geo %>%
          dataset.license.title_ascii_txt = "ODC Open Database License",
          dataset.license.address_idn_url = "https://opendatacommons.org/licenses/odbl/",
          dataset.contact.name_utf8_txt = "Keith Shepherd",
-         dataset.contact_ietf_email = "afsis.info@africasoils.net")
+         dataset.contact_ietf_email = "afsis.info@africasoils.net") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt)
 
 # Removing duplicates
 afsis1.sitedata %>%
@@ -572,7 +573,7 @@ afsis1.mir %>%
 toc()
 ```
 
-    ## 30.757 sec elapsed
+    ## 31.167 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -580,8 +581,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells  2610404 139.5    4944191  264.1   4944191  264.1
-    ## Vcells 10074127  76.9  211664099 1614.9 264580123 2018.6
+    ## Ncells  2610726 139.5    4948281  264.3   4948281  264.3
+    ## Vcells 10074962  76.9  211022284 1610.0 263777767 2012.5
 
 ## References
 

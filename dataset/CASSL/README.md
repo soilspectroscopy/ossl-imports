@@ -3,7 +3,7 @@ Dataset import: The Central African soil spectral library
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-06 December, 2022
+07 December, 2022
 
 
 
@@ -30,7 +30,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-06  
+Last update: 2022-12-07  
 Dataset:
 [CAF.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#caf.ssl)
 
@@ -84,8 +84,6 @@ caf.sitedata <- caf.metadata %>%
          layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
          observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd) %>%
   mutate(id.project_ascii_txt = "The Central African Soil Spectral Library",
-         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          layer.texture_usda_txt = "",
          pedon.taxa_usda_txt = "",
          horizon.designation_usda_txt = "",
@@ -106,6 +104,9 @@ caf.sitedata <- caf.metadata %>%
          dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          dataset.contact.name_utf8_txt = "Laura Summerauer",
          dataset.contact_ietf_email = "laura.summerauer@usys.ethz.ch") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
@@ -504,7 +505,7 @@ caf.mir %>%
 toc()
 ```
 
-    ## 14.577 sec elapsed
+    ## 14.581 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -512,8 +513,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2614682 139.7    4814485 257.2  4814485 257.2
-    ## Vcells 6752581  51.6   67152048 512.4 83600853 637.9
+    ## Ncells 2614665 139.7    4814531 257.2  4814531 257.2
+    ## Vcells 6752577  51.6   67152002 512.4 83600819 637.9
 
 ## References
 

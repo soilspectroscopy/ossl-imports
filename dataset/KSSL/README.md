@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>), Develyn Bloom
 (<develyn.bloom@ufl.edu>) -
-06 December, 2022
+07 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-06  
+Last update: 2022-12-07  
 Dataset:
 [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
@@ -49,7 +49,8 @@ Input datasets (snapshot from Jul 2022):
 -   `KSSL_202207_MIR_spectra_all_avg.csv`: csv/rds file with averaged
     MIR scans;
 -   `RaCA_measured.csv`: csv/rds file with averaged VNIR scans (from
-    RaCA project);
+    [RaCA
+    project](https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca));
 -   `All_Spectra_Access_Portable_20220712`: a folder with all tables
     exported from a Microsoft Access database;
 
@@ -401,7 +402,7 @@ kssl.sitedata <- kssl.sitedata %>%
          id.project_ascii_txt = paste0("KSSL: ", id.project_ascii_txt)) %>%
   select(id.layer_local_c, id.project_ascii_txt, id.dataset.site_ascii_txt,
          layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, layer.texture_usda_txt,
-         horizon.designation_usda_txt, observation.date.end_iso.8601_yyyy.mm.dd,
+         pedon.taxa_usda_txt, horizon.designation_usda_txt, observation.date.end_iso.8601_yyyy.mm.dd,
          longitude.point_wgs84_dd, latitude.point_wgs84_dd,
          longitude.county_wgs84_dd, latitude.county_wgs84_dd) %>%
   mutate(observation.date.end_iso.8601_yyyy.mm.dd = ymd(paste0(observation.date.end_iso.8601_yyyy.mm.dd, "-12-31"))) %>%
@@ -418,13 +419,13 @@ kssl.sitedata <- kssl.sitedata %>%
          dataset.title_utf8_txt = "Kellogg Soil Survey Laboratory database",
          dataset.owner_utf8_txt = "USDA, Soil and Plant Science Division, National Soil Survey Center",
          dataset.code_ascii_txt = "KSSL.SSL",
-         dataset.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/",
+         dataset.address_idn_url = "http://ncsslabdatamart.sc.egov.usda.gov/",
          dataset.license.title_ascii_txt = "CC-BY",
          dataset.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx",
-         dataset.doi_idf_url = "",
+         dataset.doi_idf_url = "https://doi.org/10.2136/sssaj2019.06.0205",
          dataset.contact.name_utf8_txt = "Scarlett Murphy",
          dataset.contact_ietf_email = "Scarlett.Murphy@usda.gov") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10), 
          .after = id.dataset.site_ascii_txt) %>%
   mutate_at(vars(starts_with("id.")), as.character)
@@ -826,7 +827,7 @@ kssl.mir.metadata <- metadata %>%
          scan.mir.method.preparation_any_txt = str_sub(id.scan_local_c, -2, -1),
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx",
-         scan.mir.doi_idf_url = "",
+         scan.mir.doi_idf_url = "https://doi.org/10.2136/sssaj2019.06.0205",
          scan.mir.contact.name_utf8_txt = "Scarlett Murphy",
          scan.mir.contact.email_ietf_txt = "Scarlett.Murphy@usda.gov") %>%
   group_by(id.scan_local_c) %>%
@@ -945,8 +946,8 @@ kssl.visnir.metadata <- visnir.scans %>%
          scan.visnir.method.light.source_any_txt = "",
          scan.visnir.method.preparation_any_txt = "",
          scan.visnir.license.title_ascii_txt = "CC-BY",
-         scan.visnir.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx",
-         scan.visnir.doi_idf_url = "",
+         scan.visnir.license.address_idn_url = "https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca",
+         scan.visnir.doi_idf_url = "https://doi.org/10.1007/978-3-319-04084-4_10",
          scan.visnir.contact.name_utf8_txt = "Scarlett Murphy",
          scan.visnir.contact.email_ietf_txt = "Scarlett.Murphy@usda.gov")
 
@@ -1193,7 +1194,7 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 229.913 sec elapsed
+    ## 234.638 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1201,8 +1202,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2621758 140.1   15865214  847.3   19831517 1059.2
-    ## Vcells 35785675 273.1  802301108 6121.1 1002876268 7651.4
+    ## Ncells  2621755 140.1   15865177  847.3   19831471 1059.2
+    ## Vcells 35785749 273.1  802790372 6124.9 1003487964 7656.1
 
 ## References
 

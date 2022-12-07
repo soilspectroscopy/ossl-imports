@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Wanderson Mendes de Sousa
 (<wanderson.mendes@zalf.de>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-06 December, 2022
+07 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-06  
+Last update: 2022-12-07  
 Dataset:
 [ICRAF.ISRIC](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#icraf.isric)
 
@@ -161,10 +161,7 @@ icraf.isric.sitedata <- icraf.isric.reference %>%
          id.dataset.site_ascii_txt, observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd,
          layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, pedon.taxa_usda_txt) %>% 
   mutate(id.project_ascii_txt = "ICRAF-ISRIC Soil Spectral Library",
-         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          layer.texture_usda_txt = "",
-         pedon.taxa_usda_txt = "",
          horizon.designation_usda_txt = "",
          longitude.county_wgs84_dd = NA,
          latitude.county_wgs84_dd = NA,
@@ -183,7 +180,10 @@ icraf.isric.sitedata <- icraf.isric.reference %>%
          dataset.license.title_ascii_txt = "CC-BY",
          dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          dataset.contact.name_utf8_txt = "Keith Shepherd",
-         dataset.contact_ietf_email = "afsis.info@africasoils.net")
+         dataset.contact_ietf_email = "afsis.info@africasoils.net") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt)
 
 # Removing duplicates
 # icraf.isric.sitedata %>%
@@ -782,7 +782,7 @@ icraf.isric.visnir %>%
 toc()
 ```
 
-    ## 99.598 sec elapsed
+    ## 100.813 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -790,8 +790,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb)  max used  (Mb)
-    ## Ncells 2632512 140.6    8864653 473.5  14376061 767.8
-    ## Vcells 7601800  58.0   90050552 687.1 112390039 857.5
+    ## Ncells 2632940 140.7    7103056 379.4  14399118 769.0
+    ## Vcells 7602844  58.1   89862847 685.6 112296371 856.8
 
 ## References
 

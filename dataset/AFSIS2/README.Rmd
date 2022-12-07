@@ -139,8 +139,6 @@ afsis2.sitedata <- samples %>%
   mutate(observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-01-01"),
          observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2018-12-31")) %>%
   mutate(id.project_ascii_txt = "TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL",
-         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          layer.texture_usda_txt = "",
          pedon.taxa_usda_txt = "",
          horizon.designation_usda_txt = "",
@@ -170,6 +168,9 @@ afsis2.sitedata <- samples %>%
          dataset.license.address_idn_url = "https://creativecommons.org/publicdomain/zero/1.0/",
          dataset.contact.name_utf8_txt = "Winowiecki, Leigh Ann (ICRAF)",
          dataset.contact_ietf_email = "L.A.WINOWIECKI@cgiar.org") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt) %>%
   select(-Country) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 

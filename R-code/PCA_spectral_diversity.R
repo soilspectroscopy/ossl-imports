@@ -10,7 +10,8 @@ library("qs")
 ## Folders
 
 dir.input <- "/mnt/soilspec4gg/ossl/dataset"
-dir.figures <- "out/"
+dir.figures <- "img/"
+dir.output <- "out/"
 
 ## Listing datasets
 
@@ -279,4 +280,4 @@ summary <- ossl.mir %>%
   }, by = "code") %>%
   rename(dataset = code)
 
-write_csv(summary, paste0(dir.figures, paste0("tab_dataset_count.csv")))
+write_csv(summary, paste0(dir.output, paste0("tab_dataset_count.csv")))

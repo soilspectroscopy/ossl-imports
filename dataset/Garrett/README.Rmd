@@ -115,9 +115,7 @@ garrett.sitedata <- garrett.sitedescription %>%
          layer.texture_usda_txt) %>%
   left_join({garrett.ids %>%
       select(-contains("LCR"))}, ., by = "id.dataset.site_ascii_txt") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(id.layer_local_c), # Adding missing metadata
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         id.project_ascii_txt = "Forest soil data from New Zealand (Scion Research)",
+  mutate(id.project_ascii_txt = "Forest soil data from New Zealand (Scion Research)",
          observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library',
          observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io',
          pedon.taxa_usda_txt = "",
@@ -138,6 +136,9 @@ garrett.sitedata <- garrett.sitedescription %>%
          dataset.doi_idf_url = 'https://doi.org/10.6084/m9.figshare.20506587.v2',
          dataset.contact.name_utf8_txt = "Loretta Garrett",
          dataset.contact_ietf_email = "loretta.garrett@scionresearch.com") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt) %>%
   select(id.layer_uuid_txt, # Following the sequence from ossl-manual
          id.layer_local_c,
          id.location_olc_txt,

@@ -4,7 +4,7 @@ Dataset import: The Land-Use/Cover Area Survey Soil and Spectral Library
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Leandro Parente
 (<leandro.parente@opengeohub.org>) -
-06 December, 2022
+07 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-06  
+Last update: 2022-12-07  
 Dataset:
 [LUCAS.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#lucas.ssl)
 
@@ -167,8 +167,6 @@ lucas.sitedata <- bind_rows(lucas.2009, lucas.2015) %>%
          latitude.point_wgs84_dd = latitude.point_wgs84_dd + rnorm(n(), 0, 0.005)) %>% 
   mutate(id.project_ascii_txt = "Land Use and Coverage Area frame Survey (LUCAS) topsoil data",
          id.dataset.site_ascii_txt = str_sub(id.layer_local_c, 6, -1),
-         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          layer.texture_usda_txt = "",
          pedon.taxa_usda_txt = "",
          horizon.designation_usda_txt = "",
@@ -188,7 +186,10 @@ lucas.sitedata <- bind_rows(lucas.2009, lucas.2015) %>%
          dataset.license.title_ascii_txt = "JRC License Agreement",
          dataset.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/resource-type/soil-point-data",
          dataset.contact.name_utf8_txt = "ESDAC - European Commissiony",
-         dataset.contact_ietf_email = "ec-esdac@jrc.ec.europa.eu")
+         dataset.contact_ietf_email = "ec-esdac@jrc.ec.europa.eu") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt)
 
 # Removing duplicates
 lucas.sitedata %>%
@@ -936,7 +937,7 @@ lucas.visnir %>%
 toc()
 ```
 
-    ## 450.684 sec elapsed
+    ## 451.957 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -944,8 +945,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells 2632854 140.7   25239744 1348.0  39437099 2106.2
-    ## Vcells 9733162  74.3  404335933 3084.9 986084976 7523.3
+    ## Ncells 2632864 140.7   26821093 1432.5  41907957 2238.2
+    ## Vcells 9733284  74.3  403901100 3081.6 986086117 7523.3
 
 ## References
 

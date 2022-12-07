@@ -93,8 +93,6 @@ afsis1.geo <- afsis1.geo %>%
 # Preparing dataset
 afsis1.sitedata <- afsis1.geo %>%
   mutate(id.project_ascii_txt = "Africa Soil Information Service (AfSIS-1)",
-         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          layer.texture_usda_txt = "",
          pedon.taxa_usda_txt = "",
          horizon.designation_usda_txt = "",
@@ -114,7 +112,10 @@ afsis1.sitedata <- afsis1.geo %>%
          dataset.license.title_ascii_txt = "ODC Open Database License",
          dataset.license.address_idn_url = "https://opendatacommons.org/licenses/odbl/",
          dataset.contact.name_utf8_txt = "Keith Shepherd",
-         dataset.contact_ietf_email = "afsis.info@africasoils.net")
+         dataset.contact_ietf_email = "afsis.info@africasoils.net") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt)
 
 # Removing duplicates
 afsis1.sitedata %>%

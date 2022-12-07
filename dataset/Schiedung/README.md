@@ -2,7 +2,7 @@ Dataset import: Schiedung et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-06 December, 2022
+07 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-06  
+Last update: 2022-12-07  
 Dataset:
 [SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#schiedung.ssl)
 
@@ -68,9 +68,7 @@ schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
   dplyr::rename(longitude.point_wgs84_dd = Latitute_DD, latitude.point_wgs84_dd = Longitute_DD) %>% # Author confused columns
   dplyr::mutate(id.dataset.site_ascii_txt = paste(EUP, sample_point, sep = ".")) %>%
   dplyr::select(id.layer_local_c, longitude.point_wgs84_dd, latitude.point_wgs84_dd, id.dataset.site_ascii_txt) %>%
-  dplyr::mutate(id.layer_uuid_txt = openssl::md5(id.layer_local_c),
-                id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-                id.project_ascii_txt = "High-latitude forest soil data",
+  dplyr::mutate(id.project_ascii_txt = "High-latitude forest soil data",
                 observation.ogc.schema.title_ogc_txt = 'Open Soil Spectroscopy Library',
                 observation.ogc.schema_idn_url = 'https://soilspectroscopy.github.io',
                 observation.date.begin_iso.8601_yyyy.mm.dd = "2019-07-01",
@@ -94,6 +92,9 @@ schiedung.sitedata <- schiedung.info %>% # Spectra ID is the merge of EUP, sampl
                 dataset.doi_idf_url = 'https://doi.org/10.5281/zenodo.6024831',
                 dataset.contact.name_utf8_txt = "Marcus Schiedung",
                 dataset.contact_ietf_email = "marcus.schiedung@geo.uzh.ch") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt) %>%
   dplyr::select(id.layer_uuid_txt, # Following the sequence from ossl-manual
                 id.layer_local_c,
                 id.location_olc_txt,
@@ -546,7 +547,7 @@ schiedung.mir %>%
 toc()
 ```
 
-    ## 9.555 sec elapsed
+    ## 9.76 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -554,8 +555,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2579390 137.8    4658437 248.8  4658437 248.8
-    ## Vcells 5478082  41.8   32023080 244.4 40014706 305.3
+    ## Ncells 2579388 137.8    4658445 248.8  4658445 248.8
+    ## Vcells 5478099  41.8   32023104 244.4 40014727 305.3
 
 ## References
 

@@ -97,8 +97,6 @@ caf.sitedata <- caf.metadata %>%
          layer.sequence_usda_uint16, layer.upper.depth_usda_cm, layer.lower.depth_usda_cm,
          observation.date.begin_iso.8601_yyyy.mm.dd, observation.date.end_iso.8601_yyyy.mm.dd) %>%
   mutate(id.project_ascii_txt = "The Central African Soil Spectral Library",
-         id.layer_uuid_txt = openssl::md5(as.character(id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
          layer.texture_usda_txt = "",
          pedon.taxa_usda_txt = "",
          horizon.designation_usda_txt = "",
@@ -119,6 +117,9 @@ caf.sitedata <- caf.metadata %>%
          dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          dataset.contact.name_utf8_txt = "Laura Summerauer",
          dataset.contact_ietf_email = "laura.summerauer@usys.ethz.ch") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
