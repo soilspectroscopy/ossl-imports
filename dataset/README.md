@@ -8,7 +8,14 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 
 
 -   [Description](#description)
--   [Binding and joining](#binding-and-joining)
+-   [OSSL level 0](#ossl-level-0)
+    -   [Joining files](#joining-files)
+    -   [Saving files](#saving-files)
+    -   [World map visualizations](#world-map-visualizations)
+    -   [Overlay with spatial
+        covariates](#overlay-with-spatial-covariates)
+-   [OSSL level 1](#ossl-level-1)
+    -   [Getting OSSL level 0 names](#getting-ossl-level-0-names)
 -   [References](#references)
 
 [<img src="../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
@@ -42,12 +49,13 @@ naming convention follows the standard
 -   `<local DATASET folder>/ossl_visnir_v1.2.qs`: Imported/harmonized
     ViSNIR data in `qs` format.
 
-## Binding and joining
+## OSSL level 0
 
 R packages
 
 ``` r
-packages <- c("tidyverse", "tidymodels", "data.table", "fs", "qs", "tictoc")
+packages <- c("tictoc", "tidyverse", "data.table", "lubridate",
+              "fs", "qs", "openssl", "olctools", "sf")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 invisible(lapply(packages, library, character.only = TRUE))
@@ -105,7 +113,7 @@ ossl.soilsite %>%
     ## $ observation.date.end_iso.8601_yyyy.mm.dd   <chr> "2013-12-31", "2013-12-31",…
     ## $ surveyor.title_utf8_txt                    <chr> "Tor Vagen", "Jerome Tondoh…
     ## $ id.project_ascii_txt                       <chr> "Africa Soil Information Se…
-    ## $ id.layer_uuid_txt                          <chr> "bdd9d5a45e1821c225d17a982c…
+    ## $ id.layer_uuid_txt                          <chr> "f361d06ea588aac37e6d3ed218…
     ## $ id.location_olc_txt                        <chr> "6G5P46XV+98", "7F3C75J8+7P…
     ## $ layer.texture_usda_txt                     <chr> "", "", "", "", "", "", "",…
     ## $ pedon.taxa_usda_txt                        <chr> "", "", "", "", "", "", "",…
@@ -292,7 +300,7 @@ ossl.mir %>%
     ## $ dataset.code_ascii_txt                  <chr> NA, NA, NA, NA, NA, NA, NA, NA…
     ## $ scan_mir.1000_abs                       <dbl> 1.189548, 1.286010, 1.298255, …
 
-Joining data files
+### Joining files
 
 ``` r
 # First full joining mir and visnir as some observations might not have both spectra types
@@ -351,7 +359,8 @@ ossl.info <- ossl.info %>%
   select(-layer.upper.depth_usda_cm.x, -layer.upper.depth_usda_cm.y,
          -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y,
          -code.x, -code.y,
-         -file_sequence.x, -file_sequence.y)
+         -file_sequence.x, -file_sequence.y) %>%
+  mutate_all(list(~na_if(.,"")))
 
 ossl.info %>%
   select(ends_with(".x")) %>%
@@ -473,28 +482,20 @@ ossl.level0.export <- ossl.level0.export %>%
          layer.lower.depth_usda_cm = as.numeric(layer.lower.depth_usda_cm),
          observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd(observation.date.begin_iso.8601_yyyy.mm.dd),
          observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd(observation.date.end_iso.8601_yyyy.mm.dd),
-         layer.texture_usda_txt = ifelse("", NA_character_, layer.texture_usda_txt),
-         pedon.taxa_usda_txt = ifelse("", NA_character_, pedon.taxa_usda_txt),
-         horizon.designation_usda_txt = ifelse("", NA_character_, horizon.designation_usda_txt),
          longitude.county_wgs84_dd = as.numeric(longitude.county_wgs84_dd),
          latitude.county_wgs84_dd = as.numeric(latitude.county_wgs84_dd),
-         location.point.error_any_m = as.numeric(location.point.error_any_m),
-         location.country_iso.3166_txt = ifelse("", NA_character_, location.country_iso.3166_txt),
-         scan.mir.method.light.source_any_txt = ifelse("", NA_character_, scan.mir.method.light.source_any_txt),
-         scan.mir.method.preparation_any_txt = ifelse("", NA_character_, scan.mir.method.preparation_any_txt),
-         scan.visnir.method.light.source_any_txt = ifelse("", NA_character_, scan.visnir.method.light.source_any_txt),
-         scan.visnir.method.preparation_any_txt = ifelse("", NA_character_, scan.visnir.method.preparation_any_txt))
+         location.point.error_any_m = as.numeric(location.point.error_any_m))
 
 # Checking for complete spatial locations
 ossl.level0.export %>%
-  mutate(complete_location = is.na(longitude.point_wgs84_dd)&!is.na(latitude.point_wgs84_dd)) %>%
-  count(complete_location)
+  mutate(incomplete_location = is.na(longitude.point_wgs84_dd)&!is.na(latitude.point_wgs84_dd)) %>%
+  count(incomplete_location)
 ```
 
     ## # A tibble: 1 × 2
-    ##   complete_location      n
-    ##   <lgl>              <int>
-    ## 1 FALSE             141762
+    ##   incomplete_location      n
+    ##   <lgl>                <int>
+    ## 1 FALSE               141762
 
 ``` r
 # Checking for missing spatial locations
@@ -577,6 +578,8 @@ ossl.level0.export %>%
     ## 13 SCHIEDUNG.SSL          FALSE              259        95.6 
     ## 14 SCHIEDUNG.SSL          TRUE                12         4.43
 
+### Saving files
+
 Saving level 0 (L0) files:  
 - `ossl_all_L0_v1.2.qs`: Final full OSSL level 0 data in `qs` format.  
 - `ossl_soilsite_L0_v1.2.qs`: Final OSSL site data in `qs` format.  
@@ -597,74 +600,246 @@ qs::qsave(ossl.level0.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_all_L0_v1.
 avoid.soilsite.columns <- c("code", "file_sequence")
 selected.soilsite.columns <- names(ossl.soilsite)[!(names(ossl.soilsite) %in% avoid.soilsite.columns)]
 
-final.soilsite <- ossl.level0.export %>%
+level0.soilsite <- ossl.level0.export %>%
   select(all_of(selected.soilsite.columns)) %>%
   relocate(dataset.code_ascii_txt, id.layer_uuid_txt, .before = 1)
 
-qs::qsave(final.soilsite, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs", preset = "high")
+qs::qsave(level0.soilsite, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs", preset = "high")
 
 # Exporting soillab L0
 avoid.soillab.columns <- c("code", "file_sequence", "id.layer_local_c")
 selected.soillab.columns <- names(ossl.soillab)[!(names(ossl.soillab) %in% avoid.soillab.columns)]
 
-final.soillab <- ossl.level0.export %>%
+level0.soillab <- ossl.level0.export %>%
   select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.soillab.columns))
 
-qs::qsave(final.soillab, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs", preset = "high")
+qs::qsave(level0.soillab, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs", preset = "high")
 
 # Exporting mir L0
 avoid.mir.columns <- c("code", "file_sequence", "id.layer_local_c")
 selected.mir.columns <- names(ossl.mir)[!(names(ossl.mir) %in% avoid.mir.columns)]
 
-final.mir <- ossl.level0.export %>%
+level0.mir <- ossl.level0.export %>%
   select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.mir.columns))
 
-qs::qsave(final.mir, "/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs", preset = "high")
+qs::qsave(level0.mir, "/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs", preset = "high")
 
 # Exporting visnir L0
 avoid.visnir.columns <- c("code", "file_sequence", "id.layer_local_c")
 selected.visnir.columns <- names(ossl.visnir)[!(names(ossl.visnir) %in% avoid.visnir.columns)]
 
-final.visnir <- ossl.level0.export %>%
+level0.visnir <- ossl.level0.export %>%
   select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.visnir.columns))
 
-qs::qsave(final.visnir, "/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs", preset = "high")
+qs::qsave(level0.visnir, "/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs", preset = "high")
 ```
 
-World map visualizations
+### World map visualizations
 
 ``` r
-# Still todo
-# Export as gpkg
-# Make world map
-# Save separate files
-# Save level 0
-# Overlay with covariates
-# Export golden dataset
+# visnir map
+visnir.output <- "../img/visnir.pnts_sites.png"
+
+visnir.points <- ossl.level0.export %>%
+  filter(!is.na(longitude.point_wgs84_dd)) %>%
+  filter(!is.na(scan_visnir.1000_ref)) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, latitude.point_wgs84_dd, longitude.point_wgs84_dd) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326) %>%
+  distinct(geometry, .keep_all = TRUE)
+
+plot_gh(visnir.points, output = visnir.output, fill.col = "cyan1")
+
+# mir map
+mir.output <- "../img/mir.pnts_sites.png"
+
+mir.points <- ossl.level0.export %>%
+  filter(!is.na(longitude.point_wgs84_dd)) %>%
+  filter(!is.na(scan_mir.1000_abs)) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, latitude.point_wgs84_dd, longitude.point_wgs84_dd) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326) %>%
+  distinct(geometry, .keep_all = TRUE)
+
+plot_gh(mir.points, output = mir.output, fill.col = "yellow")
 ```
+
+VisNIR locations
+<img src="../img/visnir.pnts_sites.png" heigth=100% width=100%>
+
+MIR locations
+<img src="../img/mir.pnts_sites.png" heigth=100% width=100%>
+
+### Overlay with spatial covariates
+
+``` r
+# Saving as gpkg
+ossl.points <- ossl.level0.export %>%
+  filter(!is.na(longitude.point_wgs84_dd)) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, latitude.point_wgs84_dd, longitude.point_wgs84_dd) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+
+unlink("../out/ossl_locations.gpkg")
+st_write(ossl.points, "../out/ossl_locations.gpkg", append = FALSE)
+```
+
+    ## Writing layer `ossl_locations' to data source 
+    ##   `../out/ossl_locations.gpkg' using driver `GPKG'
+    ## Writing 87623 features with 1 fields and geometry type Point.
+
+``` r
+# # Overlay points and covariates
+# ov_ADMIN = st_read("/mnt/gaia/tmp/openlandmap/tiling/tiles_GH_100km_land.gpkg")
+# site.p = spTransform(site.xy, ov_ADMIN@proj4string)
+# ID = sp::over(site.p, ov_ADMIN)
+# 
+# #summary(as.factor(ID$ID))
+# tif.lst = list.files("/data/WORLDCLIM", ".tif", full.names=TRUE)
+# 
+# ## 122
+# ov.tmp = parallel::mclapply(1:length(tif.lst), function(j){ terra::extract(terra::rast(tif.lst[j]), terra::vect(site.xy)) }, mc.cores = 16)
+# ov.tmp = dplyr::bind_cols(lapply(ov.tmp, function(i){i[,2]}))
+# names(ov.tmp) = tools::file_path_sans_ext(basename(tif.lst))
+# ## remove covariates with no variation?
+# c.na = sapply(ov.tmp, function(i){sum(is.na(i))})
+# c.sd = sapply(ov.tmp, function(i){var(i, na.rm=TRUE)})
+# rm.c = which(c.na>200 | c.sd == 0)
+# #rm.c
+# ## summary(ov.tmp$lcv_global.seasonal.s1_earth.big.data.winter.vv.rmse_m_250m_s0..0cm_2019.12..2020.11_epsg4326_v1)
+# ## 23 layers suspicious
+# ## clm_snow.prob missing values for 300-400 points
+# ov.tmp$id.location_olc_c = site.xy$id.location_olc_c
+# ov.tmp$ID = ID$ID
+# #summary(as.factor(ov.tmp$ID))
+# ## high clustering of points?
+# saveRDS.gz(ov.tmp, "/mnt/soilspec4gg/ossl/ossl_import/ov.tmp.rds")
+# #ov.tmp = readRDS.gz("/mnt/soilspec4gg/ossl/ossl_import/ov.tmp.rds")
+```
+
+## OSSL level 1
+
+### Getting OSSL level 0 names
+
+NOTE: The code chunk below this paragraph is hidden. Just run once for
+getting the OSSL level 0 column names, types, and example. Run once and
+upload to Google Sheet for integrating with the OSSL coding table.
+Copies are saved for archiving in `out/ossl_level0_names_<table>.csv`.
+Requires Google authentication.
+
+<!-- ```{r ossl_names, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # soilsite -->
+<!-- level0.soilsite <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs") -->
+<!-- level0.soilsite.format <- level0.soilsite %>% -->
+<!--   apply(., 2, function(x) na.omit(x)[1]) %>% -->
+<!--   data.frame("example" = .) %>% -->
+<!--   rownames_to_column(var = "ossl_name") %>% -->
+<!--   left_join({level0.soilsite %>% -->
+<!--       summarise_all(typeof) %>% -->
+<!--       mutate_all(as.character) %>% -->
+<!--       pivot_longer(everything(), names_to = "ossl_name", values_to = "type") -->
+<!--   }, by = "ossl_name") %>% -->
+<!--   relocate(type, .after = ossl_name) -->
+<!-- readr::write_csv(level0.soilsite.format, "../out/ossl_level0_names_soilsite.csv") -->
+<!-- # soillab -->
+<!-- level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs") -->
+<!-- level0.soillab.format <- level0.soillab %>% -->
+<!--   apply(., 2, function(x) na.omit(x)[1]) %>% -->
+<!--   data.frame("example" = .) %>% -->
+<!--   rownames_to_column(var = "ossl_name") %>% -->
+<!--   left_join({level0.soillab %>% -->
+<!--       summarise_all(typeof) %>% -->
+<!--       mutate_all(as.character) %>% -->
+<!--       pivot_longer(everything(), names_to = "ossl_name", values_to = "type") -->
+<!--   }, by = "ossl_name") %>% -->
+<!--   relocate(type, .after = ossl_name) -->
+<!-- readr::write_csv(level0.soillab.format, "../out/ossl_level0_names_soillab.csv") -->
+<!-- # mir -->
+<!-- level0.mir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs") -->
+<!-- set.seed(1993) -->
+<!-- level0.mir.format <- level0.mir %>% -->
+<!--   filter(!is.na(scan_mir.1000_abs)) %>% -->
+<!--   sample_n(10) %>% -->
+<!--   apply(., 2, function(x) na.omit(x)[1]) %>% -->
+<!--   data.frame("example" = .) %>% -->
+<!--   rownames_to_column(var = "ossl_name") %>% -->
+<!--   left_join({level0.mir %>% -->
+<!--       filter(!is.na(scan_mir.1000_abs)) %>% -->
+<!--       sample_n(10) %>% -->
+<!--       summarise_all(typeof) %>% -->
+<!--       mutate_all(as.character) %>% -->
+<!--       pivot_longer(everything(), names_to = "ossl_name", values_to = "type") -->
+<!--   }, by = "ossl_name") %>% -->
+<!--   relocate(type, .after = ossl_name) %>% -->
+<!--   filter(grepl("^id\\.|^scan\\.mir|scan_mir\\.600_abs|scan_mir\\.4000_abs", ossl_name)) -->
+<!-- readr::write_csv(level0.mir.format, "../out/ossl_level0_names_mir.csv") -->
+<!-- # visnir -->
+<!-- level0.visnir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs") -->
+<!-- set.seed(1993) -->
+<!-- level0.visnir.format <- level0.visnir %>% -->
+<!--   filter(!is.na(scan_visnir.350_ref)) %>% -->
+<!--   sample_n(10) %>% -->
+<!--   apply(., 2, function(x) na.omit(x)[1]) %>% -->
+<!--   data.frame("example" = .) %>% -->
+<!--   rownames_to_column(var = "ossl_name") %>% -->
+<!--   left_join({level0.visnir %>% -->
+<!--       filter(!is.na(scan_visnir.350_ref)) %>% -->
+<!--       sample_n(10) %>% -->
+<!--       summarise_all(typeof) %>% -->
+<!--       mutate_all(as.character) %>% -->
+<!--       pivot_longer(everything(), names_to = "ossl_name", values_to = "type") -->
+<!--   }, by = "ossl_name") %>% -->
+<!--   relocate(type, .after = ossl_name) %>% -->
+<!--   filter(grepl("^id\\.|^scan\\.visnir|scan_visnir\\.350_ref|scan_visnir\\.2500_ref", ossl_name)) -->
+<!-- readr::write_csv(level0.visnir.format, "../out/ossl_level0_names_visnir.csv") -->
+<!-- # Uploading to google sheet -->
+<!-- library("googledrive") -->
+<!-- library("googlesheets4") -->
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab1_soildata_coding") -->
+<!-- OSSL.soildata.coding <- listed.table[[1,"id"]] -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.coding) -->
+<!-- # Checking readme -->
+<!-- googlesheets4::read_sheet(OSSL.soildata.coding, sheet = 'readme') -->
+<!-- # Preparing level 0 names -->
+<!-- upload <- list.files("../out/", pattern = "level0_names") %>% -->
+<!--   tibble(file = .) %>% -->
+<!--   mutate(sheet_name = gsub("\\.csv", "", file)) -->
+<!-- # Uploading -->
+<!-- for(i in 1:nrow(upload)) { -->
+<!--   uploading.file <- read_csv(paste0("../out/", upload[[i,"file"]])) -->
+<!--   googlesheets4::write_sheet(uploading.file, ss = OSSL.soildata.coding, sheet = upload[[i,"sheet_name"]]) -->
+<!-- } -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- ``` -->
+
+NOTE: The code chunk below this paragraph is hidden. Run once for
+importing the harmonization rules (L0 to L1). The table can be edited
+online at Google Sheets after the previous definition. Copies are
+downloaded to github for archiving.
+
+<!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # Downloading from google sheet -->
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
+<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- # Preparing soillab.names -->
+<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "AFSIS") %>% -->
+<!--   filter(import == TRUE) %>% -->
+<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
+<!-- # Saving to folder -->
+<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- ``` -->
+
+Reading soil lab harmonization rules:
 
 Producing level 1 (L1) as a regression matrix for fitting models
 
 ``` r
 # Still todo
-# Export as gpkg
-# Make world map
-# Save separate files
-# Save level 0
-# Overlay with covariates
-# Export golden dataset
-```
-
-Overlay with spatial covariates
-
-``` r
-# Still todo
-# Export as gpkg
-# Make world map
-# Save separate files
-# Save level 0
-# Overlay with covariates
-# Export golden dataset
 ```
 
 Producing a golden dataset for enabling a systematic analysis that
@@ -672,19 +847,13 @@ shares the same base data (Spatial, VisNIR and MIR)
 
 ``` r
 # Still todo
-# Export as gpkg
-# Make world map
-# Save separate files
-# Save level 0
-# Overlay with covariates
-# Export golden dataset
 ```
 
 ``` r
 toc()
 ```
 
-    ## 119.144 sec elapsed
+    ## 133.054 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -692,7 +861,7 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells 2527913 135.1    5036735   269.0    5036735   269.0
-    ## Vcells 4867317  37.2 1482191309 11308.3 1510274279 11522.5
+    ## Ncells 2335175 124.8    5869618   313.5    5869618   313.5
+    ## Vcells 5346386  40.8 1988843840 15173.7 1898307759 14483.0
 
 ## References

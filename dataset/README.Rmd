@@ -390,6 +390,12 @@ mir.points <- ossl.level0.export %>%
 plot_gh(mir.points, output = mir.output, fill.col = "yellow")
 ```
 
+VisNIR locations
+<img src="../img/visnir.pnts_sites.png" heigth=100% width=100%>
+
+MIR locations
+<img src="../img/mir.pnts_sites.png" heigth=100% width=100%>
+
 ### Overlay with spatial covariates
 ```{r overlay, include=TRUE, echo=TRUE, eval=TRUE}
 # Saving as gpkg
@@ -433,126 +439,120 @@ st_write(ossl.points, "../out/ossl_locations.gpkg", append = FALSE)
 
 ### Getting OSSL level 0 names
 
-NOTE: The code chunk below this paragraph is hidden. Just run once for getting the OSSL column names, types, and example. Run once and upload to Google Sheet for formatting and integrating with the OSSL. Requires Google authentication.
+NOTE: The code chunk below this paragraph is hidden. Just run once for getting the OSSL level 0 column names, types, and example. Run once and upload to Google Sheet for integrating with the OSSL coding table. Copies are saved for archiving in `out/ossl_level0_names_<table>.csv`. Requires Google authentication.
 
-```{r ossl_names, include=FALSE, echo=FALSE, eval=FALSE}
-# soilsite
-level0.soilsite <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs")
+<!-- ```{r ossl_names, include=FALSE, echo=FALSE, eval=FALSE} -->
+<!-- # soilsite -->
+<!-- level0.soilsite <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs") -->
 
-# level0.soilsite %>%
-#   filter(!is.na(pedon.taxa_usda_txt)) %>%
-#   nrow()
+<!-- level0.soilsite.format <- level0.soilsite %>% -->
+<!--   apply(., 2, function(x) na.omit(x)[1]) %>% -->
+<!--   data.frame("example" = .) %>% -->
+<!--   rownames_to_column(var = "ossl_name") %>% -->
+<!--   left_join({level0.soilsite %>% -->
+<!--       summarise_all(typeof) %>% -->
+<!--       mutate_all(as.character) %>% -->
+<!--       pivot_longer(everything(), names_to = "ossl_name", values_to = "type") -->
+<!--   }, by = "ossl_name") %>% -->
+<!--   relocate(type, .after = ossl_name) -->
 
-# must check
-# pedon.taxa_usda_txt
+<!-- readr::write_csv(level0.soilsite.format, "../out/ossl_level0_names_soilsite.csv") -->
 
-level0.soilsite.format <- level0.soilsite %>%
-  apply(., 2, function(x) na.omit(x)[1]) %>%
-  data.frame("example" = .) %>%
-  rownames_to_column(var = "ossl_name") %>%
-  left_join({level0.soilsite %>%
-      summarise_all(typeof) %>%
-      mutate_all(as.character) %>%
-      pivot_longer(everything(), names_to = "ossl_name", values_to = "type")
-  }, by = "ossl_name") %>%
-  relocate(type, .after = ossl_name)
+<!-- # soillab -->
+<!-- level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs") -->
 
-# soillab
-level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs")
+<!-- level0.soillab.format <- level0.soillab %>% -->
+<!--   apply(., 2, function(x) na.omit(x)[1]) %>% -->
+<!--   data.frame("example" = .) %>% -->
+<!--   rownames_to_column(var = "ossl_name") %>% -->
+<!--   left_join({level0.soillab %>% -->
+<!--       summarise_all(typeof) %>% -->
+<!--       mutate_all(as.character) %>% -->
+<!--       pivot_longer(everything(), names_to = "ossl_name", values_to = "type") -->
+<!--   }, by = "ossl_name") %>% -->
+<!--   relocate(type, .after = ossl_name) -->
 
-level0.soillab.format <- level0.soillab %>%
-  apply(., 2, function(x) na.omit(x)[1]) %>%
-  data.frame("example" = .) %>%
-  rownames_to_column(var = "ossl_name") %>%
-  left_join({level0.soillab %>%
-      summarise_all(typeof) %>%
-      mutate_all(as.character) %>%
-      pivot_longer(everything(), names_to = "ossl_name", values_to = "type")
-  }, by = "ossl_name") %>%
-  relocate(type, .after = ossl_name)
+<!-- readr::write_csv(level0.soillab.format, "../out/ossl_level0_names_soillab.csv") -->
 
-# mir
-level0.mir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs")
+<!-- # mir -->
+<!-- level0.mir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs") -->
 
-set.seed(1993)
-level0.mir.format <- level0.mir %>%
-  filter(!is.na(scan_mir.1000_abs)) %>%
-  sample_n(10) %>%
-  apply(., 2, function(x) na.omit(x)[1]) %>%
-  data.frame("example" = .) %>%
-  rownames_to_column(var = "ossl_name") %>%
-  left_join({level0.mir %>%
-      filter(!is.na(scan_mir.1000_abs)) %>%
-      sample_n(10) %>%
-      summarise_all(typeof) %>%
-      mutate_all(as.character) %>%
-      pivot_longer(everything(), names_to = "ossl_name", values_to = "type")
-  }, by = "ossl_name") %>%
-  relocate(type, .after = ossl_name) %>%
-  filter(grepl("^id\\.|^scan\\.mir|scan_mir\\.600_abs|scan_mir\\.4000_abs", ossl_name))
+<!-- set.seed(1993) -->
+<!-- level0.mir.format <- level0.mir %>% -->
+<!--   filter(!is.na(scan_mir.1000_abs)) %>% -->
+<!--   sample_n(10) %>% -->
+<!--   apply(., 2, function(x) na.omit(x)[1]) %>% -->
+<!--   data.frame("example" = .) %>% -->
+<!--   rownames_to_column(var = "ossl_name") %>% -->
+<!--   left_join({level0.mir %>% -->
+<!--       filter(!is.na(scan_mir.1000_abs)) %>% -->
+<!--       sample_n(10) %>% -->
+<!--       summarise_all(typeof) %>% -->
+<!--       mutate_all(as.character) %>% -->
+<!--       pivot_longer(everything(), names_to = "ossl_name", values_to = "type") -->
+<!--   }, by = "ossl_name") %>% -->
+<!--   relocate(type, .after = ossl_name) %>% -->
+<!--   filter(grepl("^id\\.|^scan\\.mir|scan_mir\\.600_abs|scan_mir\\.4000_abs", ossl_name)) -->
 
-# visnir
-level0.visnir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs")
+<!-- readr::write_csv(level0.mir.format, "../out/ossl_level0_names_mir.csv") -->
 
-set.seed(1993)
-level0.visnir.format <- level0.visnir %>%
-  filter(!is.na(scan_visnir.350_ref)) %>%
-  sample_n(10) %>%
-  apply(., 2, function(x) na.omit(x)[1]) %>%
-  data.frame("example" = .) %>%
-  rownames_to_column(var = "ossl_name") %>%
-  left_join({level0.visnir %>%
-      filter(!is.na(scan_visnir.350_ref)) %>%
-      sample_n(10) %>%
-      summarise_all(typeof) %>%
-      mutate_all(as.character) %>%
-      pivot_longer(everything(), names_to = "ossl_name", values_to = "type")
-  }, by = "ossl_name") %>%
-  relocate(type, .after = ossl_name) %>%
-  filter(grepl("^id\\.|^scan\\.visnir|scan_visnir\\.350_ref|scan_visnir\\.2500_ref", ossl_name))
+<!-- # visnir -->
+<!-- level0.visnir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs") -->
 
-###
-###
-###
+<!-- set.seed(1993) -->
+<!-- level0.visnir.format <- level0.visnir %>% -->
+<!--   filter(!is.na(scan_visnir.350_ref)) %>% -->
+<!--   sample_n(10) %>% -->
+<!--   apply(., 2, function(x) na.omit(x)[1]) %>% -->
+<!--   data.frame("example" = .) %>% -->
+<!--   rownames_to_column(var = "ossl_name") %>% -->
+<!--   left_join({level0.visnir %>% -->
+<!--       filter(!is.na(scan_visnir.350_ref)) %>% -->
+<!--       sample_n(10) %>% -->
+<!--       summarise_all(typeof) %>% -->
+<!--       mutate_all(as.character) %>% -->
+<!--       pivot_longer(everything(), names_to = "ossl_name", values_to = "type") -->
+<!--   }, by = "ossl_name") %>% -->
+<!--   relocate(type, .after = ossl_name) %>% -->
+<!--   filter(grepl("^id\\.|^scan\\.visnir|scan_visnir\\.350_ref|scan_visnir\\.2500_ref", ossl_name)) -->
 
-# # They all have the same soil properties
-# soillab.names <- variables.file %>%
-#   names(.) %>%
-#   tibble(original_name = .) %>%
-#   dplyr::mutate(table = 'AfSIS_reference.csv', .before = 1) %>%
-#   dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>%
-#   dplyr::mutate(comment = '')
-# 
-# readr::write_csv(soillab.names, paste0(getwd(), "/afis_soillab_names.csv"))
-# 
-# # Uploading to google sheet
-# 
-# # FACT CIN folder. Get ID for soildata importing table
-# googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"))
-# 
-# OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM"
-# 
-# # Checking metadata
-# googlesheets4::as_sheets_id(OSSL.soildata.importing)
-# 
-# # Checking readme
-# googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
-# 
-# # Preparing soillab.names
-# upload <- dplyr::as_tibble(soillab.names)
-# 
-# # Uploading
-# googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "AFSIS")
-# 
-# # Checking metadata
-# googlesheets4::as_sheets_id(OSSL.soildata.importing)
-```
+<!-- readr::write_csv(level0.visnir.format, "../out/ossl_level0_names_visnir.csv") -->
 
-NOTE: The code chunk below this paragraph is hidden. Run once for importing the harmonization rules (L0 to L1). The table can be edited online at Google Sheets after the previous upload. A copy is downloaded to github for archiving.
+<!-- # Uploading to google sheet -->
+<!-- library("googledrive") -->
+<!-- library("googlesheets4") -->
+
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab1_soildata_coding") -->
+
+<!-- OSSL.soildata.coding <- listed.table[[1,"id"]] -->
+
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.coding) -->
+
+<!-- # Checking readme -->
+<!-- googlesheets4::read_sheet(OSSL.soildata.coding, sheet = 'readme') -->
+
+<!-- # Preparing level 0 names -->
+<!-- upload <- list.files("../out/", pattern = "level0_names") %>% -->
+<!--   tibble(file = .) %>% -->
+<!--   mutate(sheet_name = gsub("\\.csv", "", file)) -->
+
+<!-- # Uploading -->
+<!-- for(i in 1:nrow(upload)) { -->
+<!--   uploading.file <- read_csv(paste0("../out/", upload[[i,"file"]])) -->
+<!--   googlesheets4::write_sheet(uploading.file, ss = OSSL.soildata.coding, sheet = upload[[i,"sheet_name"]]) -->
+<!-- } -->
+
+<!-- # Checking metadata -->
+<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- ``` -->
+
+NOTE: The code chunk below this paragraph is hidden. Run once for importing the harmonization rules (L0 to L1). The table can be edited online at Google Sheets after the previous definition. Copies are downloaded to github for archiving.
 
 <!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
 <!-- # Downloading from google sheet -->
-
 <!-- # FACT CIN folder id -->
 <!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
 <!--                                       pattern = "OSSL_tab2_soildata_importing") -->
@@ -571,8 +571,8 @@ NOTE: The code chunk below this paragraph is hidden. Run once for importing the 
 <!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
 <!-- ``` -->
 
-Reading soillab harmonization rules:
-```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+Reading soil lab harmonization rules:
+```{r soilab_transvalues, include=FALSE, echo=FALSE, eval=FALSE}
 transvalues <- read_csv(paste0(getwd(), "/OSSL_soillab_level1_harmonization.csv"))
 knitr::kable(transvalues)
 ```

@@ -1,0 +1,16 @@
+ossl_name,type,example
+id.layer_uuid_txt,character,8585028b0344511c951fc0298b5ab3a8
+id.scan_local_c,character,icr021044
+scan.mir.date.begin_iso.8601_yyyy.mm.dd,double,2009-01-01
+scan.mir.date.end_iso.8601_yyyy.mm.dd,double,2013-12-31
+scan.mir.model.name_utf8_txt,character,Bruker Tensor 27 with HTS-XT accessory
+scan.mir.model.code_any_txt,character,Bruker_Tensor_27.HTS.XT
+scan.mir.method.light.source_any_txt,character,
+scan.mir.method.preparation_any_txt,character,
+scan.mir.license.title_ascii_txt,character,CC-BY
+scan.mir.license.address_idn_url,character,https://creativecommons.org/licenses/by/4.0/
+scan.mir.doi_idf_url,character,https://doi.org/10.34725/DVN/QXCWP1
+scan.mir.contact.name_utf8_txt,character,"Vagen, Tor-Gunnar (World Agroforestry)"
+scan.mir.contact.email_ietf_txt,character,afsis.info@africasoils.net
+scan_mir.600_abs,double,1.38812
+scan_mir.4000_abs,double,0.2452604

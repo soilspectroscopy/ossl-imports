@@ -1,0 +1,81 @@
+ossl_name,type,example
+dataset.code_ascii_txt,character,AFSIS1.SSL
+id.layer_uuid_txt,character,ded584d70bf0474202d30e575ae24784
+ec_usda.a364_ds.m,double,  0.03100
+al.ext_usda.a1056_mg.kg,double,1270.00000
+b.ext_mel3_mg.kg,double, 0.00100000
+ca.ext_usda.a1059_mg.kg,double,   78.20000
+cu.ext_usda.a1063_mg.kg,double, 0.5600000
+fe.ext_usda.a1064_mg.kg,double, 182.00000
+k.ext_usda.a1065_mg.kg,double,  47.000000
+mg.ext_usda.a1066_mg.kg,double,  19.600000
+mn.ext_usda.a1067_mg.kg,double, 23.10000000
+na.ext_usda.a1068_mg.kg,double,   17.800000
+p.ext_usda.a652_mg.kg,double,    9.770000
+s.ext_mel3_mg.kg,double,  16.800
+zn.ext_usda.a1073_mg.kg,double,  1.0300000
+ph.h2o_usda.a268_index,double, 5.10000
+n.tot_usda.a623_w.pct,double, 0.079766974
+c.tot_usda.a622_w.pct,double, 1.55128592
+oc_usda.c1059_w.pct,double, 1.50336492
+clay.tot_usda.a334_w.pct,double, 30.99000
+silt.tot_usda.c62_w.pct,double, 18.64000
+sand.tot_usda.c60_w.pct,double, 50.37000
+ph.cacl2_usda.a481_index,double, 6.40000
+al.ext_aquaregia_g.kg,double, 42.9620831
+fe.ext_aquaregia_g.kg,double, 71.9575342
+ca.ext_aquaregia_mg.kg,double, 368.535095
+mg.ext_aquaregia_mg.kg,double, 710.429099
+k.ext_aquaregia_mg.kg,double,1781.400966
+mn.ext_aquaregia_mg.kg,double, 497.300369
+na.ext_aquaregia_mg.kg,double,  75.986312
+p.ext_aquaregia_mg.kg,double, 608.30492
+layer.upper.depth_usda_cm,double,   0.0
+layer.lower.depth_usda_cm,double,  20.0
+bd_usda.a4_g.cm3,double,1.3477999
+wr.10kPa_usda.a414_w.pct,double, 10.852961
+wr.1500kPa_usda.a417_w.pct,double,  3.000000
+p.ext_usda.a274_mg.kg,double, 17.23518992
+p.ext_usda.a270_mg.kg,double,  50.5348939
+cec_usda.a723_cmolc.kg,double,  6.6332171
+ca.ext_usda.a722_cmolc.kg,double,  2.617060178
+mg.ext_usda.a724_cmolc.kg,double,  1.81655342
+k.ext_usda.a725_cmolc.kg,double, 0.200688352
+na.ext_usda.a726_cmolc.kg,double,  0.124398521
+caco3_usda.a54_w.pct,double,  0.50000
+acidity_usda.a795_cmolc.kg,double,  0.40000
+al.ext_usda.a69_cmolc.kg,double, 0.20000
+bd_usda.a21_g.cm3,double,1.57100
+wr.10kPa_usda.a8_w.pct,double, 23.00000
+wr.33kPa_usda.a9_w.pct,double,  18.20000
+aggstb_usda.a1_w.pct,double, 74
+al.dith_usda.a65_w.pct,double,0.13652
+al.ox_usda.a59_w.pct,double,0.12951
+awc.33.1500kPa_usda.c80_cm3.cm3,double,0.08658
+bd_usda.c85_g.cm3,double,1.13642
+cf_usda.c236_w.pct,double,  4.00000
+fe.dith_usda.a66_w.pct,double, 1.09028
+fe.ox_usda.a60_w.pct,double, 0.15422
+mn.ext_usda.a70_mg.kg,double,   0.62569
+oc_usda.c729_w.pct,double, 2.9100
+p.ext_usda.a1070_mg.kg,double,  3.44739
+ph.cacl2_usda.a477_index,double,5.40
+s.tot_usda.a624_w.pct,double, 0.03569
+sand.tot_usda.c405_w.pct,double, 79.4
+silt.tot_usda.c407_w.pct,double,18.2
+wr.33kPa_usda.a415_w.pct,double, 29.17023
+efferv_usda.a479_class,character,none
+cf_ISO.11464_w.pct,double,10
+clay.tot_ISO.11277_w.pct,double,51
+silt.tot_ISO.11277_w.pct,double,40
+sand.tot_ISO.11277_w.pct,double,  9
+ph.h2o_ISO.10390_index,double, 7.64
+ph.cacl2_ISO.10390_index,double, 7.24
+oc_ISO.10694_w.pct,double, 2.05000000
+caco3_ISO.10693_w.pct,double,27.0
+n.tot_ISO.11261_w.pct,double,0.25
+p.ext_ISO.11263_mg.kg,double,  72.4
+cec_ISO.11260_cmolc.kg,double, 37.8
+ec_ISO.11265_ds.m,double,2.3350
+n.tot_ISO.13878_w.pct,double,0.089
+c.tot_ISO.10694_w.pct,double, 3.668778009
