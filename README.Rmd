@@ -25,6 +25,19 @@ editor_options:
 This is a repository for all data import development work for the [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org) project.
 
+The full documentation is available in the [OSSL manual]("https://soilspectroscopy.github.io/ossl-manual/").
+
+The OSSL includes the USDA NRCS NCSS-KSSL MIR & VNIR libraries (labeled [KSSL]("dataset/KSSL")), ICRAF-ISRIC MIR & VNIR libraries (labeled [ICRAF_ISRIC]("dataset/ICRAF_ISRIC")), AFSIS I & AFSIS II MIR libraries (labeled [AFIS1]("dataset/AFIS1") & [AFSIS2]("dataset/AFSIS2")), ESDAC LUCAS VNIR library (labeled [LUCAS]("dataset/LUCAS")), ETH Congo Basin MIR library (labeled [CASSL]("dataset/CASSL")), the Scion Research NZ MIR library (labeled [Garrett]("dataset/Garrett")), and the University of Zurich permafrost MIR library (labeled [Schiedung)]("dataset/Schiedung")). The KSSL database represents a snapshot from July 2022.
+
+- Spectral diversity  
+<img src="img/plot_pca_scores_mir_ossl.png" heigth=100% width=100%>
+
+- MIR locations  
+<img src="img/mir.pnts_sites.png" heigth=100% width=100%>
+
+- VisNIR locations  
+<img src="img/visnir.pnts_sites.png" heigth=100% width=100%>
+
 ### Importing new datasets
 
 - Add dataset following the [project codes](https://soilspectroscopy.github.io/ossl-manual/database.html) to the `/dataset/` folder;
