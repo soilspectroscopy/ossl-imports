@@ -13,17 +13,16 @@ This is a repository for all data import development work for the [Soil
 Spectroscopy for Global Good](https://soilspectroscopy.org) project.
 
 The full documentation is available in the [OSSL
-manual](%22https://soilspectroscopy.github.io/ossl-manual/%22).
+manual](https://soilspectroscopy.github.io/ossl-manual/).
 
 The OSSL includes the USDA NRCS NCSS-KSSL MIR & VNIR libraries (labeled
-[KSSL](%22dataset/KSSL%22)), ICRAF-ISRIC MIR & VNIR libraries (labeled
-[ICRAF\_ISRIC](%22dataset/ICRAF_ISRIC%22)), AFSIS I & AFSIS II MIR
-libraries (labeled [AFIS1](%22dataset/AFIS1%22) &
-[AFSIS2](%22dataset/AFSIS2%22)), ESDAC LUCAS VNIR library (labeled
-[LUCAS](%22dataset/LUCAS%22)), ETH Congo Basin MIR library (labeled
-[CASSL](%22dataset/CASSL%22)), the Scion Research NZ MIR library
-(labeled [Garrett](%22dataset/Garrett%22)), and the University of Zurich
-permafrost MIR library (labeled [Schiedung)](%22dataset/Schiedung%22)).
+[KSSL](dataset/KSSL)), ICRAF-ISRIC MIR & VNIR libraries (labeled
+[ICRAF\_ISRIC](dataset/ICRAF_ISRIC)), AFSIS I & AFSIS II MIR libraries
+(labeled [AFIS1](dataset/AFIS1) & [AFSIS2](dataset/AFSIS2)), ESDAC LUCAS
+VNIR library (labeled [LUCAS](dataset/LUCAS)), ETH Congo Basin MIR
+library (labeled [CASSL](dataset/CASSL)), the Scion Research NZ MIR
+library (labeled [Garrett](dataset/Garrett)), and the University of
+Zurich permafrost MIR library (labeled [Schiedung)](dataset/Schiedung)).
 The KSSL database represents a snapshot from July 2022.
 
 -   Spectral diversity  
