@@ -1,16 +1,16 @@
-ossl_name,type,example
-id.layer_uuid_txt,character,bb01d3da0ea0d4d796b3391bb1d174f1
-id.scan_local_c,character,196784MD01
-scan.visnir.date.begin_iso.8601_yyyy.mm.dd,double,2015-03-05
-scan.visnir.date.end_iso.8601_yyyy.mm.dd,double,2015-03-05
-scan.visnir.model.name_utf8_txt,character,ASD Labspec 2500 with Muglight accessory
-scan.visnir.model.code_any_txt,character,ASD_Labspec_2500_MA
-scan.visnir.method.light.source_any_txt,character,
-scan.visnir.method.preparation_any_txt,character,
-scan.visnir.license.title_ascii_txt,character,CC-BY
-scan.visnir.license.address_idn_url,character,https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca
-scan.visnir.doi_idf_url,character,https://doi.org/10.1007/978-3-319-04084-4_10
-scan.visnir.contact.name_utf8_txt,character,Scarlett Murphy
-scan.visnir.contact.email_ietf_txt,character,Scarlett.Murphy@usda.gov
-scan_visnir.350_ref,double,0.10403320
-scan_visnir.2500_ref,double,0.3622029
+ossl_name,type,example,description
+id.layer_uuid_txt,character,bb01d3da0ea0d4d796b3391bb1d174f1,
+id.scan_local_c,character,196784MD01,
+scan.visnir.date.begin_iso.8601_yyyy.mm.dd,double,2015-03-05,
+scan.visnir.date.end_iso.8601_yyyy.mm.dd,double,2015-03-05,
+scan.visnir.model.name_utf8_txt,character,ASD Labspec 2500 with Muglight accessory,
+scan.visnir.model.code_any_txt,character,ASD_Labspec_2500_MA,
+scan.visnir.method.light.source_any_txt,character,,
+scan.visnir.method.preparation_any_txt,character,,
+scan.visnir.license.title_ascii_txt,character,CC-BY,
+scan.visnir.license.address_idn_url,character,https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca,
+scan.visnir.doi_idf_url,character,https://doi.org/10.1007/978-3-319-04084-4_10,
+scan.visnir.contact.name_utf8_txt,character,Scarlett Murphy,
+scan.visnir.contact.email_ietf_txt,character,Scarlett.Murphy@usda.gov,
+scan_visnir.350_ref,double,0.10403320,
+scan_visnir.2500_ref,double,0.3622029,
