@@ -616,26 +616,25 @@ NOTE: The code chunk below this paragraph is hidden. Just run once for getting t
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 <!-- ``` -->
 
-NOTE: The code chunk below this paragraph is hidden. Run once for importing the harmonization rules (L0 to L1). The table is edited online on Google Sheets after the previous definition. Copies are downloaded to github for archiving. Use `CMD + Shift + C` to uncomment chunks.
+NOTE: The code chunk below this paragraph is hidden. Run once for downloading the harmonization rules (L0 to L1). The table is edited online on Google Sheets after the previous definition. Copies are downloaded to this github for archiving. Use `CMD + Shift + C` to uncomment chunks.
 
 <!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
-<!-- # Downloading from google sheet -->
-<!-- # FACT CIN folder id -->
-<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
-<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
+<!-- library("googledrive") -->
+<!-- library("googlesheets4") -->
 
-<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+<!-- # Downloading -->
+<!-- # FACT CIN folder id -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), pattern = "OSSL_tab1_soildata_coding") -->
+<!-- ossl.soildata.coding <- listed.table[[1,"id"]] -->
 
 <!-- # Checking metadata -->
-<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 
 <!-- # Preparing soillab.names -->
-<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "AFSIS") %>% -->
-<!--   filter(import == TRUE) %>% -->
-<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
+<!-- kssl.procedures <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "KSSL_procedures") -->
 
 <!-- # Saving to folder -->
-<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- readr::write_csv(kssl.procedures, "../out/kssl_procedures.csv") -->
 <!-- ``` -->
 
 Reading soil lab harmonization rules:

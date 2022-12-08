@@ -15,6 +15,56 @@ Spectroscopy for Global Good](https://soilspectroscopy.org) project.
 The full documentation is available in the [OSSL
 manual](https://soilspectroscopy.github.io/ossl-manual/).
 
+### Importing new datasets
+
+-   Define a dataset code following the format in [manual project
+    codes](https://soilspectroscopy.github.io/ossl-manual/database.html)
+    and create a new folder inside the `dataset/` folder;
+-   Document import steps in the `README.Rmd` by producing four standard
+    tables: soilsite, soillab, mir, and visnir. Follow this
+    [example](dataset/CASSL);
+-   Follow the table formats described in the example or summarised in
+    [ossl\_level0\_names\_soilsite](out/ossl_level0_names_soilsite.csv),
+    [ossl\_level0\_names\_soillab](out/ossl_level0_names_soillab.csv),
+    [ossl\_level0\_names\_mir](out/ossl_level0_names_mir.csv),
+    [ossl\_level0\_names\_soilsite](out/ossl_level0_names_visnir.csv);
+-   Make sure to run a quality analysis similiar to the other datasets.
+    This includes the assessment of the analytical, spatial, and
+    spectral consistency;
+-   We are currently running this task on an internal server, so you can
+    host your dataset on a public repository (preferrably
+    [Zenodo](https://zenodo.org/)) or share privately (not preferred,
+    <soilspec4gg@woodwellclimate.org>) and provide your importing steps
+    in this github repository.
+-   The final integration by joining and binding all the datasets is
+    described in main `dataset/` folder and run on our internal server.
+
+In order to maximize transparency, for now, we have decided to produce
+two different levels for the OSSL database. `Level 0` takes into account
+the original analytical methods employed in each dataset but tries to
+initially fit them to our reference lists: [KSSL Guidance – Laboratory
+Methods and
+Manuals](https://www.nrcs.usda.gov/resources/guides-and-instructions/kssl-guidance)
+(the method/procedures codes are archived in [this
+file](out/kssl_procedures)) or [some ISO
+standard](https://www.frontiersin.org/articles/10.3389/fenvs.2017.00041/full).
+If a reference method does not fall in any previous method, then we
+create a new variable sharing at least a common property name and unit.
+The final harmonization takes place in the OSSL `Level 1`, where those
+common properties sharing different methods can be converted to a target
+method using some publicly available transformation rule, or in the
+worst scenario, they are naively binded or kept separated to produce its
+specific model in the OSSL engine. All the implementations are
+documented in this github repository.
+
+NOTE: for more advanced users of the soil spectral libraries **we advise
+to contact the original data producers**, especially to get help with
+using, extending, and improving the original SSL data. Note: we **do NOT
+provide support with issues that my arise with the original soil
+spectral libraries**.
+
+### Using the OSSL
+
 The OSSL includes the USDA NRCS NCSS-KSSL MIR & VNIR libraries (labeled
 [KSSL](dataset/KSSL)), ICRAF-ISRIC MIR & VNIR libraries (labeled
 [ICRAF\_ISRIC](dataset/ICRAF_ISRIC)), AFSIS I & AFSIS II MIR libraries
@@ -33,29 +83,6 @@ The KSSL database represents a snapshot from July 2022.
 
 -   VisNIR locations  
     <img src="img/visnir.pnts_sites.png" heigth=100% width=100%>
-
-### Importing new datasets
-
--   Add dataset following the [project
-    codes](https://soilspectroscopy.github.io/ossl-manual/database.html)
-    to the `/dataset/` folder;
--   Document import steps / produce four standard tables, write outputs
-    to `/ossl` folder;
--   Test dataset properties by plotting distributions, detect possible
-    artifacts (see an
-    [example](https://soilspectroscopy.github.io/ossl-manual/database.html#oc_usda.calc_wpct));
--   After quality-control, all data is imported / bind to the global
-    OSSL DB;
--   Script `test_bind.R` contains all steps used to produce the final
-    output;
-
-NOTE: for more advanced uses of the soil spectral libraries **we advise
-to contact the original data producers** especially to get help with
-using, extending, and improving the original SSL data. Note: we **do NOT
-provide support with issues that my arise with the original soil
-spectral libraries**.
-
-### Using the OSSL
 
 To load the complete analysis-ready dataset (486MB) as a single table in
 R and run predictive modeling please use:
