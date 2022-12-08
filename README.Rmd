@@ -1,5 +1,4 @@
 ---
-title: "Import soil spectral libraries into OSSL"
 output: 
   github_document:
     toc: false
