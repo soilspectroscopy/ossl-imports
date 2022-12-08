@@ -1,14 +1,7 @@
-Import spectral libraries into OSSL
+Import soil spectral libraries into OSSL
 ================
-08 December, 2022
 
 
-
--   [Description](#description)
--   [Dataset import steps](#dataset-import-steps)
--   [Load OSSL files](#load-ossl-files)
--   [Other tools and repositories of
-    interest](#other-tools-and-repositories-of-interest)
 
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.5759693.svg)](https://doi.org/10.5281/zenodo.5759693)
 
@@ -16,16 +9,12 @@ Import spectral libraries into OSSL
 
 [<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />](http://creativecommons.org/licenses/by-sa/4.0/)
 
-This work is licensed under a [Creative Commons Attribution-ShareAlike
-4.0 International
-License](http://creativecommons.org/licenses/by-sa/4.0/).
-
-## Description
+### Description
 
 This is a repository for all data import development work for the [Soil
 Spectroscopy for Global Good](https://soilspectroscopy.org) project.
 
-## Dataset import steps
+### Importing new datasets
 
 -   Add dataset following the [project
     codes](https://soilspectroscopy.github.io/ossl-manual/database.html)
@@ -46,7 +35,7 @@ using, extending, and improving the original SSL data. Note: we **do NOT
 provide support with issues that my arise with the original soil
 spectral libraries**.
 
-## Load OSSL files
+### Using the OSSL
 
 To load the complete analysis-ready dataset (486MB) as a single table in
 R and run predictive modeling please use:
@@ -58,7 +47,7 @@ R and run predictive modeling please use:
 The compilation currently contains training MIR (70k) and VisNIR (70k)
 spectral scans + soil calibration data (51,732 unique locations).
 
-## Other tools and repositories of interest
+### Other tools and repositories
 
 We are fitting [globally-applicable prediction
 models](https://github.com/soilspectroscopy/ossl-models) to enable free
