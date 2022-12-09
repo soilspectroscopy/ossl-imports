@@ -51,7 +51,7 @@ options(scipen = 999)
 R packages
 ```{r packages, include=TRUE, eval=TRUE, echo=TRUE, results='hide'}
 packages <- c("tictoc", "tidyverse", "data.table", "lubridate",
-              "fs", "qs", "openssl", "olctools", "sf")
+              "fs", "qs", "openssl", "olctools", "sf", "terra")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 invisible(lapply(packages, library, character.only = TRUE))
@@ -287,6 +287,8 @@ ossl.level0.export <- ossl.level0.export %>%
   mutate(location.point.error_any_m = ifelse(is.na(longitude.point_wgs84_dd), NA, location.point.error_any_m)) %>%
   mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10)) %>%
+  mutate(id.layer_uuid_txt = as.character(id.layer_uuid_txt),
+         id.location_olc_txt = as.character(id.location_olc_txt)) %>%
   select(-code, -file_sequence) %>%
   relocate(id.layer_uuid_txt, .after = id.layer_local_c)
 
@@ -407,41 +409,68 @@ MIR locations
 
 ### Overlay with spatial covariates
 
-Must switch all to TRUE for overlaying
+NOTE: This is a time-consuming step. Must switch `eval` to TRUE for new overlaying.
 ```{r overlay, include=TRUE, eval=FALSE, echo=TRUE}
 # Reading ossl points 
-st_layers("../out/ossl_locations.gpkg")
+# st_layers("../out/ossl_locations.gpkg")
 ossl.points <- st_read(dsn = "../out/ossl_locations.gpkg", layer = "ossl_locations")
 
 # Land points
-ov.admin <- st_read(dsn = "/mnt/lacus/tmp/openlandmap/tiling/tiles_GH_100km_land.gpkg")
+ov.admin <- st_read(dsn = "/mnt/soilspec4gg/WORLDCLIM/tiles_GH_100km_land.gpkg")
+# plot(ov.admin["ID"])
+
+# Overlay with tile ids
 ossl.points.trans <- st_transform(ossl.points, crs = st_crs(ov.admin))
-id <- st_intersection(ossl.points.trans, ov.admin)
 
-# Tif list
-tif.lst <- list.files("/mnt/lacus/tmp/WORLDCLIM", ".tif", full.names=TRUE)
+tile.id <- st_intersection(ossl.points.trans, ov.admin) %>%
+  as_tibble() %>%
+  rename(id.tile = ID) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, id.tile)
 
-# Overlay
-ov.tmp <- parallel::mclapply(1:length(tif.lst), function(j){terra::extract(terra::rast(tif.lst[j]), terra::vect(ossl.points)) }, mc.cores = 16)
-ov.tmp <- dplyr::bind_cols(lapply(ov.tmp, function(i){i[,2]}))
-names(ov.tmp) <- tools::file_path_sans_ext(basename(tif.lst))
+# Raster list
+tif.lst <- list.files("/mnt/soilspec4gg/WORLDCLIM/", ".tif", full.names=TRUE)
+
+# Overlay - Both tifs and ossl.points are CRS 4326
+# ov.ossl <- lapply(1:length(tif.lst[1:3]), function(x) {extract(rast(tif.lst[x]), vect(ossl.points))})
+ov.ossl <- parallel::mclapply(1:length(tif.lst), function(j) {
+  terra::extract(terra::rast(tif.lst[j]), terra::vect(ossl.points)) }, mc.cores = 16)
+
+# Binding all extractions
+ov.ossl.binded <- Reduce(function(x, y) {left_join(x, y, by = "ID")}, ov.ossl)
 
 # Remove covariates with no variation?
-c.na <- sapply(ov.tmp, function(i){sum(is.na(i))})
-c.sd <- sapply(ov.tmp, function(i){var(i, na.rm=TRUE)})
-rm.c <- which(c.na > 200 | c.sd == 0)
-#rm.c
-## summary(ov.tmp$lcv_global.seasonal.s1_earth.big.data.winter.vv.rmse_m_250m_s0..0cm_2019.12..2020.11_epsg4326_v1)
-## 23 layers suspicious
-## clm_snow.prob missing values for 300-400 points
-ov.tmp$id.location_olc_c <- site.xy$id.location_olc_c
-ov.tmp$id <- id$id
-#summary(as.factor(ov.tmp$ID))
-## high clustering of points?
+c.na <- apply(ov.ossl.binded, 2, function(x) {sum(is.na(x))/length(x)*100})
+c.cv <- apply(ov.ossl.binded, 2, function(x) {sd(x,na.rm=T)/mean(x,na.rm=T)*100})
+
+# Removing unnecessary covariates
+# Either coefficient of variation (CV) < 5% or High proportion of NA observations
+# In this case only using the CV filter
+ov.ossl.check <- ov.ossl.binded %>%
+  sample_n(1) %>%
+  pivot_longer(everything(), names_to = "covariate", values_to = "value") %>%
+  select(-value) %>%
+  mutate(na_perc = c.na, cv_perc = c.cv) %>%
+  filter(!(covariate == "ID")) %>%
+  # mutate(remove = ifelse(na_perc >= quantile(na_perc, 0.95) | cv_perc < 5, TRUE, FALSE))
+  mutate(remove = ifelse(cv_perc < 5, TRUE, FALSE)) #
+
+ov.ossl.check %>%
+  count(remove)
+
+ov.ossl.selection <- ov.ossl.check %>%
+  filter(!remove) %>%
+  pull(covariate)
+
+# Final data
+ov.ossl.export <- ov.ossl.binded %>%
+  bind_cols({ossl.points %>% select(dataset.code_ascii_txt, id.layer_uuid_txt)}, .) %>%
+  left_join(tile.id, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, id.tile, all_of(ov.ossl.selection)) %>%
+  as_tibble() %>% # Omit if you want to keep spatial info
+  select(-geom) # Omit if you want to keep spatial info
 
 # Saving to disk
-qs::qsave(ov.tmp, "/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.qs", preset = "high")
-ov.tmp <- qs::qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.qs")
+qs::qsave(ov.ossl.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.qs", preset = "high")
 ```
 
 ## OSSL level 1
@@ -639,6 +668,7 @@ NOTE: The code chunk below this paragraph is hidden. Run once for downloading th
 
 Reading soil lab harmonization rules:
 ```{r soilab_transvalues, include=FALSE, echo=FALSE, eval=FALSE}
+# Still todo
 transvalues <- read_csv(paste0(getwd(), "/ossl_level1_soillab_harmonization.csv"))
 knitr::kable(transvalues)
 ```

@@ -3,7 +3,7 @@ Binding all datasets
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-08 December, 2022
+09 December, 2022
 
 
 
@@ -31,7 +31,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-08
+Last update: 2022-12-09
 
 All the external SSLs were prepared and harmonized to the OSSL naming
 conventions as described in the `README` files present in each specific
@@ -55,7 +55,7 @@ R packages
 
 ``` r
 packages <- c("tictoc", "tidyverse", "data.table", "lubridate",
-              "fs", "qs", "openssl", "olctools", "sf")
+              "fs", "qs", "openssl", "olctools", "sf", "terra")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 invisible(lapply(packages, library, character.only = TRUE))
@@ -516,6 +516,8 @@ ossl.level0.export <- ossl.level0.export %>%
   mutate(location.point.error_any_m = ifelse(is.na(longitude.point_wgs84_dd), NA, location.point.error_any_m)) %>%
   mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10)) %>%
+  mutate(id.layer_uuid_txt = as.character(id.layer_uuid_txt),
+         id.location_olc_txt = as.character(id.location_olc_txt)) %>%
   select(-code, -file_sequence) %>%
   relocate(id.layer_uuid_txt, .after = id.layer_local_c)
 
@@ -673,7 +675,7 @@ st_write(ossl.points, "../out/ossl_locations.gpkg", append = FALSE)
 
     ## Writing layer `ossl_locations' to data source 
     ##   `../out/ossl_locations.gpkg' using driver `GPKG'
-    ## Writing 87623 features with 1 fields and geometry type Point.
+    ## Writing 87623 features with 2 fields and geometry type Point.
 
 VisNIR locations
 <img src="../img/visnir.pnts_sites.png" heigth=100% width=100%>
@@ -683,42 +685,70 @@ MIR locations
 
 ### Overlay with spatial covariates
 
-Must switch all to TRUE for overlaying
+NOTE: This is a time-consuming step. Must switch `eval` to TRUE for new
+overlaying.
 
 ``` r
 # Reading ossl points 
-st_layers("../out/ossl_locations.gpkg")
+# st_layers("../out/ossl_locations.gpkg")
 ossl.points <- st_read(dsn = "../out/ossl_locations.gpkg", layer = "ossl_locations")
 
 # Land points
-ov.admin <- st_read(dsn = "/mnt/lacus/tmp/openlandmap/tiling/tiles_GH_100km_land.gpkg")
+ov.admin <- st_read(dsn = "/mnt/soilspec4gg/WORLDCLIM/tiles_GH_100km_land.gpkg")
+# plot(ov.admin["ID"])
+
+# Overlay with tile ids
 ossl.points.trans <- st_transform(ossl.points, crs = st_crs(ov.admin))
-id <- st_intersection(ossl.points.trans, ov.admin)
 
-# Tif list
-tif.lst <- list.files("/mnt/lacus/tmp/WORLDCLIM", ".tif", full.names=TRUE)
+tile.id <- st_intersection(ossl.points.trans, ov.admin) %>%
+  as_tibble() %>%
+  rename(id.tile = ID) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, id.tile)
 
-# Overlay
-ov.tmp <- parallel::mclapply(1:length(tif.lst), function(j){terra::extract(terra::rast(tif.lst[j]), terra::vect(ossl.points)) }, mc.cores = 16)
-ov.tmp <- dplyr::bind_cols(lapply(ov.tmp, function(i){i[,2]}))
-names(ov.tmp) <- tools::file_path_sans_ext(basename(tif.lst))
+# Raster list
+tif.lst <- list.files("/mnt/soilspec4gg/WORLDCLIM/", ".tif", full.names=TRUE)
+
+# Overlay - Both tifs and ossl.points are CRS 4326
+# ov.ossl <- lapply(1:length(tif.lst[1:3]), function(x) {extract(rast(tif.lst[x]), vect(ossl.points))})
+ov.ossl <- parallel::mclapply(1:length(tif.lst), function(j) {
+  terra::extract(terra::rast(tif.lst[j]), terra::vect(ossl.points)) }, mc.cores = 16)
+
+# Binding all extractions
+ov.ossl.binded <- Reduce(function(x, y) {left_join(x, y, by = "ID")}, ov.ossl)
 
 # Remove covariates with no variation?
-c.na <- sapply(ov.tmp, function(i){sum(is.na(i))})
-c.sd <- sapply(ov.tmp, function(i){var(i, na.rm=TRUE)})
-rm.c <- which(c.na > 200 | c.sd == 0)
-#rm.c
-## summary(ov.tmp$lcv_global.seasonal.s1_earth.big.data.winter.vv.rmse_m_250m_s0..0cm_2019.12..2020.11_epsg4326_v1)
-## 23 layers suspicious
-## clm_snow.prob missing values for 300-400 points
-ov.tmp$id.location_olc_c <- site.xy$id.location_olc_c
-ov.tmp$id <- id$id
-#summary(as.factor(ov.tmp$ID))
-## high clustering of points?
+c.na <- apply(ov.ossl.binded, 2, function(x) {sum(is.na(x))/length(x)*100})
+c.cv <- apply(ov.ossl.binded, 2, function(x) {sd(x,na.rm=T)/mean(x,na.rm=T)*100})
+
+# Removing unnecessary covariates
+# Either coefficient of variation (CV) < 5% or High proportion of NA observations
+# In this case only using the CV filter
+ov.ossl.check <- ov.ossl.binded %>%
+  sample_n(1) %>%
+  pivot_longer(everything(), names_to = "covariate", values_to = "value") %>%
+  select(-value) %>%
+  mutate(na_perc = c.na, cv_perc = c.cv) %>%
+  filter(!(covariate == "ID")) %>%
+  # mutate(remove = ifelse(na_perc >= quantile(na_perc, 0.95) | cv_perc < 5, TRUE, FALSE))
+  mutate(remove = ifelse(cv_perc < 5, TRUE, FALSE)) #
+
+ov.ossl.check %>%
+  count(remove)
+
+ov.ossl.selection <- ov.ossl.check %>%
+  filter(!remove) %>%
+  pull(covariate)
+
+# Final data
+ov.ossl.export <- ov.ossl.binded %>%
+  bind_cols({ossl.points %>% select(dataset.code_ascii_txt, id.layer_uuid_txt)}, .) %>%
+  left_join(tile.id, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, id.tile, all_of(ov.ossl.selection)) %>%
+  as_tibble() %>% # Omit if you want to keep spatial info
+  select(-geom) # Omit if you want to keep spatial info
 
 # Saving to disk
-qs::qsave(ov.tmp, "/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.qs", preset = "high")
-ov.tmp <- qs::qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.qs")
+qs::qsave(ov.ossl.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.qs", preset = "high")
 ```
 
 ## OSSL level 1
@@ -876,24 +906,24 @@ uncomment chunks.
 <!-- ``` -->
 
 NOTE: The code chunk below this paragraph is hidden. Run once for
-importing the harmonization rules (L0 to L1). The table is edited online
-on Google Sheets after the previous definition. Copies are downloaded to
-github for archiving. Use `CMD + Shift + C` to uncomment chunks.
+downloading the harmonization rules (L0 to L1). The table is edited
+online on Google Sheets after the previous definition. Copies are
+downloaded to this github for archiving. Use `CMD + Shift + C` to
+uncomment chunks.
 
 <!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
-<!-- # Downloading from google sheet -->
+<!-- library("googledrive") -->
+<!-- library("googlesheets4") -->
+<!-- # Downloading -->
 <!-- # FACT CIN folder id -->
-<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
-<!--                                       pattern = "OSSL_tab2_soildata_importing") -->
-<!-- OSSL.soildata.importing <- listed.table[[1,"id"]] -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), pattern = "OSSL_tab1_soildata_coding") -->
+<!-- ossl.soildata.coding <- listed.table[[1,"id"]] -->
 <!-- # Checking metadata -->
-<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
+<!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 <!-- # Preparing soillab.names -->
-<!-- transvalues <- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = "AFSIS") %>% -->
-<!--   filter(import == TRUE) %>% -->
-<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
+<!-- kssl.procedures <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "KSSL_procedures") -->
 <!-- # Saving to folder -->
-<!-- write_csv(transvalues, paste0(getwd(), "/OSSL_transvalues.csv")) -->
+<!-- readr::write_csv(kssl.procedures, "../out/kssl_procedures.csv") -->
 <!-- ``` -->
 
 Reading soil lab harmonization rules:
@@ -915,7 +945,7 @@ shares the same base data (Spatial, VisNIR and MIR)
 toc()
 ```
 
-    ## 132.901 sec elapsed
+    ## 135.575 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -923,7 +953,7 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells 2334912 124.7    5869254   313.5    5869254   313.5
-    ## Vcells 5343888  40.8 1988838819 15173.7 1898306211 14483.0
+    ## Ncells 3576720 191.1    8340952   445.5    8340952   445.5
+    ## Vcells 6935563  53.0 1996179967 15229.7 1897097108 14473.8
 
 ## References
