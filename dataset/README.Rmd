@@ -477,7 +477,7 @@ qs::qsave(ov.ossl.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.q
 
 ### Getting OSSL level 0 names
 
-NOTE: The code chunk below this paragraph is hidden. Just run once for getting the OSSL level 0 column names, types, and example. Run once and upload to Google Sheet for integrating with the OSSL coding table. Copies are saved for archiving in `out/ossl_level0_names_<table>.csv`. Requires Google authentication. Use `CMD + Shift + C` to uncomment chunks.
+NOTE: The code chunk below this paragraph is hidden. Just run once for getting the OSSL level 0 column names, types, and example. Run once and upload to Google Sheet for integrating with the OSSL coding table. Copies are saved for archiving  and latter updated in `out/ossl_level0_names_<table>.csv`. Requires Google authentication. Use `CMD + Shift + C` to uncomment chunks.
 
 <!-- ```{r ossl_names, include=FALSE, echo=FALSE, eval=FALSE} -->
 <!-- library("googledrive") -->
@@ -604,30 +604,12 @@ NOTE: The code chunk below this paragraph is hidden. Just run once for getting t
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 <!-- ``` -->
 
-NOTE: The code chunk below this paragraph is hidden. Just run once for getting the OSSL level 0 soilab column names for defining the harmonization rules. Run once and upload to Google Sheet with the OSSL coding table. A copy is saved for archiving in `out/ossl_soillab_level1_harmonization.csv` but modified on Google Sheet. Requires Google authentication. Use `CMD + Shift + C` to uncomment chunks.
+NOTE: The code chunk below this paragraph is hidden. Just run once for getting the OSSL level 0 soilab column edit online. The copies are archived in `out/`. Requires Google authentication. Use `CMD + Shift + C` to uncomment chunks.
 
 <!-- ```{r ossl_names, include=FALSE, echo=FALSE, eval=FALSE} -->
 <!-- library("googledrive") -->
 <!-- library("googlesheets4") -->
 
-<!-- # soillab -->
-<!-- level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs") -->
-
-<!-- level0.harmonization <- level0.soillab %>% -->
-<!--   sample_n(1) %>% -->
-<!--   mutate_all(as.character) %>% -->
-<!--   pivot_longer(everything(), names_to = "ossl_name_level0", values_to = "value") %>% -->
-<!--   select(-value) %>% -->
-<!--   mutate(split = ifelse(ossl_name_level0 %in% c("dataset.code_ascii_txt", "id.layer_uuid_txt"), "id", "properties")) %>% -->
-<!--   group_by(split) %>% -->
-<!--   arrange(split, ossl_name_level0) %>% -->
-<!--   ungroup() %>% -->
-<!--   select(-split) %>% -->
-<!--   mutate(ossl_pattern = ossl_name_level0) %>% -->
-<!--   separate(ossl_pattern, into = c("ossl_abbrev_level0", "ossl_method_level0", "ossl_unit_level0"), sep = "_") %>% -->
-<!--   mutate(target_name = "", target_method = "", target_unit = "", ossl_name_level1 = "", ossl_level1_transform = "") -->
-
-<!-- # Uploading to google sheet -->
 <!-- # FACT CIN folder id -->
 <!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), pattern = "OSSL_tab1_soildata_coding") -->
 <!-- ossl.soildata.coding <- listed.table[[1,"id"]] -->
@@ -635,23 +617,25 @@ NOTE: The code chunk below this paragraph is hidden. Just run once for getting t
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 
-<!-- # Checking readme -->
-<!-- googlesheets4::read_sheet(ossl.soildata.coding, sheet = 'readme') -->
+<!-- # Downloading edited names -->
+<!-- ossl.level0.names.soillab <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_soillab") -->
+<!-- ossl.level0.names.soilsite <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_soilsite") -->
+<!-- ossl.level0.names.mir <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_mir") -->
+<!-- ossl.level0.names.visnir <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_visnir") -->
 
-<!-- # Uploading -->
-<!-- googlesheets4::write_sheet(level0.harmonization, ss = ossl.soildata.coding, sheet = "ossl_level1_soillab_harmonization") -->
-
-<!-- # Checking metadata -->
-<!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
+<!-- # Saving to folder -->
+<!-- readr::write_csv(ossl.level0.names.soillab, "../out/ossl_level0_names_soillab.csv") -->
+<!-- readr::write_csv(ossl.level0.names.soilsite, "../out/ossl_level0_names_soilsite.csv") -->
+<!-- readr::write_csv(ossl.level0.names.mir, "../out/ossl_level0_names_mir.csv") -->
+<!-- readr::write_csv(ossl.level0.names.visnir, "../out/ossl_level0_names_visnir.csv") -->
 <!-- ``` -->
 
-NOTE: The code chunk below this paragraph is hidden. Run once for downloading the harmonization rules (L0 to L1). The table is edited online on Google Sheets after the previous definition. Copies are downloaded to this github for archiving. Use `CMD + Shift + C` to uncomment chunks.
+NOTE: The code chunk below this paragraph is hidden. Run once for downloading the harmonization rules (L0 to L1). The table is edited online on Google Sheets after the previous definitions. Copies are downloaded to github for archiving. Use `CMD + Shift + C` to uncomment chunks.
 
 <!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
 <!-- library("googledrive") -->
 <!-- library("googlesheets4") -->
 
-<!-- # Downloading -->
 <!-- # FACT CIN folder id -->
 <!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), pattern = "OSSL_tab1_soildata_coding") -->
 <!-- ossl.soildata.coding <- listed.table[[1,"id"]] -->
@@ -660,10 +644,10 @@ NOTE: The code chunk below this paragraph is hidden. Run once for downloading th
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 
 <!-- # Preparing soillab.names -->
-<!-- kssl.procedures <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "KSSL_procedures") -->
+<!-- ossl.soillab.harmonization <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level1_soillab_harmonization") -->
 
-<!-- # Saving to folder -->
-<!-- readr::write_csv(kssl.procedures, "../out/kssl_procedures.csv") -->
+<!-- # Downloading to folder -->
+<!-- readr::write_csv(ossl.soillab.harmonization, "../out/ossl_level0_to_level1_soillab_harmonization.csv") -->
 <!-- ``` -->
 
 Reading soil lab harmonization rules:
