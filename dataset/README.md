@@ -49,8 +49,6 @@ naming convention follows the standard
 -   `<local DATASET folder>/ossl_visnir_v1.2.qs`: Imported/harmonized
     ViSNIR data in `qs` format.
 
-## OSSL level 0
-
 R packages
 
 ``` r
@@ -68,6 +66,8 @@ Directory/folder path
 dir = "/mnt/soilspec4gg/ossl/dataset/"
 tic()
 ```
+
+## OSSL level 0
 
 Listing, reading and row binding `qs` files
 
@@ -150,7 +150,7 @@ ossl.soillab %>%
 ```
 
     ## Rows: 151,187
-    ## Columns: 82
+    ## Columns: 81
     ## $ code                           <chr> "AFSIS", "AFSIS", "AFSIS", "AFSIS", "AF…
     ## $ file_sequence                  <chr> "1", "1", "1", "1", "1", "1", "1", "1",…
     ## $ id.layer_local_c               <chr> "icr074433", "icr075957", "icr074336", …
@@ -205,7 +205,6 @@ ossl.soillab %>%
     ## $ al.dith_usda.a65_w.pct         <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ al.ox_usda.a59_w.pct           <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ awc.33.1500kPa_usda.c80_w.frac <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-    ## $ bd_usda.c85_g.cm3              <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ cf_usda.c236_w.pct             <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ fe.dith_usda.a66_w.pct         <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ fe.ox_usda.a60_w.pct           <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
@@ -230,7 +229,7 @@ ossl.soillab %>%
     ## $ p.ext_iso.11263_mg.kg          <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ cec_iso.11260_cmolc.kg         <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ ec_iso.11265_ds.m              <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-    ## $ bd__g.cm3                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+    ## $ bd_iso.11272_g.cm3             <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ n.tot_iso.13878_w.pct          <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ c.tot_iso.10694_w.pct          <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
 
@@ -759,9 +758,9 @@ qs::qsave(ov.ossl.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.q
 NOTE: The code chunk below this paragraph is hidden. Just run once for
 getting the OSSL level 0 column names, types, and example. Run once and
 upload to Google Sheet for integrating with the OSSL coding table.
-Copies are saved for archiving in `out/ossl_level0_names_<table>.csv`.
-Requires Google authentication. Use `CMD + Shift + C` to uncomment
-chunks.
+Copies are saved for archiving and latter updated in
+`out/ossl_level0_names_<table>.csv`. Requires Google authentication. Use
+`CMD + Shift + C` to uncomment chunks.
 
 <!-- ```{r ossl_names, include=FALSE, echo=FALSE, eval=FALSE} -->
 <!-- library("googledrive") -->
@@ -867,72 +866,133 @@ chunks.
 <!-- ``` -->
 
 NOTE: The code chunk below this paragraph is hidden. Just run once for
-getting the OSSL level 0 soilab column names for defining the
-harmonization rules. Run once and upload to Google Sheet with the OSSL
-coding table. A copy is saved for archiving in
-`out/ossl_soillab_level1_harmonization.csv` but modified on Google
-Sheet. Requires Google authentication. Use `CMD + Shift + C` to
-uncomment chunks.
+getting the OSSL level 0 soilab column edit online. The copies are
+archived in `out/`. Requires Google authentication. Use
+`CMD + Shift + C` to uncomment chunks.
 
 <!-- ```{r ossl_names, include=FALSE, echo=FALSE, eval=FALSE} -->
 <!-- library("googledrive") -->
 <!-- library("googlesheets4") -->
-<!-- # soillab -->
-<!-- level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs") -->
-<!-- level0.harmonization <- level0.soillab %>% -->
-<!--   sample_n(1) %>% -->
-<!--   mutate_all(as.character) %>% -->
-<!--   pivot_longer(everything(), names_to = "ossl_name_level0", values_to = "value") %>% -->
-<!--   select(-value) %>% -->
-<!--   mutate(split = ifelse(ossl_name_level0 %in% c("dataset.code_ascii_txt", "id.layer_uuid_txt"), "id", "properties")) %>% -->
-<!--   group_by(split) %>% -->
-<!--   arrange(split, ossl_name_level0) %>% -->
-<!--   ungroup() %>% -->
-<!--   select(-split) %>% -->
-<!--   mutate(ossl_pattern = ossl_name_level0) %>% -->
-<!--   separate(ossl_pattern, into = c("ossl_abbrev_level0", "ossl_method_level0", "ossl_unit_level0"), sep = "_") %>% -->
-<!--   mutate(target_name = "", target_method = "", target_unit = "", ossl_name_level1 = "", ossl_level1_transform = "") -->
-<!-- # Uploading to google sheet -->
 <!-- # FACT CIN folder id -->
 <!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), pattern = "OSSL_tab1_soildata_coding") -->
 <!-- ossl.soildata.coding <- listed.table[[1,"id"]] -->
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
-<!-- # Checking readme -->
-<!-- googlesheets4::read_sheet(ossl.soildata.coding, sheet = 'readme') -->
-<!-- # Uploading -->
-<!-- googlesheets4::write_sheet(level0.harmonization, ss = ossl.soildata.coding, sheet = "ossl_level1_soillab_harmonization") -->
-<!-- # Checking metadata -->
-<!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
+<!-- # Downloading edited names -->
+<!-- ossl.level0.names.soillab <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_soillab") -->
+<!-- ossl.level0.names.soilsite <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_soilsite") -->
+<!-- ossl.level0.names.mir <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_mir") -->
+<!-- ossl.level0.names.visnir <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_visnir") -->
+<!-- # Saving to folder -->
+<!-- readr::write_csv(ossl.level0.names.soillab, "../out/ossl_level0_names_soillab.csv") -->
+<!-- readr::write_csv(ossl.level0.names.soilsite, "../out/ossl_level0_names_soilsite.csv") -->
+<!-- readr::write_csv(ossl.level0.names.mir, "../out/ossl_level0_names_mir.csv") -->
+<!-- readr::write_csv(ossl.level0.names.visnir, "../out/ossl_level0_names_visnir.csv") -->
 <!-- ``` -->
 
 NOTE: The code chunk below this paragraph is hidden. Run once for
 downloading the harmonization rules (L0 to L1). The table is edited
-online on Google Sheets after the previous definition. Copies are
-downloaded to this github for archiving. Use `CMD + Shift + C` to
-uncomment chunks.
+online on Google Sheets after the previous definitions. Copies are
+downloaded to github for archiving. Use `CMD + Shift + C` to uncomment
+chunks.
 
 <!-- ```{r soilab_download, include=FALSE, echo=FALSE, eval=FALSE} -->
 <!-- library("googledrive") -->
 <!-- library("googlesheets4") -->
-<!-- # Downloading -->
 <!-- # FACT CIN folder id -->
 <!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), pattern = "OSSL_tab1_soildata_coding") -->
 <!-- ossl.soildata.coding <- listed.table[[1,"id"]] -->
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 <!-- # Preparing soillab.names -->
-<!-- kssl.procedures <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "KSSL_procedures") -->
-<!-- # Saving to folder -->
-<!-- readr::write_csv(kssl.procedures, "../out/kssl_procedures.csv") -->
+<!-- ossl.soillab.harmonization <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level1_soillab_harmonization") -->
+<!-- # Downloading to folder -->
+<!-- readr::write_csv(ossl.soillab.harmonization, "../out/ossl_level0_to_level1_soillab_harmonization.csv") -->
 <!-- ``` -->
-
-Reading soil lab harmonization rules:
 
 Producing level 1 (L1) as a regression matrix for fitting models
 
 ``` r
-# Still todo
+## Reading harmonization rules
+ossl.soillab.level1.transvalues <- read_csv("../out/ossl_level0_to_level1_soillab_harmonization.csv")
+
+ossl.soillab.level1.transvalues %>%
+  select(ossl_name_level0, ossl_name_level1, ossl_level1_transform)
+```
+
+    ## # A tibble: 79 × 3
+    ##    ossl_name_level0               ossl_name_level1               ossl_level1_t…¹
+    ##    <chr>                          <chr>                          <chr>          
+    ##  1 dataset.code_ascii_txt         dataset.code_ascii_txt         x              
+    ##  2 id.layer_uuid_txt              id.layer_uuid_txt              x              
+    ##  3 acidity_usda.a795_cmolc.kg     acidity_usda.a795_cmolc.kg     x              
+    ##  4 aggstb_usda.a1_w.pct           aggstb_usda.a1_w.pct           x              
+    ##  5 al.dith_usda.a65_w.pct         al.dith_usda.a65_w.pct         x              
+    ##  6 al.ext_aquaregia_g.kg          al.ext_aquaregia_g.kg          x              
+    ##  7 al.ext_usda.a1056_mg.kg        al.ext_usda.a1056_mg.kg        x              
+    ##  8 al.ext_usda.a69_cmolc.kg       al.ext_usda.a69_cmolc.kg       x              
+    ##  9 al.ox_usda.a59_w.pct           al.ox_usda.a59_w.pct           x              
+    ## 10 awc.33.1500kPa_usda.c80_w.frac awc.33.1500kPa_usda.c80_w.frac x              
+    ## # … with 69 more rows, and abbreviated variable name ¹​ossl_level1_transform
+
+``` r
+## Reading soilab level 0
+level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs")
+level0.soillab <- as.data.frame(level0.soillab)
+
+## First: harmonizing values
+
+# Getting the formulas
+functions.list <- ossl.soillab.level1.transvalues %>%
+  mutate(ossl_name_level0 = factor(ossl_name_level0, levels = names(ossl_name_level0))) %>%
+  arrange(ossl_name_level0) %>%
+  pull(ossl_level1_transform)
+
+# Applying harmonization rules
+level1.soillab.harmonized <- transform_values(df = level0.soillab,
+                                              out.name = names(level0.soillab),
+                                              in.name = names(level0.soillab),
+                                              fun.lst = functions.list)
+
+## Second: renaming
+
+analytes.old.names <- ossl.soillab.level1.transvalues %>%
+  pull(ossl_name_level0)
+
+analytes.new.names <- ossl.soillab.level1.transvalues %>%
+  pull(ossl_name_level1)
+
+renaming.vector <- analytes.new.names
+names(renaming.vector) <- analytes.old.names
+
+priorioty.first <- ossl.soillab.level1.transvalues %>%
+  mutate(priority = ifelse(ossl_name_level0 == ossl_name_level1, 1, 2)) %>%
+  select(ossl_name_level0, priority)
+
+# Pivoting and renaming
+level1.soillab.renamed <- level1.soillab.harmonized %>%
+  mutate_all(as.character) %>%
+  pivot_longer(-all_of(c("dataset.code_ascii_txt", "id.layer_uuid_txt")), names_to = "ossl_name_level0", values_to = "values") %>%
+  left_join(priorioty.first, by = "ossl_name_level0") %>%
+  mutate(ossl_name_level1 = recode(ossl_name_level0, !!!renaming.vector))
+
+## Arranging and firsting (or averaging) different methods for sample observation
+# Here we are coalescing (finding first non na element instead of averaging)
+# Instead of using coalesce (which does not drop na values), we filter, arrange and first
+
+# level1.soillab.renamed %>%
+#   mutate(check = is.na(values)) %>%
+#   count(ossl_name_level0, check)
+
+level1.soillab.export <- level1.soillab.renamed %>%
+  filter(!is.na(values)) %>%
+  arrange(dataset.code_ascii_txt, id.layer_uuid_txt, ossl_name_level1, priority) %>%
+  group_by(dataset.code_ascii_txt, id.layer_uuid_txt, ossl_name_level1) %>%
+  summarise(new_values = first(values), .groups = "drop") %>%
+  pivot_wider(names_from = "ossl_name_level1", values_from = "new_values")
+
+## Saving to disk
+qs::qsave(level1.soillab.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L1_v1.2.qs", preset = "high")
 ```
 
 Producing a golden dataset for enabling a systematic analysis that
@@ -946,7 +1006,7 @@ shares the same base data (Spatial, VisNIR and MIR)
 toc()
 ```
 
-    ## 150.079 sec elapsed
+    ## 187.745 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -954,7 +1014,7 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells 3576723 191.1    6233701   333.0    6233701   333.0
-    ## Vcells 6935573  53.0 1996598681 15232.9 1897226494 14474.7
+    ## Ncells 3651599 195.1   13549154   723.7   16936442   904.6
+    ## Vcells 7077752  54.0 2004510887 15293.3 2505638608 19116.6
 
 ## References

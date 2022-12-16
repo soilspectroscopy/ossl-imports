@@ -1,5 +1,5 @@
 original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
-BD_fine,bd,NA,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd__g.cm3
+BD_fine,bd,iso.11272,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_iso.11272_g.cm3
 TN,n.tot,iso.13878,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_iso.13878_w.pct
 TC,c.tot,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_iso.10694_w.pct
 SOC,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",oc_iso.10694_w.pct

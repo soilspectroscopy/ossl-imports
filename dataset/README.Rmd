@@ -38,8 +38,6 @@ All the external SSLs were prepared and harmonized to the OSSL naming convention
 - `<local DATASET folder>/ossl_mir_v1.2.qs`: Imported/harmonized MIR data in `qs` format.  
 - `<local DATASET folder>/ossl_visnir_v1.2.qs`: Imported/harmonized ViSNIR data in `qs` format.  
 
-## OSSL level 0
-
 ```{r setup, include=FALSE}
 library(captioner)
 fig_nums <- captioner(prefix = "Fig.")
@@ -63,6 +61,8 @@ Directory/folder path
 dir = "/mnt/soilspec4gg/ossl/dataset/"
 tic()
 ```
+
+## OSSL level 0
 
 Listing, reading and row binding `qs` files
 ```{r qs, include=TRUE, echo=TRUE, eval=TRUE}
@@ -650,16 +650,71 @@ NOTE: The code chunk below this paragraph is hidden. Run once for downloading th
 <!-- readr::write_csv(ossl.soillab.harmonization, "../out/ossl_level0_to_level1_soillab_harmonization.csv") -->
 <!-- ``` -->
 
-Reading soil lab harmonization rules:
-```{r soilab_transvalues, include=FALSE, echo=FALSE, eval=FALSE}
-# Still todo
-transvalues <- read_csv(paste0(getwd(), "/ossl_level1_soillab_harmonization.csv"))
-knitr::kable(transvalues)
-```
-
 Producing level 1 (L1) as a regression matrix for fitting models
-```{r covariates, include=TRUE, echo=TRUE, eval=TRUE}
-# Still todo
+```{r level1, include=TRUE, echo=TRUE, eval=TRUE}
+## Reading harmonization rules
+ossl.soillab.level1.transvalues <- read_csv("../out/ossl_level0_to_level1_soillab_harmonization.csv")
+
+ossl.soillab.level1.transvalues %>%
+  select(ossl_name_level0, ossl_name_level1, ossl_level1_transform)
+
+## Reading soilab level 0
+level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs")
+level0.soillab <- as.data.frame(level0.soillab)
+
+## First: harmonizing values
+
+# Getting the formulas
+functions.list <- ossl.soillab.level1.transvalues %>%
+  mutate(ossl_name_level0 = factor(ossl_name_level0, levels = names(ossl_name_level0))) %>%
+  arrange(ossl_name_level0) %>%
+  pull(ossl_level1_transform)
+
+# Applying harmonization rules
+level1.soillab.harmonized <- transform_values(df = level0.soillab,
+                                              out.name = names(level0.soillab),
+                                              in.name = names(level0.soillab),
+                                              fun.lst = functions.list)
+
+## Second: renaming
+
+analytes.old.names <- ossl.soillab.level1.transvalues %>%
+  pull(ossl_name_level0)
+
+analytes.new.names <- ossl.soillab.level1.transvalues %>%
+  pull(ossl_name_level1)
+
+renaming.vector <- analytes.new.names
+names(renaming.vector) <- analytes.old.names
+
+priorioty.first <- ossl.soillab.level1.transvalues %>%
+  mutate(priority = ifelse(ossl_name_level0 == ossl_name_level1, 1, 2)) %>%
+  select(ossl_name_level0, priority)
+
+# Pivoting and renaming
+level1.soillab.renamed <- level1.soillab.harmonized %>%
+  mutate_all(as.character) %>%
+  pivot_longer(-all_of(c("dataset.code_ascii_txt", "id.layer_uuid_txt")), names_to = "ossl_name_level0", values_to = "values") %>%
+  left_join(priorioty.first, by = "ossl_name_level0") %>%
+  mutate(ossl_name_level1 = recode(ossl_name_level0, !!!renaming.vector))
+
+## Arranging and firsting (or averaging) different methods for sample observation
+# Here we are coalescing (finding first non na element instead of averaging)
+# Instead of using coalesce (which does not drop na values), we filter, arrange and first
+
+# level1.soillab.renamed %>%
+#   mutate(check = is.na(values)) %>%
+#   count(ossl_name_level0, check)
+
+level1.soillab.export <- level1.soillab.renamed %>%
+  filter(!is.na(values)) %>%
+  arrange(dataset.code_ascii_txt, id.layer_uuid_txt, ossl_name_level1, priority) %>%
+  group_by(dataset.code_ascii_txt, id.layer_uuid_txt, ossl_name_level1) %>%
+  summarise(new_values = first(values), .groups = "drop") %>%
+  pivot_wider(names_from = "ossl_name_level1", values_from = "new_values")
+
+## Saving to disk
+qs::qsave(level1.soillab.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L1_v1.2.qs", preset = "high")
 ```
 
 Producing a golden dataset for enabling a systematic analysis that shares the same base data (Spatial, VisNIR and MIR)

@@ -637,7 +637,7 @@ garrett.mir %>%
 toc()
 ```
 
-    ## 13.697 sec elapsed
+    ## 14.136 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -645,7 +645,7 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2600279 138.9    4718771 252.1  4718771 252.1
+    ## Ncells 2600279 138.9    4718797 252.1  4718797 252.1
     ## Vcells 5321322  40.6   25913249 197.8 32359166 246.9
 
 ## References

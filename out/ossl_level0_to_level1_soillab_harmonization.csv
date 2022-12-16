@@ -10,6 +10,7 @@ Aggregate Stability,aggstb_usda.a1_w.pct,aggstb,usda.a1,w.pct,aggstb,usda.a1,w.p
 "Aluminum, Amorphous, Total Non-Crystalline Iron",al.ox_usda.a59_w.pct,al.ox,usda.a59,w.pct,al.ox,usda.a59,w.pct,x,al.ox_usda.a59_w.pct,TRUE
 "Available Water Content, Difference 33-1500 kPa",awc.33.1500kPa_usda.c80_w.frac,awc.33.1500kPa,usda.c80,w.frac,awc.33.1500kPa,usda.c80,w.frac,x,awc.33.1500kPa_usda.c80_w.frac,TRUE
 "Boron, Extractable, Mehlich3",b.ext_mel3_mg.kg,b.ext,mel3,mg.kg,b.ext,mel3,mg.kg,x,b.ext_mel3_mg.kg,TRUE
+"Bulk Density, iso 11272",bd_iso.11272_g.cm3,bd,iso.11272,g.cm3,bd,usda.a4,g.cm3,x,bd_usda.a4_g.cm3,TRUE
 "Bulk Density, <2 mm fraction, Field Moist",bd_usda.a21_g.cm3,bd,usda.a21,g.cm3,bd,usda.a4,g.cm3,x,bd_usda.a4_g.cm3,TRUE
 "Bulk Density, <2mm Fraction, Field Capacity",bd_usda.a4_g.cm3,bd,usda.a4,g.cm3,bd,usda.a4,g.cm3,x,bd_usda.a4_g.cm3,TRUE
 "Bulk Density, Whole Soil, Field Capacity",bd_usda.c85_g.cm3,bd,usda.c85,g.cm3,bd,usda.a4,g.cm3,x,bd_usda.a4_g.cm3,TRUE

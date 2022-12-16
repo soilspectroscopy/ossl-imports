@@ -1,7 +1,6 @@
 source,id,kssl_original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
 kssl_analyte,4,"Bulk Density, <2mm Fraction, 1/3 Bar",bd,usda.a4,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a4_g.cm3
 kssl_analyte,21,"Bulk Density, Core, <2 mm fraction, Field Moist",bd,usda.a21,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a21_g.cm3
-kssl_calc,85,"Weight per Unit Volume, @ 1/3 Bar, Whole Soil",bd,usda.c85,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.c85_g.cm3
 kssl_calc,236,"Coarse Fragments, Greater 2mm, Wt Percent, Whole Soil Base",cf,usda.c236,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cf_usda.c236_w.pct
 kssl_analyte,9,"Water Retention, 1/3 Bar, <2mm Clod",wr.33kPa,usda.a9,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.33kPa_usda.a9_w.pct
 kssl_analyte,415,"Water Retention, 1/3 Bar, <2mm Sieve",wr.33kPa,usda.a415,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.33kPa_usda.a415_w.pct

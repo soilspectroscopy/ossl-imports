@@ -10,9 +10,9 @@ al.ext_usda.a69_cmolc.kg,al.ext,usda.a69,cmolc.kg,numeric,0.20000,"Aluminum, Ext
 al.ox_usda.a59_w.pct,al.ox,usda.a59,w.pct,numeric,0.12951,"Aluminum, Amorphous, Total Non-Crystalline Iron",weight percent,"Ammonium oxalate extractable aluminum is an estimate of the total pedogenic Al, much of which may be in noncrystalline materials or complexed by organic matter."
 awc.33.1500kPa_usda.c80_w.frac,awc.33.1500kPa,usda.c80,w.frac,numeric,0.08658,"Available Water Content, Difference 33-1500 kPa",weight fraction,The amount (fraction) of water released between 1/3 (33 kPa) and 15 (1500 kPa) bar tensions determined as gravimetric percent.
 b.ext_mel3_mg.kg,b.ext,mel3,mg.kg,numeric,0.00100000,"Boron, Extractable, Mehlich3",miligrams per kilogram of soil,Plant available B.
-bd_usda.a21_g.cm3,bd,usda.a21,g.cm3,numeric,1.57100,"Bulk Density, <2 mm fraction, Field Moist",grams per cubic centimeter,Bulk density is the weight per unit volume of the whole soil or <2mm fraction.
-bd_usda.a4_g.cm3,bd,usda.a4,g.cm3,numeric,1.3477999,"Bulk Density, <2mm Fraction, Field Capacity",grams per cubic centimeter,Bulk density is the weight per unit volume of the whole soil or <2mm fraction.
-bd_usda.c85_g.cm3,bd,usda.c85,g.cm3,numeric,1.13642,"Bulk Density, Whole Soil, Field Capacity",grams per cubic centimeter,Bulk density is the weight per unit volume of the whole soil or <2mm fraction.
+bd_iso.11272_g.cm3,bd,iso.11272,g.cm3,numeric,1.57100,"Bulk Density, iso 11272",grams per cubic centimeter,Bulk density is the weight per unit volume of the fine earth fraction (<2 mm).
+bd_usda.a21_g.cm3,bd,usda.a21,g.cm3,numeric,1.57100,"Bulk Density, <2 mm fraction, Core",grams per cubic centimeter,Bulk density is the weight per unit volume of the fine earth fraction (<2 mm).
+bd_usda.a4_g.cm3,bd,usda.a4,g.cm3,numeric,1.3477999,"Bulk Density, <2mm fraction, Clod",grams per cubic centimeter,Bulk density is the weight per unit volume of the fine earth fraction (<2 mm).
 c.tot_iso.10694_w.pct,c.tot,iso.10694,w.pct,numeric,3.668778009,"Carbon, Total NCS, iso 10694",weight percent,"Total carbon is a measure of all organic and inorganic carbon, including that found in carbonate minerals."
 c.tot_usda.a622_w.pct,c.tot,usda.a622,w.pct,numeric,1.55128592,"Carbon, Total NCS",weight percent,"Total carbon is a measure of all organic and inorganic carbon, including that found in carbonate minerals."
 ca.ext_aquaregia_mg.kg,ca.ext,aquaregia,mg.kg,numeric,368.535095,"Calcium, Extractable, Aqua Regia",miligrams per kilogram of soil,Exchangeable or plant available Ca.

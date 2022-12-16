@@ -507,7 +507,6 @@ knitr::kable(transvalues)
 |:--------------|-----:|:-----------------------------------------------------------|:---------------|:-------------|:-----------|:---------------------------------------------------|:---------------------------------|
 | kssl\_analyte |    4 | Bulk Density, &lt;2mm Fraction, 1/3 Bar                    | bd             | usda.a4      | g.cm3      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | bd\_usda.a4\_g.cm3               |
 | kssl\_analyte |   21 | Bulk Density, Core, &lt;2 mm fraction, Field Moist         | bd             | usda.a21     | g.cm3      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | bd\_usda.a21\_g.cm3              |
-| kssl\_calc    |   85 | Weight per Unit Volume, @ 1/3 Bar, Whole Soil              | bd             | usda.c85     | g.cm3      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | bd\_usda.c85\_g.cm3              |
 | kssl\_calc    |  236 | Coarse Fragments, Greater 2mm, Wt Percent, Whole Soil Base | cf             | usda.c236    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | cf\_usda.c236\_w.pct             |
 | kssl\_analyte |    9 | Water Retention, 1/3 Bar, &lt;2mm Clod                     | wr.33kPa       | usda.a9      | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | wr.33kPa\_usda.a9\_w.pct         |
 | kssl\_analyte |  415 | Water Retention, 1/3 Bar, &lt;2mm Sieve                    | wr.33kPa       | usda.a415    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | wr.33kPa\_usda.a415\_w.pct       |
@@ -1073,12 +1072,12 @@ kssl.soildata %>%
 |:-------------------------------------------------|:-----------|
 | Name                                             | Piped data |
 | Number of rows                                   | 98138      |
-| Number of columns                                | 53         |
+| Number of columns                                | 52         |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
 | Column type frequency:                           |            |
 | character                                        | 1          |
 | factor                                           | 1          |
-| numeric                                          | 51         |
+| numeric                                          | 50         |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
 | Group variables                                  | None       |
 
@@ -1109,7 +1108,6 @@ Data summary
 | awc.33.1500kPa\_usda.c80\_w.frac |      79289 |    0.15 |    0.07 | 0.00 |   0.11 |    0.14 |    0.18 |     0.78 |
 | bd\_usda.a21\_g.cm3              |      90292 |    0.94 |    0.50 | 0.01 |   0.53 |    1.04 |    1.32 |     8.10 |
 | bd\_usda.a4\_g.cm3               |      78305 |    1.37 |    0.26 | 0.02 |   1.25 |    1.40 |    1.54 |     2.53 |
-| bd\_usda.c85\_g.cm3              |      35422 |    1.49 |    0.21 | 0.02 |   1.45 |    1.45 |    1.52 |     2.65 |
 | c.tot\_usda.a622\_w.pct          |        310 |    6.23 |   12.46 | 0.00 |   0.52 |    1.45 |    3.81 |    78.45 |
 | ca.ext\_usda.a1059\_mg.kg        |      96393 | 5501.26 | 8941.37 | 3.09 | 645.84 | 2333.22 | 4967.32 | 44723.96 |
 | ca.ext\_usda.a722\_cmolc.kg      |      38472 |   22.09 |   32.40 | 0.00 |   3.22 |   11.84 |   28.50 |   410.41 |
@@ -1194,7 +1192,7 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 236.068 sec elapsed
+    ## 236.653 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1202,8 +1200,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2621755 140.1   15910289  849.8   19887861 1062.2
-    ## Vcells 35785742 273.1  802422954 6122.1 1003028054 7652.5
+    ## Ncells  2621830 140.1   15686478  837.8   19608097 1047.2
+    ## Vcells 35783784 273.1  962180265 7340.9 1002204418 7646.3
 
 ## References
 
