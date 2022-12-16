@@ -4,7 +4,7 @@ Dataset import: The Land-Use/Cover Area Survey Soil and Spectral Library
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Leandro Parente
 (<leandro.parente@opengeohub.org>) -
-07 December, 2022
+16 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-07  
+Last update: 2022-12-16  
 Dataset:
 [LUCAS.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#lucas.ssl)
 
@@ -291,29 +291,29 @@ knitr::kable(transvalues)
 
 | table                              | original\_name | ossl\_abbrev | ossl\_method | ossl\_unit | ossl\_convert                                                  | ossl\_name                 |
 |:-----------------------------------|:---------------|:-------------|:-------------|:-----------|:---------------------------------------------------------------|:---------------------------|
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | coarse         | cf           | ISO.11464    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | cf\_ISO.11464\_w.pct       |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | clay           | clay.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | clay.tot\_ISO.11277\_w.pct |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | silt           | silt.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | silt.tot\_ISO.11277\_w.pct |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | sand           | sand.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | sand.tot\_ISO.11277\_w.pct |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | pHinH2O        | ph.h2o       | ISO.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | ph.h2o\_ISO.10390\_index   |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | pHinCaCl2      | ph.cacl2     | ISO.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | ph.cacl2\_ISO.10390\_index |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | OC             | oc           | ISO.10694    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | oc\_ISO.10694\_w.pct       |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | CaCO3          | caco3        | ISO.10693    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | caco3\_ISO.10693\_w.pct    |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | N              | n.tot        | ISO.11261    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | n.tot\_ISO.11261\_w.pct    |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | P              | p.ext        | ISO.11263    | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | p.ext\_ISO.11263\_mg.kg    |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | coarse         | cf           | iso.11464    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | cf\_iso.11464\_w.pct       |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | clay           | clay.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | clay.tot\_iso.11277\_w.pct |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | silt           | silt.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | silt.tot\_iso.11277\_w.pct |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | sand           | sand.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | sand.tot\_iso.11277\_w.pct |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | pHinH2O        | ph.h2o       | iso.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | ph.h2o\_iso.10390\_index   |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | pHinCaCl2      | ph.cacl2     | iso.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | ph.cacl2\_iso.10390\_index |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | OC             | oc           | iso.10694    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | oc\_iso.10694\_w.pct       |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | CaCO3          | caco3        | iso.10693    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | caco3\_iso.10693\_w.pct    |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | N              | n.tot        | iso.11261    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | n.tot\_iso.11261\_w.pct    |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | P              | p.ext        | iso.11263    | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | p.ext\_iso.11263\_mg.kg    |
 | LUCAS 2009/2012; SoilAttr\_\*.gpkg | K              | k.ext        | usda.a725    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/(39.098\*10/2)) | k.ext\_usda.a725\_cmolc.kg |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | CEC            | cec          | ISO.11260    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | cec\_ISO.11260\_cmolc.kg   |
-| LUCAS\_Topsoil\_2015.csv           | Coarse         | cf           | ISO.11464    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | cf\_ISO.11464\_w.pct       |
-| LUCAS\_Topsoil\_2015.csv           | Clay           | clay.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | clay.tot\_ISO.11277\_w.pct |
-| LUCAS\_Topsoil\_2015.csv           | Sand           | sand.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | sand.tot\_ISO.11277\_w.pct |
-| LUCAS\_Topsoil\_2015.csv           | Silt           | silt.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | silt.tot\_ISO.11277\_w.pct |
-| LUCAS\_Topsoil\_2015.csv           | pH(CaCl2)      | ph.cacl2     | ISO.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | ph.cacl2\_ISO.10390\_index |
-| LUCAS\_Topsoil\_2015.csv           | pH(H2O)        | ph.h2o       | ISO.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | ph.h2o\_ISO.10390\_index   |
-| LUCAS\_Topsoil\_2015.csv           | EC             | ec           | ISO.11265    | ds.m       | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/100)            | ec\_ISO.11265\_ds.m        |
-| LUCAS\_Topsoil\_2015.csv           | OC             | oc           | ISO.10694    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | oc\_ISO.10694\_w.pct       |
-| LUCAS\_Topsoil\_2015.csv           | CaCO3          | caco3        | ISO.10693    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | caco3\_ISO.10693\_w.pct    |
-| LUCAS\_Topsoil\_2015.csv           | P              | p.ext        | ISO.11263    | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | p.ext\_ISO.11263\_mg.kg    |
-| LUCAS\_Topsoil\_2015.csv           | N              | n.tot        | ISO.11261    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | n.tot\_ISO.11261\_w.pct    |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | CEC            | cec          | iso.11260    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | cec\_iso.11260\_cmolc.kg   |
+| LUCAS\_Topsoil\_2015.csv           | Coarse         | cf           | iso.11464    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | cf\_iso.11464\_w.pct       |
+| LUCAS\_Topsoil\_2015.csv           | Clay           | clay.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | clay.tot\_iso.11277\_w.pct |
+| LUCAS\_Topsoil\_2015.csv           | Sand           | sand.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | sand.tot\_iso.11277\_w.pct |
+| LUCAS\_Topsoil\_2015.csv           | Silt           | silt.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | silt.tot\_iso.11277\_w.pct |
+| LUCAS\_Topsoil\_2015.csv           | pH(CaCl2)      | ph.cacl2     | iso.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | ph.cacl2\_iso.10390\_index |
+| LUCAS\_Topsoil\_2015.csv           | pH(H2O)        | ph.h2o       | iso.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | ph.h2o\_iso.10390\_index   |
+| LUCAS\_Topsoil\_2015.csv           | EC             | ec           | iso.11265    | ds.m       | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/100)            | ec\_iso.11265\_ds.m        |
+| LUCAS\_Topsoil\_2015.csv           | OC             | oc           | iso.10694    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | oc\_iso.10694\_w.pct       |
+| LUCAS\_Topsoil\_2015.csv           | CaCO3          | caco3        | iso.10693    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | caco3\_iso.10693\_w.pct    |
+| LUCAS\_Topsoil\_2015.csv           | P              | p.ext        | iso.11263    | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1)             | p.ext\_iso.11263\_mg.kg    |
+| LUCAS\_Topsoil\_2015.csv           | N              | n.tot        | iso.11261    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/10)             | n.tot\_iso.11261\_w.pct    |
 | LUCAS\_Topsoil\_2015.csv           | K              | k.ext        | usda.a725    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)/(39.098\*10/2)) | k.ext\_usda.a725\_cmolc.kg |
 
 Preparing soil data from different files:
@@ -567,10 +567,10 @@ lucas.visnir.2015 <- lucas.visnir.2015 %>%
 # Binding both spectra
 lucas.visnir <- bind_rows(lucas.visnir.2009, lucas.visnir.2015) %>%
   mutate(id.scan_local_c = id.layer_local_c, .after = id.layer_local_c) %>%
-  mutate(scan.visnir.model.name_utf8_txt = "XDS Rapid Content Analyzer",
-         scan.visnir.model.code_any_txt = "XDS_Rapid_Content_Analyzer",
-         scan.visnir.method.light.source_any_txt = "",
-         scan.visnir.method.preparation_any_txt = "",
+  mutate(scan.visnir.model.name_utf8_txt = "Metrohm NIRS XDS RapidContent Analyzer",
+         scan.visnir.model.code_any_txt = "Metrohm_NIRS_XDS_RapidContent_Analyzer",
+         scan.visnir.method.optics_any_txt = "",
+         scan.visnir.method.preparation_any_txt = "Sieved <2 mm",
          scan.visnir.contact.name_utf8_txt = "ESDAC - European Commission",
          scan.visnir.contact.email_ietf_txt = "ec-esdac@jrc.ec.europa.eu",
          .after = scan.visnir.doi_idf_url)
@@ -738,9 +738,9 @@ lucas.mir.metadata <- mir.scans %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
   mutate(dataset.code_ascii_txt = "LUCAS.WOODWELL.SSL",
          scan.mir.date.end_iso.8601_yyyy.mm.dd = scan.mir.date.begin_iso.8601_yyyy.mm.dd,
-         scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
-         scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.light.source_any_txt = "",
+         scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with with PikeAutoDiff accessory",
+         scan.mir.model.code_any_txt = "Bruker_Vertex_70.PikeAutoDiff",
+         scan.mir.method.optics_any_txt = "KBr beamsplitter; Gold mirror; Mirror background",
          scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
@@ -778,7 +778,7 @@ lucas.availability <- lucas.visnir.export %>%
   left_join({lucas.sitedata %>%
       select(id.layer_local_c, dataset.code_ascii_txt, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
   left_join({lucas.soildata %>%
-      select(id.layer_local_c, oc_ISO.10694_w.pct)}, by = "id.layer_local_c") %>%
+      select(id.layer_local_c, oc_iso.10694_w.pct)}, by = "id.layer_local_c") %>%
   mutate(dataset.code_ascii_txt = coalesce(dataset.code_ascii_txt.x, dataset.code_ascii_txt.y, NA),
          .before = 1) %>%
   select(-dataset.code_ascii_txt.x, -dataset.code_ascii_txt.y) %>%
@@ -799,7 +799,7 @@ lucas.availability %>%
     ## 1 dataset.code_ascii_txt    40816
     ## 2 id.layer_local_c          40818
     ## 3 layer.upper.depth_usda_cm 40816
-    ## 4 oc_ISO.10694_w.pct        40816
+    ## 4 oc_iso.10694_w.pct        40816
     ## 5 scan_mir.600_abs            589
     ## 6 scan_visnir.450_ref       40818
 
@@ -881,19 +881,19 @@ Data summary
 
 | skim\_variable             | n\_missing |  mean |    sd |   p0 |   p25 |   p50 |   p75 |    p100 |
 |:---------------------------|-----------:|------:|------:|-----:|------:|------:|------:|--------:|
-| cf\_ISO.11464\_w.pct       |      17601 | 14.89 | 13.09 | 0.00 |  5.00 | 11.00 | 21.00 |   92.00 |
-| clay.tot\_ISO.11277\_w.pct |      17628 | 19.69 | 14.63 | 0.00 |  8.00 | 17.00 | 28.00 |   96.00 |
-| silt.tot\_ISO.11277\_w.pct |      17630 | 37.24 | 19.06 | 0.00 | 24.00 | 38.00 | 51.00 |   93.00 |
-| sand.tot\_ISO.11277\_w.pct |      17628 | 38.78 | 26.01 | 0.00 | 16.00 | 36.00 | 59.00 |  100.00 |
-| ph.h2o\_ISO.10390\_index   |          2 |  6.19 |  1.34 | 3.17 |  5.02 |  6.18 |  7.48 |   10.37 |
-| ph.cacl2\_ISO.10390\_index |          2 |  5.71 |  1.40 | 2.57 |  4.50 |  5.76 |  7.10 |   10.00 |
-| oc\_ISO.10694\_w.pct       |        249 |  4.52 |  8.22 | 0.01 |  1.26 |  2.02 |  3.79 |   58.68 |
-| caco3\_ISO.10693\_w.pct    |        697 |  5.44 | 13.05 | 0.00 |  0.00 |  0.10 |  1.60 |   97.60 |
-| n.tot\_ISO.11261\_w.pct    |          7 |  0.30 |  0.36 | 0.00 |  0.12 |  0.18 |  0.30 |    3.86 |
-| p.ext\_ISO.11263\_mg.kg    |        697 | 31.21 | 32.69 | 0.00 | 10.90 | 22.70 | 43.00 | 1366.40 |
+| cf\_iso.11464\_w.pct       |      17601 | 14.89 | 13.09 | 0.00 |  5.00 | 11.00 | 21.00 |   92.00 |
+| clay.tot\_iso.11277\_w.pct |      17628 | 19.69 | 14.63 | 0.00 |  8.00 | 17.00 | 28.00 |   96.00 |
+| silt.tot\_iso.11277\_w.pct |      17630 | 37.24 | 19.06 | 0.00 | 24.00 | 38.00 | 51.00 |   93.00 |
+| sand.tot\_iso.11277\_w.pct |      17628 | 38.78 | 26.01 | 0.00 | 16.00 | 36.00 | 59.00 |  100.00 |
+| ph.h2o\_iso.10390\_index   |          2 |  6.19 |  1.34 | 3.17 |  5.02 |  6.18 |  7.48 |   10.37 |
+| ph.cacl2\_iso.10390\_index |          2 |  5.71 |  1.40 | 2.57 |  4.50 |  5.76 |  7.10 |   10.00 |
+| oc\_iso.10694\_w.pct       |        249 |  4.52 |  8.22 | 0.01 |  1.26 |  2.02 |  3.79 |   58.68 |
+| caco3\_iso.10693\_w.pct    |        697 |  5.44 | 13.05 | 0.00 |  0.00 |  0.10 |  1.60 |   97.60 |
+| n.tot\_iso.11261\_w.pct    |          7 |  0.30 |  0.36 | 0.00 |  0.12 |  0.18 |  0.30 |    3.86 |
+| p.ext\_iso.11263\_mg.kg    |        697 | 31.21 | 32.69 | 0.00 | 10.90 | 22.70 | 43.00 | 1366.40 |
 | k.ext\_usda.a725\_cmolc.kg |          2 |  1.02 |  1.18 | 0.00 |  0.39 |  0.74 |  1.29 |   51.31 |
-| cec\_ISO.11260\_cmolc.kg   |      21882 | 17.31 | 15.19 | 0.00 |  7.50 | 13.50 | 22.80 |  234.00 |
-| ec\_ISO.11265\_ds.m        |      22066 |  0.26 |  0.33 | 0.00 |  0.10 |  0.17 |  0.28 |    9.69 |
+| cec\_iso.11260\_cmolc.kg   |      21882 | 17.31 | 15.19 | 0.00 |  7.50 | 13.50 | 22.80 |  234.00 |
+| ec\_iso.11265\_ds.m        |      22066 |  0.26 |  0.33 | 0.00 |  0.10 |  0.17 |  0.28 |    9.69 |
 
 MIR spectral visualization:
 
@@ -937,7 +937,7 @@ lucas.visnir %>%
 toc()
 ```
 
-    ## 451.957 sec elapsed
+    ## 455.188 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -945,8 +945,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells 2632864 140.7   26821093 1432.5  41907957 2238.2
-    ## Vcells 9733284  74.3  403901100 3081.6 986086117 7523.3
+    ## Ncells 2632864 140.7   26821069 1432.4  41907920 2238.2
+    ## Vcells 9733307  74.3  403901124 3081.6 986086158 7523.3
 
 ## References
 

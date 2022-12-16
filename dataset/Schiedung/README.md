@@ -2,7 +2,7 @@ Dataset import: Schiedung et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-07 December, 2022
+16 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-07  
+Last update: 2022-12-16  
 Dataset:
 [SCHIEDUNG.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#schiedung.ssl)
 
@@ -194,15 +194,15 @@ knitr::kable(transvalues)
 
 | original\_name  | ossl\_abbrev | ossl\_method | ossl\_unit | ossl\_convert                                      | ossl\_name                 |
 |:----------------|:-------------|:-------------|:-----------|:---------------------------------------------------|:---------------------------|
-| BD\_fine        | bd           | usda.a4      | g.cm3      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | bd\_usda.a4\_g.cm3         |
-| TN              | n.tot        | ISO.13878    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | n.tot\_ISO.13878\_w.pct    |
-| TC              | c.tot        | ISO.10694    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | c.tot\_ISO.10694\_w.pct    |
-| SOC             | oc           | ISO.10694    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | oc\_ISO.10694\_w.pct       |
-| pH\_CaCl2\_site | ph.cacl2     | ISO.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ph.cacl2\_ISO.10390\_index |
-| EC\_CaCl2\_site | ec           | ISO.11265    | ds.m       | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ec\_ISO.11265\_ds.m        |
-| clay\_site      | clay.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | clay.tot\_ISO.11277\_w.pct |
-| silt\_site      | silt.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | silt.tot\_ISO.11277\_w.pct |
-| sand\_site      | sand.tot     | ISO.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | sand.tot\_ISO.11277\_w.pct |
+| BD\_fine        | bd           | NA           | g.cm3      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | bd\_\_g.cm3                |
+| TN              | n.tot        | iso.13878    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | n.tot\_iso.13878\_w.pct    |
+| TC              | c.tot        | iso.10694    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | c.tot\_iso.10694\_w.pct    |
+| SOC             | oc           | iso.10694    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | oc\_iso.10694\_w.pct       |
+| pH\_CaCl2\_site | ph.cacl2     | iso.10390    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ph.cacl2\_iso.10390\_index |
+| EC\_CaCl2\_site | ec           | iso.11265    | ds.m       | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ec\_iso.11265\_ds.m        |
+| clay\_site      | clay.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | clay.tot\_iso.11277\_w.pct |
+| silt\_site      | silt.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | silt.tot\_iso.11277\_w.pct |
+| sand\_site      | sand.tot     | iso.11277    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | sand.tot\_iso.11277\_w.pct |
 
 ``` r
 # Reading soil information
@@ -387,8 +387,8 @@ schiedung.mir.metadata <- schiedung.mir %>%
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2019-08-31"),
          scan.mir.model.name_utf8_txt = "Bruker Tensor 27",
          scan.mir.model.code_any_txt = "Bruker_Tensor_27",
-         scan.mir.method.light.source_any_txt = "",
-         scan.mir.method.preparation_any_txt = "",
+         scan.mir.method.optics_any_txt = "Kbr background",
+         scan.mir.method.preparation_any_txt = "Finelly ground <80 mesh",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          scan.mir.doi_idf_url = 'https://doi.org/10.5281/zenodo.6024831',
@@ -422,7 +422,7 @@ schiedung.availability <- schiedung.mir.export %>%
   left_join({schiedung.sitedata %>%
       select(id.layer_local_c, latitude.point_wgs84_dd)}, by = "id.layer_local_c") %>%
   left_join({schiedung.soildata %>%
-      select(id.layer_local_c, ph.cacl2_ISO.10390_index)}, by = "id.layer_local_c") %>%
+      select(id.layer_local_c, ph.cacl2_iso.10390_index)}, by = "id.layer_local_c") %>%
   filter(!is.na(id.layer_local_c))
 
 # Availability of information from schiedung
@@ -439,7 +439,7 @@ schiedung.availability %>%
     ##   <chr>                    <int>
     ## 1 id.layer_local_c           271
     ## 2 latitude.point_wgs84_dd    259
-    ## 3 ph.cacl2_ISO.10390_index   250
+    ## 3 ph.cacl2_iso.10390_index   250
     ## 4 scan_mir.600_abs           271
 
 ``` r
@@ -515,15 +515,15 @@ Data summary
 |:----------------------------|-----------:|------:|------:|------:|------:|------:|------:|------:|
 | layer.upper.depth\_usda\_cm |          0 | 18.48 | 16.14 |  0.00 |  0.00 | 15.00 | 30.00 | 45.00 |
 | layer.lower.depth\_usda\_cm |          0 | 33.48 | 16.14 | 15.00 | 15.00 | 30.00 | 45.00 | 60.00 |
-| bd\_usda.a4\_g.cm3          |          0 |  1.27 |  0.25 |  0.38 |  1.17 |  1.33 |  1.44 |  1.72 |
-| n.tot\_ISO.13878\_w.pct     |         23 |  0.10 |  0.09 |  0.02 |  0.04 |  0.07 |  0.14 |  0.68 |
-| c.tot\_ISO.10694\_w.pct     |          0 |  1.79 |  1.97 |  0.00 |  0.53 |  1.24 |  2.38 | 15.68 |
-| oc\_ISO.10694\_w.pct        |          0 |  1.56 |  1.87 |  0.07 |  0.31 |  0.90 |  2.13 | 11.84 |
-| ph.cacl2\_ISO.10390\_index  |         13 |  5.24 |  0.91 |  3.65 |  4.53 |  5.18 |  5.87 |  7.07 |
-| ec\_ISO.11265\_ds.m         |         13 |  2.32 |  0.03 |  2.25 |  2.31 |  2.32 |  2.34 |  2.41 |
-| clay.tot\_ISO.11277\_w.pct  |         13 | 14.18 | 11.32 |  2.00 |  5.00 |  8.00 | 25.00 | 40.00 |
-| silt.tot\_ISO.11277\_w.pct  |         13 | 30.47 | 18.68 |  3.00 | 15.00 | 28.00 | 50.00 | 66.00 |
-| sand.tot\_ISO.11277\_w.pct  |         13 | 54.16 | 29.64 | 12.00 | 23.75 | 65.00 | 81.00 | 95.00 |
+| bd\_\_g.cm3                 |          0 |  1.27 |  0.25 |  0.38 |  1.17 |  1.33 |  1.44 |  1.72 |
+| n.tot\_iso.13878\_w.pct     |         23 |  0.10 |  0.09 |  0.02 |  0.04 |  0.07 |  0.14 |  0.68 |
+| c.tot\_iso.10694\_w.pct     |          0 |  1.79 |  1.97 |  0.00 |  0.53 |  1.24 |  2.38 | 15.68 |
+| oc\_iso.10694\_w.pct        |          0 |  1.56 |  1.87 |  0.07 |  0.31 |  0.90 |  2.13 | 11.84 |
+| ph.cacl2\_iso.10390\_index  |         13 |  5.24 |  0.91 |  3.65 |  4.53 |  5.18 |  5.87 |  7.07 |
+| ec\_iso.11265\_ds.m         |         13 |  2.32 |  0.03 |  2.25 |  2.31 |  2.32 |  2.34 |  2.41 |
+| clay.tot\_iso.11277\_w.pct  |         13 | 14.18 | 11.32 |  2.00 |  5.00 |  8.00 | 25.00 | 40.00 |
+| silt.tot\_iso.11277\_w.pct  |         13 | 30.47 | 18.68 |  3.00 | 15.00 | 28.00 | 50.00 | 66.00 |
+| sand.tot\_iso.11277\_w.pct  |         13 | 54.16 | 29.64 | 12.00 | 23.75 | 65.00 | 81.00 | 95.00 |
 
 MIR spectral visualization:
 
@@ -547,7 +547,7 @@ schiedung.mir %>%
 toc()
 ```
 
-    ## 9.76 sec elapsed
+    ## 10.858 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -555,8 +555,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2579388 137.8    4658445 248.8  4658445 248.8
-    ## Vcells 5478099  41.8   32023104 244.4 40014727 305.3
+    ## Ncells 2579388 137.8    4659922 248.9  4659922 248.9
+    ## Vcells 5478105  41.8   32023121 244.4 40028901 305.4
 
 ## References
 

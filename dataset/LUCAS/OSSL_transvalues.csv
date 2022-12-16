@@ -1,25 +1,25 @@
 table,original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
-LUCAS 2009/2012; SoilAttr_*.gpkg,coarse,cf,ISO.11464,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cf_ISO.11464_w.pct
-LUCAS 2009/2012; SoilAttr_*.gpkg,clay,clay.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_ISO.11277_w.pct
-LUCAS 2009/2012; SoilAttr_*.gpkg,silt,silt.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_ISO.11277_w.pct
-LUCAS 2009/2012; SoilAttr_*.gpkg,sand,sand.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_ISO.11277_w.pct
-LUCAS 2009/2012; SoilAttr_*.gpkg,pHinH2O,ph.h2o,ISO.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_ISO.10390_index
-LUCAS 2009/2012; SoilAttr_*.gpkg,pHinCaCl2,ph.cacl2,ISO.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_ISO.10390_index
-LUCAS 2009/2012; SoilAttr_*.gpkg,OC,oc,ISO.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",oc_ISO.10694_w.pct
-LUCAS 2009/2012; SoilAttr_*.gpkg,CaCO3,caco3,ISO.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_ISO.10693_w.pct
-LUCAS 2009/2012; SoilAttr_*.gpkg,N,n.tot,ISO.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_ISO.11261_w.pct
-LUCAS 2009/2012; SoilAttr_*.gpkg,P,p.ext,ISO.11263,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_ISO.11263_mg.kg
+LUCAS 2009/2012; SoilAttr_*.gpkg,coarse,cf,iso.11464,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cf_iso.11464_w.pct
+LUCAS 2009/2012; SoilAttr_*.gpkg,clay,clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_iso.11277_w.pct
+LUCAS 2009/2012; SoilAttr_*.gpkg,silt,silt.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_iso.11277_w.pct
+LUCAS 2009/2012; SoilAttr_*.gpkg,sand,sand.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_iso.11277_w.pct
+LUCAS 2009/2012; SoilAttr_*.gpkg,pHinH2O,ph.h2o,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_iso.10390_index
+LUCAS 2009/2012; SoilAttr_*.gpkg,pHinCaCl2,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_iso.10390_index
+LUCAS 2009/2012; SoilAttr_*.gpkg,OC,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",oc_iso.10694_w.pct
+LUCAS 2009/2012; SoilAttr_*.gpkg,CaCO3,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_iso.10693_w.pct
+LUCAS 2009/2012; SoilAttr_*.gpkg,N,n.tot,iso.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_iso.11261_w.pct
+LUCAS 2009/2012; SoilAttr_*.gpkg,P,p.ext,iso.11263,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_iso.11263_mg.kg
 LUCAS 2009/2012; SoilAttr_*.gpkg,K,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/(39.098*10/2))",k.ext_usda.a725_cmolc.kg
-LUCAS 2009/2012; SoilAttr_*.gpkg,CEC,cec,ISO.11260,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_ISO.11260_cmolc.kg
-LUCAS_Topsoil_2015.csv,Coarse,cf,ISO.11464,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cf_ISO.11464_w.pct
-LUCAS_Topsoil_2015.csv,Clay,clay.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_ISO.11277_w.pct
-LUCAS_Topsoil_2015.csv,Sand,sand.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_ISO.11277_w.pct
-LUCAS_Topsoil_2015.csv,Silt,silt.tot,ISO.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_ISO.11277_w.pct
-LUCAS_Topsoil_2015.csv,pH(CaCl2),ph.cacl2,ISO.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_ISO.10390_index
-LUCAS_Topsoil_2015.csv,pH(H2O),ph.h2o,ISO.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_ISO.10390_index
-LUCAS_Topsoil_2015.csv,EC,ec,ISO.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/100)",ec_ISO.11265_ds.m
-LUCAS_Topsoil_2015.csv,OC,oc,ISO.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",oc_ISO.10694_w.pct
-LUCAS_Topsoil_2015.csv,CaCO3,caco3,ISO.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_ISO.10693_w.pct
-LUCAS_Topsoil_2015.csv,P,p.ext,ISO.11263,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_ISO.11263_mg.kg
-LUCAS_Topsoil_2015.csv,N,n.tot,ISO.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_ISO.11261_w.pct
+LUCAS 2009/2012; SoilAttr_*.gpkg,CEC,cec,iso.11260,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_iso.11260_cmolc.kg
+LUCAS_Topsoil_2015.csv,Coarse,cf,iso.11464,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cf_iso.11464_w.pct
+LUCAS_Topsoil_2015.csv,Clay,clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_iso.11277_w.pct
+LUCAS_Topsoil_2015.csv,Sand,sand.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_iso.11277_w.pct
+LUCAS_Topsoil_2015.csv,Silt,silt.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_iso.11277_w.pct
+LUCAS_Topsoil_2015.csv,pH(CaCl2),ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_iso.10390_index
+LUCAS_Topsoil_2015.csv,pH(H2O),ph.h2o,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_iso.10390_index
+LUCAS_Topsoil_2015.csv,EC,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/100)",ec_iso.11265_ds.m
+LUCAS_Topsoil_2015.csv,OC,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",oc_iso.10694_w.pct
+LUCAS_Topsoil_2015.csv,CaCO3,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_iso.10693_w.pct
+LUCAS_Topsoil_2015.csv,P,p.ext,iso.11263,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_iso.11263_mg.kg
+LUCAS_Topsoil_2015.csv,N,n.tot,iso.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_iso.11261_w.pct
 LUCAS_Topsoil_2015.csv,K,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/(39.098*10/2))",k.ext_usda.a725_cmolc.kg

@@ -3,7 +3,7 @@ Dataset import: Africa Soil Information Service (AfSIS-I) SSL
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-07 December, 2022
+16 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-07  
+Last update: 2022-12-16  
 Dataset:
 [AFSIS1.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis1.ssl)
 
@@ -399,7 +399,7 @@ afsis1.mir.metadata <- afsis1.mir %>%
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2013-12-31"),
          scan.mir.model.name_utf8_txt = "Bruker Tensor 27 with HTS-XT accessory",
          scan.mir.model.code_any_txt = "Bruker_Tensor_27.HTS.XT",
-         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.optics_any_txt = "",
          scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
@@ -573,7 +573,7 @@ afsis1.mir %>%
 toc()
 ```
 
-    ## 31.167 sec elapsed
+    ## 31.715 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -581,8 +581,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells  2610726 139.5    4948281  264.3   4948281  264.3
-    ## Vcells 10074962  76.9  211022284 1610.0 263777767 2012.5
+    ## Ncells  2610698 139.5    4948448  264.3   4948448  264.3
+    ## Vcells 10074858  76.9  211022035 1610.0 263777185 2012.5
 
 ## References
 

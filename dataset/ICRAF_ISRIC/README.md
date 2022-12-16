@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Wanderson Mendes de Sousa
 (<wanderson.mendes@zalf.de>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-07 December, 2022
+16 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-07  
+Last update: 2022-12-16  
 Dataset:
 [ICRAF.ISRIC](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#icraf.isric)
 
@@ -461,10 +461,10 @@ icraf.isric.mir.metadata <- icraf.isric.mir %>%
   mutate(id.scan_local_c = id.layer_local_c) %>%
   mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2004-02-01"),
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2004-11-01"),
-         scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
-         scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.light.source_any_txt = "",
-         scan.mir.method.preparation_any_txt = "",
+         scan.mir.model.name_utf8_txt = "Bruker Tensor 27 with HTS-XT accessory",
+         scan.mir.model.code_any_txt = "Bruker_Tensor_27.HTS.XT",
+         scan.mir.method.optics_any_txt = "HgCdTe detector",
+         scan.mir.method.preparation_any_txt = "Finely ground <0.1 mm",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          scan.mir.doi_idf_url = "https://doi.org/10.34725/DVN/MFHA9C",
@@ -583,8 +583,8 @@ icraf.isric.visnir.metadata <- icraf.isric.visnir %>%
          scan.visnir.date.end_iso.8601_yyyy.mm.dd = ymd("2004-11-01"),
          scan.visnir.model.name_utf8_txt = "ASD FieldSpec Pro FR",
          scan.visnir.model.code_any_txt = "ASD_FieldSpec_FR",
-         scan.visnir.method.light.source_any_txt = "4.5 W halogen lamp",
-         scan.visnir.method.preparation_any_txt = "",
+         scan.visnir.method.optics_any_txt = "4.5 W halogen lamp",
+         scan.visnir.method.preparation_any_txt = "Sieve <2 mm",
          scan.visnir.license.title_ascii_txt = "CC-BY",
          scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          scan.visnir.doi_idf_url = "https://doi.org/10.34725/DVN/MFHA9C",
@@ -782,7 +782,7 @@ icraf.isric.visnir %>%
 toc()
 ```
 
-    ## 100.813 sec elapsed
+    ## 101.33 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -790,8 +790,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb)  max used  (Mb)
-    ## Ncells 2632940 140.7    7103056 379.4  14399118 769.0
-    ## Vcells 7602844  58.1   89862847 685.6 112296371 856.8
+    ## Ncells 2632940 140.7    7103025 379.4  14399057 769.0
+    ## Vcells 7602860  58.1   89862874 685.6 112296395 856.8
 
 ## References
 

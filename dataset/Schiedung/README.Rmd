@@ -376,8 +376,8 @@ schiedung.mir.metadata <- schiedung.mir %>%
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2019-08-31"),
          scan.mir.model.name_utf8_txt = "Bruker Tensor 27",
          scan.mir.model.code_any_txt = "Bruker_Tensor_27",
-         scan.mir.method.light.source_any_txt = "",
-         scan.mir.method.preparation_any_txt = "",
+         scan.mir.method.optics_any_txt = "Kbr background",
+         scan.mir.method.preparation_any_txt = "Finelly ground <80 mesh",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          scan.mir.doi_idf_url = 'https://doi.org/10.5281/zenodo.6024831',
@@ -409,7 +409,7 @@ schiedung.availability <- schiedung.mir.export %>%
   left_join({schiedung.sitedata %>%
       select(id.layer_local_c, latitude.point_wgs84_dd)}, by = "id.layer_local_c") %>%
   left_join({schiedung.soildata %>%
-      select(id.layer_local_c, ph.cacl2_ISO.10390_index)}, by = "id.layer_local_c") %>%
+      select(id.layer_local_c, ph.cacl2_iso.10390_index)}, by = "id.layer_local_c") %>%
   filter(!is.na(id.layer_local_c))
 
 # Availability of information from schiedung

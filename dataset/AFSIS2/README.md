@@ -3,7 +3,7 @@ Dataset import: TanSIS, NiSIS and GhanSIS (AfSIS-II) SSL
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-07 December, 2022
+16 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-07  
+Last update: 2022-12-16  
 Dataset:
 [AFSIS2.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#afsis2.ssl)
 
@@ -461,7 +461,7 @@ afsis2.mir.metadata <- afsis2.mir %>%
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2019-12-31"),
          scan.mir.model.name_utf8_txt = "Bruker Alpha 1 ZnSe",
          scan.mir.model.code_any_txt = "Bruker_Alpha_1_ZnSe",
-         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.optics_any_txt = "",
          scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC0",
          scan.mir.license.address_idn_url = "https://creativecommons.org/publicdomain/zero/1.0/",
@@ -627,7 +627,7 @@ afsis2.mir %>%
 toc()
 ```
 
-    ## 40.338 sec elapsed
+    ## 39.575 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -635,8 +635,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    ## Ncells  2611350 139.5   13571616  724.9  16964520  906.1
-    ## Vcells 54369533 414.9  186420542 1422.3 175431001 1338.5
+    ## Ncells  2611350 139.5   13571610  724.9  16964512  906.1
+    ## Vcells 54369528 414.9  186420534 1422.3 175430992 1338.5
 
 ## References
 

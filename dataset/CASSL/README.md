@@ -3,7 +3,7 @@ Dataset import: The Central African soil spectral library
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-07 December, 2022
+16 December, 2022
 
 
 
@@ -30,7 +30,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-07  
+Last update: 2022-12-16  
 Dataset:
 [CAF.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#caf.ssl)
 
@@ -333,7 +333,7 @@ caf.mir.metadata <- caf.mir %>%
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2018-12-31"),
          scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
          scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.optics_any_txt = "",
          scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
@@ -505,7 +505,7 @@ caf.mir %>%
 toc()
 ```
 
-    ## 14.581 sec elapsed
+    ## 15.681 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -513,8 +513,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2614665 139.7    4814531 257.2  4814531 257.2
-    ## Vcells 6752577  51.6   67152002 512.4 83600819 637.9
+    ## Ncells 2614680 139.7    4814437 257.2  4814437 257.2
+    ## Vcells 6752610  51.6   67152048 512.4 83600852 637.9
 
 ## References
 

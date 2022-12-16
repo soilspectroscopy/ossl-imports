@@ -8,7 +8,7 @@ kssl_analyte,415,"Water Retention, 1/3 Bar, <2mm Sieve",wr.33kPa,usda.a415,w.pct
 kssl_analyte,8,"Water Retention, 1/10 Bar, <2mm Clod",wr.10kPa,usda.a8,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.10kPa_usda.a8_w.pct
 kssl_analyte,414,"Water Retention, 1/10 Bar, <2mm Sieve, Air-dry",wr.10kPa,usda.a414,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.10kPa_usda.a414_w.pct
 kssl_analyte,417,"Water Retention, 15 Bar, <2mm,  Air-dry",wr.1500kPa,usda.a417,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.1500kPa_usda.a417_w.pct
-kssl_calc,80,"Water Retention Difference, 1/3 to 15 Bar, <2mm",awc.33.1500kPa,usda.c80,cm3.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",awc.33.1500kPa_usda.c80_cm3.cm3
+kssl_calc,80,"Water Retention Difference, 1/3 to 15 Bar, <2mm",awc.33.1500kPa,usda.c80,w.frac,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",awc.33.1500kPa_usda.c80_w.frac
 kssl_calc,60,"Sand, Total",sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct
 kssl_calc,405,"Sand, Total, N prep",sand.tot,usda.c405,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c405_w.pct
 kssl_calc,62,"Silt, Total",silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct

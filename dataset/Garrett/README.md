@@ -2,7 +2,7 @@ Dataset import: Garrett et al. (2022)
 ================
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>) and Jonathan
 Sanderman (<jsanderman@woodwellclimate.org>)
-07 December, 2022
+16 December, 2022
 
 
 
@@ -29,7 +29,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-07  
+Last update: 2022-12-16  
 Dataset:
 [GARRETT.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#garrett.ssl)
 
@@ -459,7 +459,7 @@ garrett.mir.metadata <- garrett.mir %>%
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2019-08-31"),
          scan.mir.model.name_utf8_txt = "Bruker Invenio-S with HTS-XT",
          scan.mir.model.code_any_txt = "Bruker_InvenioS_HTS.XT",
-         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.optics_any_txt = "",
          scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
@@ -637,7 +637,7 @@ garrett.mir %>%
 toc()
 ```
 
-    ## 12.932 sec elapsed
+    ## 13.697 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -645,8 +645,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2600279 138.9    4724340 252.4  4724340 252.4
-    ## Vcells 5321327  40.6   25913260 197.8 32359171 246.9
+    ## Ncells 2600279 138.9    4718771 252.1  4718771 252.1
+    ## Vcells 5321322  40.6   25913249 197.8 32359166 246.9
 
 ## References
 

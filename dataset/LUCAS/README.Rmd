@@ -452,10 +452,10 @@ lucas.visnir.2015 <- lucas.visnir.2015 %>%
 # Binding both spectra
 lucas.visnir <- bind_rows(lucas.visnir.2009, lucas.visnir.2015) %>%
   mutate(id.scan_local_c = id.layer_local_c, .after = id.layer_local_c) %>%
-  mutate(scan.visnir.model.name_utf8_txt = "XDS Rapid Content Analyzer",
-         scan.visnir.model.code_any_txt = "XDS_Rapid_Content_Analyzer",
-         scan.visnir.method.light.source_any_txt = "",
-         scan.visnir.method.preparation_any_txt = "",
+  mutate(scan.visnir.model.name_utf8_txt = "Metrohm NIRS XDS RapidContent Analyzer",
+         scan.visnir.model.code_any_txt = "Metrohm_NIRS_XDS_RapidContent_Analyzer",
+         scan.visnir.method.optics_any_txt = "",
+         scan.visnir.method.preparation_any_txt = "Sieved <2 mm",
          scan.visnir.contact.name_utf8_txt = "ESDAC - European Commission",
          scan.visnir.contact.email_ietf_txt = "ec-esdac@jrc.ec.europa.eu",
          .after = scan.visnir.doi_idf_url)
@@ -611,9 +611,9 @@ lucas.mir.metadata <- mir.scans %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
   mutate(dataset.code_ascii_txt = "LUCAS.WOODWELL.SSL",
          scan.mir.date.end_iso.8601_yyyy.mm.dd = scan.mir.date.begin_iso.8601_yyyy.mm.dd,
-         scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
-         scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.light.source_any_txt = "",
+         scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with with PikeAutoDiff accessory",
+         scan.mir.model.code_any_txt = "Bruker_Vertex_70.PikeAutoDiff",
+         scan.mir.method.optics_any_txt = "KBr beamsplitter; Gold mirror; Mirror background",
          scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
@@ -649,7 +649,7 @@ lucas.availability <- lucas.visnir.export %>%
   left_join({lucas.sitedata %>%
       select(id.layer_local_c, dataset.code_ascii_txt, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
   left_join({lucas.soildata %>%
-      select(id.layer_local_c, oc_ISO.10694_w.pct)}, by = "id.layer_local_c") %>%
+      select(id.layer_local_c, oc_iso.10694_w.pct)}, by = "id.layer_local_c") %>%
   mutate(dataset.code_ascii_txt = coalesce(dataset.code_ascii_txt.x, dataset.code_ascii_txt.y, NA),
          .before = 1) %>%
   select(-dataset.code_ascii_txt.x, -dataset.code_ascii_txt.y) %>%

@@ -377,7 +377,7 @@ afsis1.mir.metadata <- afsis1.mir %>%
          scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2013-12-31"),
          scan.mir.model.name_utf8_txt = "Bruker Tensor 27 with HTS-XT accessory",
          scan.mir.model.code_any_txt = "Bruker_Tensor_27.HTS.XT",
-         scan.mir.method.light.source_any_txt = "",
+         scan.mir.method.optics_any_txt = "",
          scan.mir.method.preparation_any_txt = "",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
