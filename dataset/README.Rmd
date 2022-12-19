@@ -204,9 +204,6 @@ ossl.level0 %>%
 
 # For some reason, some observations have soil and spectral measurements, but not site data
 # We will automatically fill them with general metadata. ID, spatial and temporal info is ommitted
-ossl.level0 %>%
-  count(dataset.code_ascii_txt)
-
 soilsite.columns <- ossl.soilsite %>%
   select(starts_with(c("dataset", "observation", "surveyor")),
          id.dataset.site_ascii_txt, id.project_ascii_txt) %>%
@@ -228,7 +225,24 @@ ossl.level0.export <- ossl.level0 %>%
   fill(all_of(soilsite.columns)) %>%
   ungroup()
 
-# Removing duplicates
+# For some reason, some observations have spectral measurements but not soil data
+# We will drop them
+soil.na <- ossl.level0.export %>%
+  select(all_of(names(ossl.soillab))) %>%
+  select(-code, -file_sequence, - id.layer_local_c) %>%
+  apply(., 1, function(x) sum(is.na(x))/length(x)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({ossl.level0.export %>% select(code, file_sequence, id.layer_local_c)}, .)
+
+soil.na %>%
+  filter(proportion_NA == 1) %>%
+  group_by(code) %>%
+  summarise(count = n())
+
+soil.na.ids <- soil.na %>%
+  filter(proportion_NA == 1) %>%
+  pull(id.layer_local_c)
+
 # ossl.level0.export %>%
 #   group_by(dataset.code_ascii_txt, id.layer_local_c) %>%
 #   summarise(repeats = n()) %>%
@@ -244,6 +258,7 @@ dupli.ids <- ossl.level0.export %>%
 # Removing duplicates and rearranging columns
 ossl.level0.export <- ossl.level0.export %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
+  filter(!(id.layer_local_c %in% soil.na.ids)) %>%
   select(any_of(names(ossl.soilsite)), any_of(sort(names(ossl.soillab))), any_of(names(ossl.spectra))) %>%
   select(dataset.code_ascii_txt, contains("id."), everything())
 
@@ -338,7 +353,8 @@ level0.soilsite <- ossl.level0.export %>%
 qs::qsave(level0.soilsite, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs", preset = "high")
 
 # Exporting soillab L0
-avoid.soillab.columns <- c("code", "file_sequence", "id.layer_local_c", "layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm")
+avoid.soillab.columns <- c("code", "file_sequence", "id.layer_local_c",
+                           "layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm")
 selected.soillab.columns <- names(ossl.soillab)[!(names(ossl.soillab) %in% avoid.soillab.columns)]
 
 level0.soillab <- ossl.level0.export %>%
@@ -351,16 +367,27 @@ avoid.mir.columns <- c("code", "file_sequence", "id.layer_local_c")
 selected.mir.columns <- names(ossl.mir)[!(names(ossl.mir) %in% avoid.mir.columns)]
 
 level0.mir <- ossl.level0.export %>%
-  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.mir.columns))
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.mir.columns)) %>%
+  mutate_at(vars(ends_with("_abs")), round, 5)
 
 qs::qsave(level0.mir, "/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs", preset = "high")
+
+# # Size test
+# level0.mir.test1 <- level0.mir %>% mutate_at(vars(ends_with("_abs")), round, 5)
+# head(level0.mir.test1[,50:55])
+# qs::qsave(level0.mir.test1, "/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2_test1.qs", preset = "high")
+# 
+# level0.mir.test2 <- level0.mir %>% mutate_at(vars(ends_with("_abs")), function(x=.){round(x*1000, 0)})
+# head(level0.mir.test2[,50:55])
+# qs::qsave(level0.mir.test2, "/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2_test2.qs", preset = "high")
 
 # Exporting visnir L0
 avoid.visnir.columns <- c("code", "file_sequence", "id.layer_local_c")
 selected.visnir.columns <- names(ossl.visnir)[!(names(ossl.visnir) %in% avoid.visnir.columns)]
 
 level0.visnir <- ossl.level0.export %>%
-  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.visnir.columns))
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.visnir.columns)) %>%
+  mutate_at(vars(ends_with("_ref")), round, 5)
 
 qs::qsave(level0.visnir, "/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs", preset = "high")
 ```
@@ -656,14 +683,14 @@ Producing level 1 (L1) as a regression matrix for fitting models
 ossl.soillab.level1.transvalues <- read_csv("../out/ossl_level0_to_level1_soillab_harmonization.csv")
 
 ossl.soillab.level1.transvalues %>%
-  select(ossl_name_level0, ossl_name_level1, ossl_level1_transform)
+  select(ossl_name_level0, ossl_name_level1, ossl_level1_transform) %>%
+  knitr::kable()
 
 ## Reading soilab level 0
 level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs")
 level0.soillab <- as.data.frame(level0.soillab)
 
-## First: harmonizing values
-
+## First step: harmonizing values from different methods
 # Getting the formulas
 functions.list <- ossl.soillab.level1.transvalues %>%
   mutate(ossl_name_level0 = factor(ossl_name_level0, levels = names(ossl_name_level0))) %>%
@@ -676,8 +703,7 @@ level1.soillab.harmonized <- transform_values(df = level0.soillab,
                                               in.name = names(level0.soillab),
                                               fun.lst = functions.list)
 
-## Second: renaming
-
+## Second step: renaming to common property name
 analytes.old.names <- ossl.soillab.level1.transvalues %>%
   pull(ossl_name_level0)
 
@@ -694,13 +720,14 @@ priorioty.first <- ossl.soillab.level1.transvalues %>%
 # Pivoting and renaming
 level1.soillab.renamed <- level1.soillab.harmonized %>%
   mutate_all(as.character) %>%
-  pivot_longer(-all_of(c("dataset.code_ascii_txt", "id.layer_uuid_txt")), names_to = "ossl_name_level0", values_to = "values") %>%
+  pivot_longer(-all_of(c("dataset.code_ascii_txt", "id.layer_uuid_txt")),
+               names_to = "ossl_name_level0", values_to = "values") %>%
   left_join(priorioty.first, by = "ossl_name_level0") %>%
   mutate(ossl_name_level1 = recode(ossl_name_level0, !!!renaming.vector))
 
-## Arranging and firsting (or averaging) different methods for sample observation
+## Third step: arranging and summarizing to unique values
 # Here we are coalescing (finding first non na element instead of averaging)
-# Instead of using coalesce (which does not drop na values), we filter, arrange and first
+# Instead of using dplyr::coalesce (which does not drop na values), we filter, arrange, first, and pivot to wider
 
 # level1.soillab.renamed %>%
 #   mutate(check = is.na(values)) %>%
@@ -717,10 +744,73 @@ level1.soillab.export <- level1.soillab.renamed %>%
 qs::qsave(level1.soillab.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L1_v1.2.qs", preset = "high")
 ```
 
-Producing a golden dataset for enabling a systematic analysis that shares the same base data (Spatial, VisNIR and MIR)
+## Golden subset
+
+Producing a golden dataset (that have complete observations for Spatial, VisNIR and MIR info).
 ```{r golden_dataset, include=TRUE, echo=TRUE, eval=TRUE}
-# Still todo
+## Reading separate files for joining to level 1
+level0.soilsite <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs")
+level0.visnir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs")
+level0.mir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs")
+level1.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L1_v1.2.qs")
+
+ossl.level1 <- left_join(level0.soilsite, level1.soillab,
+                         by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level0.visnir, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level0.mir, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt", "id.scan_local_c"))
+
+# ossl.level1 %>%
+#   select(ends_with(".x")) %>%
+#   names()
+
+## Saving to disk
+qs::qsave(ossl.level1, "/mnt/soilspec4gg/ossl/ossl_import/ossl_all_L1_v1.2.qs", preset = "high")
+
+## Reading spatial overlay
+ossl.overlay <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.qs")
+
+## Producing golden subset
+ossl.golden.subset <- ossl.overlay %>%
+  left_join(level0.soilsite, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level1.soillab, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level0.visnir, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level0.mir, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt", "id.scan_local_c"))
+
+# ossl.golden.subset %>%
+#   select(ends_with(".x")) %>%
+#   names()
+
+ossl.golden.subset.export <- ossl.golden.subset %>%
+  mutate(remove = ifelse(is.na(scan_mir.1000_abs) |
+                           is.na(scan_visnir.1000_ref) |
+                           is.na(latitude.point_wgs84_dd), TRUE, FALSE),
+         .before = 1) %>%
+  filter(!remove)
+
+## Saving to disk
+qs::qsave(ossl.golden.subset.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_golden_subset_v1.2.qs", preset = "high")
+
+## Summary
+ossl.golden.subset.export %>%
+  count(dataset.code_ascii_txt) %>%
+  bind_rows(tibble(dataset.code_ascii_txt = "TOTAL",
+                   n = nrow(ossl.golden.subset.export)))
 ```
+
+### Map visualization
+```{r golden_subset_map, include=TRUE, echo=TRUE, eval=TRUE}
+gs.output <- "../img/golden.subset_sites.png"
+
+gs.points <- ossl.golden.subset.export %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, latitude.point_wgs84_dd, longitude.point_wgs84_dd) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326) %>%
+  distinct(geometry, .keep_all = TRUE)
+
+plot_gh(gs.points, output = gs.output, fill.col = "red")
+```
+
+Golden subset locations
+<img src="../img/golden.subset_sites.png" heigth=100% width=100%>
 
 ```{r}
 toc()
@@ -729,3 +819,5 @@ gc()
 ```
 
 ## References
+
+This data processing and analysis follow the principles of `tidyverse` (@package_tidyverse) while taking advantage of several other amazing packages, such as `tictoc` (@package_tictoc), `data.table` (@package_datatable), `lubridate` (@package_lubridate), `fs` (@package_fs), `qs` (@package_qs), `openssl` (@package_openssl), `olctools` (@package_olctools), `sf` (@package_sf), and `terra` (@package_terra).

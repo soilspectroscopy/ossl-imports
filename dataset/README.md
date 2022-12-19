@@ -3,7 +3,7 @@ Binding all datasets
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-16 December, 2022
+19 December, 2022
 
 
 
@@ -16,6 +16,8 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
         covariates](#overlay-with-spatial-covariates)
 -   [OSSL level 1](#ossl-level-1)
     -   [Getting OSSL level 0 names](#getting-ossl-level-0-names)
+-   [Golden subset](#golden-subset)
+    -   [Map visualization](#map-visualization)
 -   [References](#references)
 
 [<img src="../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
@@ -31,7 +33,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-16
+Last update: 2022-12-19
 
 All the external SSLs were prepared and harmonized to the OSSL naming
 conventions as described in the `README` files present in each specific
@@ -404,23 +406,6 @@ ossl.level0 %>%
 ``` r
 # For some reason, some observations have soil and spectral measurements, but not site data
 # We will automatically fill them with general metadata. ID, spatial and temporal info is ommitted
-ossl.level0 %>%
-  count(dataset.code_ascii_txt)
-```
-
-    ##     dataset.code_ascii_txt     n
-    ##  1:             AFSIS1.SSL  1838
-    ##  2:             AFSIS2.SSL   151
-    ##  3:                CAF.SSL  1629
-    ##  4:            GARRETT.SSL   184
-    ##  5:            ICRAF.ISRIC  4073
-    ##  6:               KSSL.SSL 86908
-    ##  7:              LUCAS.SSL 40227
-    ##  8:     LUCAS.WOODWELL.SSL   589
-    ##  9:          SCHIEDUNG.SSL   259
-    ## 10:                   <NA>  6234
-
-``` r
 soilsite.columns <- ossl.soilsite %>%
   select(starts_with(c("dataset", "observation", "surveyor")),
          id.dataset.site_ascii_txt, id.project_ascii_txt) %>%
@@ -442,7 +427,34 @@ ossl.level0.export <- ossl.level0 %>%
   fill(all_of(soilsite.columns)) %>%
   ungroup()
 
-# Removing duplicates
+# For some reason, some observations have spectral measurements but not soil data
+# We will drop them
+soil.na <- ossl.level0.export %>%
+  select(all_of(names(ossl.soillab))) %>%
+  select(-code, -file_sequence, - id.layer_local_c) %>%
+  apply(., 1, function(x) sum(is.na(x))/length(x)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({ossl.level0.export %>% select(code, file_sequence, id.layer_local_c)}, .)
+
+soil.na %>%
+  filter(proportion_NA == 1) %>%
+  group_by(code) %>%
+  summarise(count = n())
+```
+
+    ## # A tibble: 4 × 2
+    ##   code        count
+    ##   <chr>       <int>
+    ## 1 ICRAF_ISRIC   365
+    ## 2 KSSL         5789
+    ## 3 LUCAS           2
+    ## 4 Schiedung      12
+
+``` r
+soil.na.ids <- soil.na %>%
+  filter(proportion_NA == 1) %>%
+  pull(id.layer_local_c)
+
 # ossl.level0.export %>%
 #   group_by(dataset.code_ascii_txt, id.layer_local_c) %>%
 #   summarise(repeats = n()) %>%
@@ -458,6 +470,7 @@ dupli.ids <- ossl.level0.export %>%
 # Removing duplicates and rearranging columns
 ossl.level0.export <- ossl.level0.export %>%
   filter(!(id.layer_local_c %in% dupli.ids)) %>%
+  filter(!(id.layer_local_c %in% soil.na.ids)) %>%
   select(any_of(names(ossl.soilsite)), any_of(sort(names(ossl.soillab))), any_of(names(ossl.spectra))) %>%
   select(dataset.code_ascii_txt, contains("id."), everything())
 
@@ -495,7 +508,7 @@ ossl.level0.export %>%
     ## # A tibble: 1 × 2
     ##   incomplete_location      n
     ##   <lgl>                <int>
-    ## 1 FALSE               141762
+    ## 1 FALSE               135616
 
 ``` r
 # Checking for missing spatial locations
@@ -508,7 +521,7 @@ ossl.level0.export %>%
     ##   missing_location     n
     ##   <lgl>            <int>
     ## 1 FALSE            87623
-    ## 2 TRUE             54139
+    ## 2 TRUE             47993
 
 ``` r
 # Running unique id with dataset and layer id combination, and olc location code 
@@ -543,14 +556,14 @@ ossl.level0.export %>%
     ##  2 AFSIS2.SSL             TRUE          FALSE              151       100   
     ##  3 CAF.SSL                TRUE          FALSE             1561       100   
     ##  4 GARRETT.SSL            TRUE          FALSE              184       100   
-    ##  5 ICRAF.ISRIC            FALSE         TRUE               285         6.42
-    ##  6 ICRAF.ISRIC            TRUE          TRUE              4153        93.6 
-    ##  7 KSSL.SSL               FALSE         TRUE              9784        10.6 
-    ##  8 KSSL.SSL               TRUE          FALSE            72702        78.6 
-    ##  9 KSSL.SSL               TRUE          TRUE             10001        10.8 
-    ## 10 LUCAS.SSL              FALSE         TRUE             40177       100   
+    ##  5 ICRAF.ISRIC            FALSE         TRUE                 2         0.05
+    ##  6 ICRAF.ISRIC            TRUE          TRUE              4071       100.  
+    ##  7 KSSL.SSL               FALSE         TRUE              9784        11.3 
+    ##  8 KSSL.SSL               TRUE          FALSE            66935        77.2 
+    ##  9 KSSL.SSL               TRUE          TRUE             10001        11.5 
+    ## 10 LUCAS.SSL              FALSE         TRUE             40175       100   
     ## 11 LUCAS.WOODWELL.SSL     TRUE          TRUE               589       100   
-    ## 12 SCHIEDUNG.SSL          TRUE          FALSE              271       100
+    ## 12 SCHIEDUNG.SSL          TRUE          FALSE              259       100
 
 ``` r
 # Final spatial counts
@@ -561,7 +574,7 @@ ossl.level0.export %>%
   mutate(perc_dataset = round(n/sum(n)*100, 2))
 ```
 
-    ## # A tibble: 14 × 4
+    ## # A tibble: 12 × 4
     ## # Groups:   dataset.code_ascii_txt [9]
     ##    dataset.code_ascii_txt missing_location     n perc_dataset
     ##    <chr>                  <lgl>            <int>        <dbl>
@@ -570,15 +583,13 @@ ossl.level0.export %>%
     ##  3 AFSIS2.SSL             TRUE               151       100   
     ##  4 CAF.SSL                FALSE             1561       100   
     ##  5 GARRETT.SSL            FALSE              184       100   
-    ##  6 ICRAF.ISRIC            FALSE             4013        90.4 
-    ##  7 ICRAF.ISRIC            TRUE               425         9.58
-    ##  8 KSSL.SSL               FALSE            39004        42.2 
-    ##  9 KSSL.SSL               TRUE             53483        57.8 
+    ##  6 ICRAF.ISRIC            FALSE             4013        98.5 
+    ##  7 ICRAF.ISRIC            TRUE                60         1.47
+    ##  8 KSSL.SSL               FALSE            39004        45.0 
+    ##  9 KSSL.SSL               TRUE             47716        55.0 
     ## 10 LUCAS.SSL              FALSE            40175       100   
-    ## 11 LUCAS.SSL              TRUE                 2         0   
-    ## 12 LUCAS.WOODWELL.SSL     FALSE              589       100   
-    ## 13 SCHIEDUNG.SSL          FALSE              259        95.6 
-    ## 14 SCHIEDUNG.SSL          TRUE                12         4.43
+    ## 11 LUCAS.WOODWELL.SSL     FALSE              589       100   
+    ## 12 SCHIEDUNG.SSL          FALSE              259       100
 
 ### Saving files
 
@@ -609,7 +620,8 @@ level0.soilsite <- ossl.level0.export %>%
 qs::qsave(level0.soilsite, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs", preset = "high")
 
 # Exporting soillab L0
-avoid.soillab.columns <- c("code", "file_sequence", "id.layer_local_c", "layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm")
+avoid.soillab.columns <- c("code", "file_sequence", "id.layer_local_c",
+                           "layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm")
 selected.soillab.columns <- names(ossl.soillab)[!(names(ossl.soillab) %in% avoid.soillab.columns)]
 
 level0.soillab <- ossl.level0.export %>%
@@ -622,16 +634,27 @@ avoid.mir.columns <- c("code", "file_sequence", "id.layer_local_c")
 selected.mir.columns <- names(ossl.mir)[!(names(ossl.mir) %in% avoid.mir.columns)]
 
 level0.mir <- ossl.level0.export %>%
-  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.mir.columns))
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.mir.columns)) %>%
+  mutate_at(vars(ends_with("_abs")), round, 5)
 
 qs::qsave(level0.mir, "/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs", preset = "high")
+
+# # Size test
+# level0.mir.test1 <- level0.mir %>% mutate_at(vars(ends_with("_abs")), round, 5)
+# head(level0.mir.test1[,50:55])
+# qs::qsave(level0.mir.test1, "/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2_test1.qs", preset = "high")
+# 
+# level0.mir.test2 <- level0.mir %>% mutate_at(vars(ends_with("_abs")), function(x=.){round(x*1000, 0)})
+# head(level0.mir.test2[,50:55])
+# qs::qsave(level0.mir.test2, "/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2_test2.qs", preset = "high")
 
 # Exporting visnir L0
 avoid.visnir.columns <- c("code", "file_sequence", "id.layer_local_c")
 selected.visnir.columns <- names(ossl.visnir)[!(names(ossl.visnir) %in% avoid.visnir.columns)]
 
 level0.visnir <- ossl.level0.export %>%
-  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.visnir.columns))
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.visnir.columns)) %>%
+  mutate_at(vars(ends_with("_ref")), round, 5)
 
 qs::qsave(level0.visnir, "/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs", preset = "high")
 ```
@@ -917,31 +940,98 @@ Producing level 1 (L1) as a regression matrix for fitting models
 ossl.soillab.level1.transvalues <- read_csv("../out/ossl_level0_to_level1_soillab_harmonization.csv")
 
 ossl.soillab.level1.transvalues %>%
-  select(ossl_name_level0, ossl_name_level1, ossl_level1_transform)
+  select(ossl_name_level0, ossl_name_level1, ossl_level1_transform) %>%
+  knitr::kable()
 ```
 
-    ## # A tibble: 79 × 3
-    ##    ossl_name_level0               ossl_name_level1               ossl_level1_t…¹
-    ##    <chr>                          <chr>                          <chr>          
-    ##  1 dataset.code_ascii_txt         dataset.code_ascii_txt         x              
-    ##  2 id.layer_uuid_txt              id.layer_uuid_txt              x              
-    ##  3 acidity_usda.a795_cmolc.kg     acidity_usda.a795_cmolc.kg     x              
-    ##  4 aggstb_usda.a1_w.pct           aggstb_usda.a1_w.pct           x              
-    ##  5 al.dith_usda.a65_w.pct         al.dith_usda.a65_w.pct         x              
-    ##  6 al.ext_aquaregia_g.kg          al.ext_aquaregia_g.kg          x              
-    ##  7 al.ext_usda.a1056_mg.kg        al.ext_usda.a1056_mg.kg        x              
-    ##  8 al.ext_usda.a69_cmolc.kg       al.ext_usda.a69_cmolc.kg       x              
-    ##  9 al.ox_usda.a59_w.pct           al.ox_usda.a59_w.pct           x              
-    ## 10 awc.33.1500kPa_usda.c80_w.frac awc.33.1500kPa_usda.c80_w.frac x              
-    ## # … with 69 more rows, and abbreviated variable name ¹​ossl_level1_transform
+| ossl\_name\_level0               | ossl\_name\_level1               | ossl\_level1\_transform |
+|:---------------------------------|:---------------------------------|:------------------------|
+| dataset.code\_ascii\_txt         | dataset.code\_ascii\_txt         | x                       |
+| id.layer\_uuid\_txt              | id.layer\_uuid\_txt              | x                       |
+| acidity\_usda.a795\_cmolc.kg     | acidity\_usda.a795\_cmolc.kg     | x                       |
+| aggstb\_usda.a1\_w.pct           | aggstb\_usda.a1\_w.pct           | x                       |
+| al.dith\_usda.a65\_w.pct         | al.dith\_usda.a65\_w.pct         | x                       |
+| al.ext\_aquaregia\_g.kg          | al.ext\_aquaregia\_g.kg          | x                       |
+| al.ext\_usda.a1056\_mg.kg        | al.ext\_usda.a1056\_mg.kg        | x                       |
+| al.ext\_usda.a69\_cmolc.kg       | al.ext\_usda.a69\_cmolc.kg       | x                       |
+| al.ox\_usda.a59\_w.pct           | al.ox\_usda.a59\_w.pct           | x                       |
+| awc.33.1500kPa\_usda.c80\_w.frac | awc.33.1500kPa\_usda.c80\_w.frac | x                       |
+| b.ext\_mel3\_mg.kg               | b.ext\_mel3\_mg.kg               | x                       |
+| bd\_iso.11272\_g.cm3             | bd\_usda.a4\_g.cm3               | x                       |
+| bd\_usda.a21\_g.cm3              | bd\_usda.a4\_g.cm3               | x                       |
+| bd\_usda.a4\_g.cm3               | bd\_usda.a4\_g.cm3               | x                       |
+| bd\_usda.c85\_g.cm3              | bd\_usda.a4\_g.cm3               | x                       |
+| c.tot\_iso.10694\_w.pct          | c.tot\_usda.a622\_w.pct          | x                       |
+| c.tot\_usda.a622\_w.pct          | c.tot\_usda.a622\_w.pct          | x                       |
+| ca.ext\_aquaregia\_mg.kg         | ca.ext\_aquaregia\_mg.kg         | x                       |
+| ca.ext\_usda.a1059\_mg.kg        | ca.ext\_usda.a1059\_mg.kg        | x                       |
+| ca.ext\_usda.a722\_cmolc.kg      | ca.ext\_usda.a722\_cmolc.kg      | x                       |
+| caco3\_iso.10693\_w.pct          | caco3\_usda.a54\_w.pct           | x                       |
+| caco3\_usda.a54\_w.pct           | caco3\_usda.a54\_w.pct           | x                       |
+| cec\_iso.11260\_cmolc.kg         | cec\_usda.a723\_cmolc.kg         | x                       |
+| cec\_usda.a723\_cmolc.kg         | cec\_usda.a723\_cmolc.kg         | x                       |
+| cf\_iso.11464\_w.pct             | cf\_usda.c236\_w.pct             | x                       |
+| cf\_usda.c236\_w.pct             | cf\_usda.c236\_w.pct             | x                       |
+| clay.tot\_iso.11277\_w.pct       | clay.tot\_usda.a334\_w.pct       | x                       |
+| clay.tot\_usda.a334\_w.pct       | clay.tot\_usda.a334\_w.pct       | x                       |
+| cu.ext\_usda.a1063\_mg.kg        | cu.ext\_usda.a1063\_mg.kg        | x                       |
+| ec\_iso.11265\_ds.m              | ec\_usda.a364\_ds.m              | x                       |
+| ec\_usda.a364\_ds.m              | ec\_usda.a364\_ds.m              | x                       |
+| efferv\_usda.a479\_class         | efferv\_usda.a479\_class         | x                       |
+| fe.dith\_usda.a66\_w.pct         | fe.dith\_usda.a66\_w.pct         | x                       |
+| fe.ext\_aquaregia\_g.kg          | fe.ext\_aquaregia\_g.kg          | x                       |
+| fe.ext\_usda.a1064\_mg.kg        | fe.ext\_usda.a1064\_mg.kg        | x                       |
+| fe.ox\_usda.a60\_w.pct           | fe.ox\_usda.a60\_w.pct           | x                       |
+| k.ext\_aquaregia\_mg.kg          | k.ext\_aquaregia\_mg.kg          | x                       |
+| k.ext\_usda.a1065\_mg.kg         | k.ext\_usda.a1065\_mg.kg         | x                       |
+| k.ext\_usda.a725\_cmolc.kg       | k.ext\_usda.a725\_cmolc.kg       | x                       |
+| mg.ext\_aquaregia\_mg.kg         | mg.ext\_aquaregia\_mg.kg         | x                       |
+| mg.ext\_usda.a1066\_mg.kg        | mg.ext\_usda.a1066\_mg.kg        | x                       |
+| mg.ext\_usda.a724\_cmolc.kg      | mg.ext\_usda.a724\_cmolc.kg      | x                       |
+| mn.ext\_aquaregia\_mg.kg         | mn.ext\_aquaregia\_mg.kg         | x                       |
+| mn.ext\_usda.a1067\_mg.kg        | mn.ext\_usda.a1066\_mg.kg        | x                       |
+| mn.ext\_usda.a70\_mg.kg          | mn.ext\_usda.a70\_mg.kg          | x                       |
+| n.tot\_iso.11261\_w.pct          | n.tot\_usda.a623\_w.pct          | x                       |
+| n.tot\_iso.13878\_w.pct          | n.tot\_usda.a623\_w.pct          | x                       |
+| n.tot\_usda.a623\_w.pct          | n.tot\_usda.a623\_w.pct          | x                       |
+| na.ext\_aquaregia\_mg.kg         | na.ext\_aquaregia\_mg.kg         | x                       |
+| na.ext\_usda.a1068\_mg.kg        | na.ext\_usda.a1068\_mg.kg        | x                       |
+| na.ext\_usda.a726\_cmolc.kg      | na.ext\_usda.a726\_cmolc.kg      | x                       |
+| oc\_iso.10694\_w.pct             | oc\_usda.c729\_w.pct             | x                       |
+| oc\_usda.c1059\_w.pct            | oc\_usda.c729\_w.pct             | x                       |
+| oc\_usda.c729\_w.pct             | oc\_usda.c729\_w.pct             | x                       |
+| p.ext\_aquaregia\_mg.kg          | p.ext\_aquaregia\_mg.kg          | x                       |
+| p.ext\_iso.11263\_mg.kg          | p.ext\_usda.a274\_mg.kg          | x                       |
+| p.ext\_usda.a1070\_mg.kg         | p.ext\_usda.a1070\_mg.kg         | x                       |
+| p.ext\_usda.a270\_mg.kg          | p.ext\_usda.a270\_mg.kg          | x                       |
+| p.ext\_usda.a274\_mg.kg          | p.ext\_usda.a274\_mg.kg          | x                       |
+| p.ext\_usda.a652\_mg.kg          | p.ext\_usda.a1070\_mg.kg         | x                       |
+| ph.cacl2\_iso.10390\_index       | ph.cacl2\_usda.a481\_index       | x                       |
+| ph.cacl2\_usda.a477\_index       | ph.cacl2\_usda.a481\_index       | x                       |
+| ph.cacl2\_usda.a481\_index       | ph.cacl2\_usda.a481\_index       | x                       |
+| ph.h2o\_iso.10390\_index         | ph.h2o\_usda.a268\_index         | x                       |
+| ph.h2o\_usda.a268\_index         | ph.h2o\_usda.a268\_index         | x                       |
+| s.ext\_mel3\_mg.kg               | s.ext\_mel3\_mg.kg               | x                       |
+| s.tot\_usda.a624\_w.pct          | s.tot\_usda.a624\_w.pct          | x                       |
+| sand.tot\_iso.11277\_w.pct       | sand.tot\_usda.c60\_w.pct        | x                       |
+| sand.tot\_usda.c405\_w.pct       | sand.tot\_usda.c60\_w.pct        | x                       |
+| sand.tot\_usda.c60\_w.pct        | sand.tot\_usda.c60\_w.pct        | x                       |
+| silt.tot\_iso.11277\_w.pct       | silt.tot\_usda.c62\_w.pct        | x                       |
+| silt.tot\_usda.c407\_w.pct       | silt.tot\_usda.c62\_w.pct        | x                       |
+| silt.tot\_usda.c62\_w.pct        | silt.tot\_usda.c62\_w.pct        | x                       |
+| wr.10kPa\_usda.a414\_w.pct       | wr.10kPa\_usda.a414\_w.pct       | x                       |
+| wr.10kPa\_usda.a8\_w.pct         | wr.10kPa\_usda.a414\_w.pct       | x                       |
+| wr.1500kPa\_usda.a417\_w.pct     | wr.1500kPa\_usda.a417\_w.pct     | x                       |
+| wr.33kPa\_usda.a415\_w.pct       | wr.33kPa\_usda.a415\_w.pct       | x                       |
+| wr.33kPa\_usda.a9\_w.pct         | wr.33kPa\_usda.a415\_w.pct       | x                       |
+| zn.ext\_usda.a1073\_mg.kg        | zn.ext\_usda.a1073\_mg.kg        | x                       |
 
 ``` r
 ## Reading soilab level 0
 level0.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs")
 level0.soillab <- as.data.frame(level0.soillab)
 
-## First: harmonizing values
-
+## First step: harmonizing values from different methods
 # Getting the formulas
 functions.list <- ossl.soillab.level1.transvalues %>%
   mutate(ossl_name_level0 = factor(ossl_name_level0, levels = names(ossl_name_level0))) %>%
@@ -954,8 +1044,7 @@ level1.soillab.harmonized <- transform_values(df = level0.soillab,
                                               in.name = names(level0.soillab),
                                               fun.lst = functions.list)
 
-## Second: renaming
-
+## Second step: renaming to common property name
 analytes.old.names <- ossl.soillab.level1.transvalues %>%
   pull(ossl_name_level0)
 
@@ -972,13 +1061,14 @@ priorioty.first <- ossl.soillab.level1.transvalues %>%
 # Pivoting and renaming
 level1.soillab.renamed <- level1.soillab.harmonized %>%
   mutate_all(as.character) %>%
-  pivot_longer(-all_of(c("dataset.code_ascii_txt", "id.layer_uuid_txt")), names_to = "ossl_name_level0", values_to = "values") %>%
+  pivot_longer(-all_of(c("dataset.code_ascii_txt", "id.layer_uuid_txt")),
+               names_to = "ossl_name_level0", values_to = "values") %>%
   left_join(priorioty.first, by = "ossl_name_level0") %>%
   mutate(ossl_name_level1 = recode(ossl_name_level0, !!!renaming.vector))
 
-## Arranging and firsting (or averaging) different methods for sample observation
+## Third step: arranging and summarizing to unique values
 # Here we are coalescing (finding first non na element instead of averaging)
-# Instead of using coalesce (which does not drop na values), we filter, arrange and first
+# Instead of using dplyr::coalesce (which does not drop na values), we filter, arrange, first, and pivot to wider
 
 # level1.soillab.renamed %>%
 #   mutate(check = is.na(values)) %>%
@@ -995,18 +1085,90 @@ level1.soillab.export <- level1.soillab.renamed %>%
 qs::qsave(level1.soillab.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L1_v1.2.qs", preset = "high")
 ```
 
-Producing a golden dataset for enabling a systematic analysis that
-shares the same base data (Spatial, VisNIR and MIR)
+## Golden subset
+
+Producing a golden dataset (that have complete observations for Spatial,
+VisNIR and MIR info).
 
 ``` r
-# Still todo
+## Reading separate files for joining to level 1
+level0.soilsite <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soilsite_L0_v1.2.qs")
+level0.visnir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_visnir_L0_v1.2.qs")
+level0.mir <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_mir_L0_v1.2.qs")
+level1.soillab <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L1_v1.2.qs")
+
+ossl.level1 <- left_join(level0.soilsite, level1.soillab,
+                         by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level0.visnir, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level0.mir, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt", "id.scan_local_c"))
+
+# ossl.level1 %>%
+#   select(ends_with(".x")) %>%
+#   names()
+
+## Saving to disk
+qs::qsave(ossl.level1, "/mnt/soilspec4gg/ossl/ossl_import/ossl_all_L1_v1.2.qs", preset = "high")
+
+## Reading spatial overlay
+ossl.overlay <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_overlay_v1.2.qs")
+
+## Producing golden subset
+ossl.golden.subset <- ossl.overlay %>%
+  left_join(level0.soilsite, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level1.soillab, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level0.visnir, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt")) %>%
+  left_join(level0.mir, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt", "id.scan_local_c"))
+
+# ossl.golden.subset %>%
+#   select(ends_with(".x")) %>%
+#   names()
+
+ossl.golden.subset.export <- ossl.golden.subset %>%
+  mutate(remove = ifelse(is.na(scan_mir.1000_abs) |
+                           is.na(scan_visnir.1000_ref) |
+                           is.na(latitude.point_wgs84_dd), TRUE, FALSE),
+         .before = 1) %>%
+  filter(!remove)
+
+## Saving to disk
+qs::qsave(ossl.golden.subset.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_golden_subset_v1.2.qs", preset = "high")
+
+## Summary
+ossl.golden.subset.export %>%
+  count(dataset.code_ascii_txt) %>%
+  bind_rows(tibble(dataset.code_ascii_txt = "TOTAL",
+                   n = nrow(ossl.golden.subset.export)))
 ```
+
+    ## # A tibble: 4 × 2
+    ##   dataset.code_ascii_txt     n
+    ##   <chr>                  <int>
+    ## 1 ICRAF.ISRIC             4011
+    ## 2 KSSL.SSL                 522
+    ## 3 LUCAS.WOODWELL.SSL       589
+    ## 4 TOTAL                   5122
+
+### Map visualization
+
+``` r
+gs.output <- "../img/golden.subset_sites.png"
+
+gs.points <- ossl.golden.subset.export %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, latitude.point_wgs84_dd, longitude.point_wgs84_dd) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326) %>%
+  distinct(geometry, .keep_all = TRUE)
+
+plot_gh(gs.points, output = gs.output, fill.col = "red")
+```
+
+Golden subset locations
+<img src="../img/golden.subset_sites.png" heigth=100% width=100%>
 
 ``` r
 toc()
 ```
 
-    ## 187.745 sec elapsed
+    ## 281.805 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1014,7 +1176,109 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells 3651599 195.1   13549154   723.7   16936442   904.6
-    ## Vcells 7077752  54.0 2004510887 15293.3 2505638608 19116.6
+    ## Ncells 3658637 195.4   12639710   675.1   15799637   843.8
+    ## Vcells 7022192  53.6 2887382770 22029.0 3007611257 22946.3
 
 ## References
+
+This data processing and analysis follow the principles of `tidyverse`
+([Wickham et al.](#ref-package_tidyverse)
+([2019](#ref-package_tidyverse))) while taking advantage of several
+other amazing packages, such as `tictoc`
+([Izrailev](#ref-package_tictoc) ([2022](#ref-package_tictoc))),
+`data.table` ([Dowle & Srinivasan](#ref-package_datatable)
+([2021](#ref-package_datatable))), `lubridate` ([Grolemund &
+Wickham](#ref-package_lubridate) ([2011](#ref-package_lubridate))), `fs`
+([Hester, Wickham, & Csárdi](#ref-package_fs)
+([2021](#ref-package_fs))), `qs` ([Ching](#ref-package_qs)
+([2022](#ref-package_qs))), `openssl` ([Ooms](#ref-package_openssl)
+([2022](#ref-package_openssl))), `olctools`
+([Keyes](#ref-package_olctools) ([2016](#ref-package_olctools))), `sf`
+([Pebesma](#ref-package_sf) ([2018](#ref-package_sf))), and `terra`
+([Hijmans](#ref-package_terra) ([2021](#ref-package_terra))).
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+line-spacing="2">
+
+<div id="ref-package_qs" class="csl-entry">
+
+Ching, T. (2022). *Qs: Quick serialization of r objects*. Retrieved from
+<https://CRAN.R-project.org/package=qs>
+
+</div>
+
+<div id="ref-package_datatable" class="csl-entry">
+
+Dowle, M., & Srinivasan, A. (2021). *Data.table: Extension of
+‘data.frame‘*. Retrieved from
+<https://CRAN.R-project.org/package=data.table>
+
+</div>
+
+<div id="ref-package_lubridate" class="csl-entry">
+
+Grolemund, G., & Wickham, H. (2011). Dates and times made easy with
+<span class="nocase">lubridate</span>. *Journal of Statistical
+Software*, *40*(3), 1–25. Retrieved from
+<https://www.jstatsoft.org/v40/i03/>
+
+</div>
+
+<div id="ref-package_fs" class="csl-entry">
+
+Hester, J., Wickham, H., & Csárdi, G. (2021). *Fs: Cross-platform file
+system operations based on ’libuv’*. Retrieved from
+<https://CRAN.R-project.org/package=fs>
+
+</div>
+
+<div id="ref-package_terra" class="csl-entry">
+
+Hijmans, R. J. (2021). *Terra: Spatial data analysis*. Retrieved from
+<https://rspatial.org/terra/>
+
+</div>
+
+<div id="ref-package_tictoc" class="csl-entry">
+
+Izrailev, S. (2022). *Tictoc: Functions for timing r scripts, as well as
+implementations of "stack" and "list" structures*. Retrieved from
+<https://CRAN.R-project.org/package=tictoc>
+
+</div>
+
+<div id="ref-package_olctools" class="csl-entry">
+
+Keyes, O. (2016). *Olctools: Open location code handling in r*.
+Retrieved from <https://CRAN.R-project.org/package=olctools>
+
+</div>
+
+<div id="ref-package_openssl" class="csl-entry">
+
+Ooms, J. (2022). *Openssl: Toolkit for encryption, signatures and
+certificates based on OpenSSL*. Retrieved from
+<https://CRAN.R-project.org/package=openssl>
+
+</div>
+
+<div id="ref-package_sf" class="csl-entry">
+
+Pebesma, E. (2018). <span class="nocase">Simple Features for R:
+Standardized Support for Spatial Vector Data</span>. *The R Journal*,
+*10*(1), 439–446.
+doi:[10.32614/RJ-2018-009](https://doi.org/10.32614/RJ-2018-009)
+
+</div>
+
+<div id="ref-package_tidyverse" class="csl-entry">
+
+Wickham, H., Averick, M., Bryan, J., Chang, W., McGowan, L. D.,
+François, R., … Yutani, H. (2019). Welcome to the <span
+class="nocase">tidyverse</span>. *Journal of Open Source Software*,
+*4*(43), 1686.
+doi:[10.21105/joss.01686](https://doi.org/10.21105/joss.01686)
+
+</div>
+
+</div>

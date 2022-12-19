@@ -23,16 +23,16 @@ manual](https://soilspectroscopy.github.io/ossl-manual/).
 -   Document import steps in the `README.Rmd` by producing four standard
     tables: soilsite, soillab, mir, and visnir. Follow this
     [example](dataset/CASSL);
--   Follow the table formats described in the example or summarised in
+-   Follow the table formats described in the example or summarized in
     [ossl\_level0\_names\_soilsite](out/ossl_level0_names_soilsite.csv),
     [ossl\_level0\_names\_soillab](out/ossl_level0_names_soillab.csv),
     [ossl\_level0\_names\_mir](out/ossl_level0_names_mir.csv),
     [ossl\_level0\_names\_soilsite](out/ossl_level0_names_visnir.csv);
--   Make sure to run a quality analysis similiar to the other datasets.
+-   Make sure to run a quality analysis similar to the other datasets.
     This includes the assessment of the analytical, spatial, and
     spectral consistency;
 -   We are currently running this task on an internal server, so you can
-    host your dataset on a public repository (preferrably
+    host your dataset on a public repository (preferably
     [Zenodo](https://zenodo.org/)) or share privately (not preferred,
     <soilspec4gg@woodwellclimate.org>) and provide your importing steps
     in this github repository.
@@ -53,7 +53,7 @@ create a new variable sharing at least a common property name and unit.
 The final harmonization takes place in the OSSL `Level 1`, where those
 common properties sharing different methods can be converted to a target
 method using some publicly available transformation rule, or in the
-worst scenario, they are naively binded or kept separated to produce its
+worst scenario, they are naively bind or kept separated to produce its
 specific model in the OSSL engine. All the implementations are
 documented in this github repository.
 
