@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>), Develyn Bloom
 (<develyn.bloom@ufl.edu>) -
-16 December, 2022
+27 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-16  
+Last update: 2022-12-27  
 Dataset:
 [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
@@ -802,6 +802,46 @@ extreme.ids <- scans.summary %>%
 kssl.mir <- kssl.mir %>%
   filter(!(id.scan_local_c %in% extreme.ids))
 
+# # Spectral duplicates
+# scans.duplicates <- kssl.mir %>%
+#   mutate(product = scan_mir.600_abs*scan_mir.1000_abs*scan_mir.1500_abs*
+#            scan_mir.2000_abs*scan_mir.2500_abs*scan_mir.3000_abs*
+#            scan_mir.3500_abs*scan_mir.4000_abs) %>%
+#   select(id.scan_local_c, product)
+# 
+# scans.duplicates %>%
+#   group_by(product) %>%
+#   summarise(rep = n()) %>%
+#   group_by(rep) %>%
+#   summarise(n = n())
+# 
+# spec.dupli.value <- scans.duplicates %>%
+#   group_by(product) %>%
+#   summarise(rep = n()) %>%
+#   filter(rep > 1) %>%
+#   pull(product)
+# 
+# spec.dupli.id <- scans.duplicates %>%
+#   filter(product %in% spec.dupli.value) %>%
+#   pull(id.scan_local_c)
+# 
+# kssl.mir.check <- kssl.mir %>%
+#   filter(id.scan_local_c %in% spec.dupli.id)
+# 
+# kssl.mir.check %>%
+#   select(id.scan_local_c, scan_mir.600_abs, scan_mir.1000_abs, scan_mir.1500_abs,
+#          scan_mir.2000_abs, scan_mir.2500_abs, scan_mir.3000_abs,
+#          scan_mir.3500_abs, scan_mir.4000_abs) %>%
+#   View()
+# 
+# kssl.mir.check %>%
+#   sample_n(100) %>%
+#   select(-id.layer_local_c) %>%
+#   pivot_longer(-id.scan_local_c, names_to = "wavenumber", values_to = "absorbance") %>%
+#   mutate(wavenumber = as.numeric(gsub("scan_mir.|_abs", "", wavenumber))) %>%
+#   ggplot(aes(x = wavenumber, y = absorbance, group = id.scan_local_c)) +
+#   geom_line(alpha = 0.25, size = 0.25) + theme_light()
+
 # Metadata
 metadata1 <- fread(paste0(dir.mir, "/KSSL_202207_MIR_metadata_20221003.csv"), header = TRUE) %>%
   select(sample_id, date_time_sm) %>%
@@ -883,35 +923,26 @@ kssl.visnir <- kssl.visnir %>%
   select(id.layer_local_c, id.scan_local_c, all_of(old.wavelengths)) %>%
   rename_with(~new.wavelengths, as.character(old.wavelengths))
 
-# Spectral consistency analysis
-cl = makeCluster(mc <- getOption("cl.cores", data.table::getDTthreads()))
-
 # Gaps
 scans.na.gaps <- kssl.visnir %>%
   select(-id.scan_local_c, -id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
   bind_cols({kssl.visnir %>% select(id.scan_local_c)}, .)
 
 # Extreme negative
 scans.extreme.neg <- kssl.visnir %>%
   select(-id.scan_local_c, -id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
   bind_cols({kssl.visnir %>% select(id.scan_local_c)}, .)
 
 # Extreme positive
 scans.extreme.pos <- kssl.visnir %>%
   select(-id.scan_local_c, -id.layer_local_c) %>%
-  parallel::parRapply(cl, ., function(x) {
-    round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)
-  }) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_higherRef1 = .) %>%
   bind_cols({kssl.visnir %>% select(id.scan_local_c)}, .)
-
-stopCluster(cl)
 
 # Consistency summary
 scans.summary <- scans.na.gaps %>%
@@ -942,7 +973,7 @@ kssl.visnir.metadata <- visnir.scans %>%
          scan.visnir.date.end_iso.8601_yyyy.mm.dd = scan.visnir.date.begin_iso.8601_yyyy.mm.dd) %>%
   mutate(scan.visnir.model.name_utf8_txt = "ASD Labspec 2500",
          scan.visnir.model.code_any_txt = "ASD_Labspec_2500",
-         scan.visnir.method.optics_any_txt = "ASD MugLite",
+         scan.visnir.method.optics_any_txt = "ASD MugLight",
          scan.visnir.method.preparation_any_txt = "Sieved <2 mm",
          scan.visnir.license.title_ascii_txt = "CC-BY",
          scan.visnir.license.address_idn_url = "https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca",
@@ -1192,7 +1223,7 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 236.653 sec elapsed
+    ## 192.357 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1200,8 +1231,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2621830 140.1   15686478  837.8   19608097 1047.2
-    ## Vcells 35783784 273.1  962180265 7340.9 1002204418 7646.3
+    ## Ncells  2619514 139.9   15686337  837.8   19607921 1047.2
+    ## Vcells 35779066 273.0  962181220 7340.9 1002205219 7646.3
 
 ## References
 
