@@ -64,6 +64,7 @@ tic()
 
 ## OSSL level 0
 
+### Binding files
 Listing, reading and row binding `qs` files
 ```{r qs, include=TRUE, echo=TRUE, eval=TRUE}
 qs.files <- dir_ls(dir, recurse = T, regexp = glob2rx("*v1.2.qs"))
@@ -97,7 +98,9 @@ ossl.soillab <- map_dfr(.x = qs.soillab,
                        .f = qread,
                        .id = "file_sequence") %>%
   left_join(qs.soillab.ids, by = "file_sequence") %>%
-  relocate(code, .before = 1)
+  relocate(code, .before = 1) %>%
+  select(order(colnames(.))) %>%
+  select(code, file_sequence, id.layer_local_c, everything())
 
 ossl.soillab %>%
   glimpse()
@@ -130,6 +133,7 @@ ossl.mir %>%
 ### Joining files
 ```{r join, include=TRUE, echo=TRUE, eval=TRUE}
 # First full joining mir and visnir as some observations might not have both spectra types
+# NOTE: this requires the use of na filters when modeling to check availability of soil and spectra type
 ossl.spectra <- full_join(ossl.mir, ossl.visnir, by = "id.layer_local_c")
 
 ossl.spectra %>%
@@ -358,7 +362,9 @@ avoid.soillab.columns <- c("code", "file_sequence", "id.layer_local_c",
 selected.soillab.columns <- names(ossl.soillab)[!(names(ossl.soillab) %in% avoid.soillab.columns)]
 
 level0.soillab <- ossl.level0.export %>%
-  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.soillab.columns))
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, all_of(selected.soillab.columns)) %>%
+  select(order(colnames(.))) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, everything())
 
 qs::qsave(level0.soillab, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L0_v1.2.qs", preset = "high")
 
@@ -677,7 +683,9 @@ NOTE: The code chunk below this paragraph is hidden. Run once for downloading th
 <!-- readr::write_csv(ossl.soillab.harmonization, "../out/ossl_level0_to_level1_soillab_harmonization.csv") -->
 <!-- ``` -->
 
-Producing level 1 (L1) as a regression matrix for fitting models
+### Producing level 1
+
+This can be used as a regression matrix for fitting prediction models
 ```{r level1, include=TRUE, echo=TRUE, eval=TRUE}
 ## Reading harmonization rules
 ossl.soillab.level1.transvalues <- read_csv("../out/ossl_level0_to_level1_soillab_harmonization.csv")
@@ -739,6 +747,13 @@ level1.soillab.export <- level1.soillab.renamed %>%
   group_by(dataset.code_ascii_txt, id.layer_uuid_txt, ossl_name_level1) %>%
   summarise(new_values = first(values), .groups = "drop") %>%
   pivot_wider(names_from = "ossl_name_level1", values_from = "new_values")
+
+# Mutating data types
+level1.soillab.export <- level1.soillab.export %>%
+  mutate_at(vars(-all_of(c("dataset.code_ascii_txt", "id.layer_uuid_txt", "efferv_usda.a479_class"))),
+            as.numeric) %>%
+  select(order(colnames(.))) %>%
+  select(dataset.code_ascii_txt, id.layer_uuid_txt, everything())
 
 ## Saving to disk
 qs::qsave(level1.soillab.export, "/mnt/soilspec4gg/ossl/ossl_import/ossl_soillab_L1_v1.2.qs", preset = "high")
@@ -820,4 +835,4 @@ gc()
 
 ## References
 
-This data processing and analysis follow the principles of `tidyverse` (@package_tidyverse) while taking advantage of several other amazing packages, such as `tictoc` (@package_tictoc), `data.table` (@package_datatable), `lubridate` (@package_lubridate), `fs` (@package_fs), `qs` (@package_qs), `openssl` (@package_openssl), `olctools` (@package_olctools), `sf` (@package_sf), and `terra` (@package_terra).
+This data processing follows the principles of `tidyverse` (@package_tidyverse) and takes advantage of several amazing packages, such as `tictoc` (@package_tictoc), `data.table` (@package_datatable), `lubridate` (@package_lubridate), `fs` (@package_fs), `qs` (@package_qs), `openssl` (@package_openssl), `olctools` (@package_olctools), `sf` (@package_sf), and `terra` (@package_terra).
