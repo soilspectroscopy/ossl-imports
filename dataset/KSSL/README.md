@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>), Develyn Bloom
 (<develyn.bloom@ufl.edu>) -
-27 December, 2022
+28 December, 2022
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-27  
+Last update: 2022-12-28  
 Dataset:
 [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
@@ -701,6 +701,7 @@ preparation. We will focus only on XS and XN prep scans.
 
 ``` r
 dir.mir <- paste0(dir.files, "/KSSL_MIR_export")
+dir.db <- paste0(dir.files, "/All_Spectra_Access_Portable_20220712")
 
 # Already formatted to 600-4000 cm-1, with 2 cm-1 interval
 mir.scans <- fread(paste0(dir.mir, "/KSSL_202207_MIR_spectra_all_avg.csv"), header = TRUE)
@@ -790,7 +791,7 @@ scans.summary %>%
     ##   check                 count
     ##   <chr>                 <int>
     ## 1 proportion_higherAbs5    31
-    ## 2 proportion_lower0        33
+    ## 2 proportion_lower0        34
 
 ``` r
 # These few scans with extreme values are removed - getting ids
@@ -802,45 +803,41 @@ extreme.ids <- scans.summary %>%
 kssl.mir <- kssl.mir %>%
   filter(!(id.scan_local_c %in% extreme.ids))
 
-# # Spectral duplicates
-# scans.duplicates <- kssl.mir %>%
-#   mutate(product = scan_mir.600_abs*scan_mir.1000_abs*scan_mir.1500_abs*
-#            scan_mir.2000_abs*scan_mir.2500_abs*scan_mir.3000_abs*
-#            scan_mir.3500_abs*scan_mir.4000_abs) %>%
-#   select(id.scan_local_c, product)
-# 
-# scans.duplicates %>%
-#   group_by(product) %>%
-#   summarise(rep = n()) %>%
-#   group_by(rep) %>%
-#   summarise(n = n())
-# 
-# spec.dupli.value <- scans.duplicates %>%
-#   group_by(product) %>%
-#   summarise(rep = n()) %>%
-#   filter(rep > 1) %>%
-#   pull(product)
-# 
-# spec.dupli.id <- scans.duplicates %>%
-#   filter(product %in% spec.dupli.value) %>%
-#   pull(id.scan_local_c)
-# 
-# kssl.mir.check <- kssl.mir %>%
-#   filter(id.scan_local_c %in% spec.dupli.id)
-# 
-# kssl.mir.check %>%
-#   select(id.scan_local_c, scan_mir.600_abs, scan_mir.1000_abs, scan_mir.1500_abs,
-#          scan_mir.2000_abs, scan_mir.2500_abs, scan_mir.3000_abs,
-#          scan_mir.3500_abs, scan_mir.4000_abs) %>%
-#   View()
-# 
-# kssl.mir.check %>%
-#   sample_n(100) %>%
-#   select(-id.layer_local_c) %>%
-#   pivot_longer(-id.scan_local_c, names_to = "wavenumber", values_to = "absorbance") %>%
-#   mutate(wavenumber = as.numeric(gsub("scan_mir.|_abs", "", wavenumber))) %>%
-#   ggplot(aes(x = wavenumber, y = absorbance, group = id.scan_local_c)) +
-#   geom_line(alpha = 0.25, size = 0.25) + theme_light()
+# Spectral duplicates, i.e., same spectra but different id
+sum.columns <- as.character(seq(600, 4000, by = 50))
+
+scans.duplicates <- kssl.mir %>%
+  select(-id.scan_local_c, -id.layer_local_c, contains(sum.columns)) %>%
+  apply(., 1, function(x) {sum(x, na.rm = T)}) %>%
+  tibble(sum = .) %>%
+  bind_cols({kssl.mir %>% select(id.scan_local_c)}, .)
+
+scans.duplicates %>%
+  group_by(sum) %>%
+  summarise(repeats = n()) %>%
+  group_by(repeats) %>%
+  summarise(n_spectra = n())
+```
+
+    ## # A tibble: 2 × 2
+    ##   repeats n_spectra
+    ##     <int>     <int>
+    ## 1       1     82745
+    ## 2       2        58
+
+``` r
+spec.dupli.value <- scans.duplicates %>%
+  group_by(sum) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(sum)
+
+spec.dupli.id <- scans.duplicates %>%
+  filter(sum %in% spec.dupli.value) %>%
+  pull(id.scan_local_c)
+
+kssl.mir <- kssl.mir %>%
+  filter(!(id.scan_local_c %in% spec.dupli.id))
 
 # Metadata
 metadata1 <- fread(paste0(dir.mir, "/KSSL_202207_MIR_metadata_20221003.csv"), header = TRUE) %>%
@@ -1034,12 +1031,12 @@ kssl.availability %>%
     ## # A tibble: 6 × 2
     ##   column                    count
     ##   <chr>                     <int>
-    ## 1 c.tot_usda.a622_w.pct     86636
-    ## 2 id.layer_local_c          92624
-    ## 3 id.scan_local_c           92624
-    ## 4 layer.upper.depth_usda_cm 92183
-    ## 5 scan_mir.600_abs          82840
-    ## 6 scan_visnir.350_ref       19829
+    ## 1 c.tot_usda.a622_w.pct     86532
+    ## 2 id.layer_local_c          92512
+    ## 3 id.scan_local_c           92512
+    ## 4 layer.upper.depth_usda_cm 92071
+    ## 5 scan_mir.600_abs          82723
+    ## 6 scan_visnir.350_ref       19807
 
 ``` r
 # Repeats check - There are 60 samples duplicated due to different MIR preparations
@@ -1057,9 +1054,9 @@ kssl.availability %>%
     ## # Groups:   column [2]
     ##   column           repeats count
     ##   <chr>              <int> <int>
-    ## 1 id.layer_local_c       1 92504
-    ## 2 id.layer_local_c       2    60
-    ## 3 id.scan_local_c        1 92624
+    ## 1 id.layer_local_c       1 92436
+    ## 2 id.layer_local_c       2    38
+    ## 3 id.scan_local_c        1 92512
 
 This summary shows that, at total, about 92k observations are available.
 Some rows have both MIR and VisNIR scans, many not. As we have repeats
@@ -1223,16 +1220,16 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 192.357 sec elapsed
+    ## 197.208 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-    ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2619514 139.9   15686337  837.8   19607921 1047.2
-    ## Vcells 35779066 273.0  962181220 7340.9 1002205219 7646.3
+    ##            used (Mb) gc trigger   (Mb)   max used   (Mb)
+    ## Ncells  2619664  140   15686490  837.8   19608112 1047.2
+    ## Vcells 35781256  273  801767152 6117.0 1002208640 7646.3
 
 ## References
 

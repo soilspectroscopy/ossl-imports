@@ -613,6 +613,7 @@ qs::qsave(kssl.soildata, soillab.qs, preset = "high")
 Reading the MIR scans. The same sample/layer can have multiple preparation. We will focus only on XS and XN prep scans.
 ```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
 dir.mir <- paste0(dir.files, "/KSSL_MIR_export")
+dir.db <- paste0(dir.files, "/All_Spectra_Access_Portable_20220712")
 
 # Already formatted to 600-4000 cm-1, with 2 cm-1 interval
 mir.scans <- fread(paste0(dir.mir, "/KSSL_202207_MIR_spectra_all_avg.csv"), header = TRUE)
@@ -706,45 +707,33 @@ extreme.ids <- scans.summary %>%
 kssl.mir <- kssl.mir %>%
   filter(!(id.scan_local_c %in% extreme.ids))
 
-# # Spectral duplicates
-# scans.duplicates <- kssl.mir %>%
-#   mutate(product = scan_mir.600_abs*scan_mir.1000_abs*scan_mir.1500_abs*
-#            scan_mir.2000_abs*scan_mir.2500_abs*scan_mir.3000_abs*
-#            scan_mir.3500_abs*scan_mir.4000_abs) %>%
-#   select(id.scan_local_c, product)
-# 
-# scans.duplicates %>%
-#   group_by(product) %>%
-#   summarise(rep = n()) %>%
-#   group_by(rep) %>%
-#   summarise(n = n())
-# 
-# spec.dupli.value <- scans.duplicates %>%
-#   group_by(product) %>%
-#   summarise(rep = n()) %>%
-#   filter(rep > 1) %>%
-#   pull(product)
-# 
-# spec.dupli.id <- scans.duplicates %>%
-#   filter(product %in% spec.dupli.value) %>%
-#   pull(id.scan_local_c)
-# 
-# kssl.mir.check <- kssl.mir %>%
-#   filter(id.scan_local_c %in% spec.dupli.id)
-# 
-# kssl.mir.check %>%
-#   select(id.scan_local_c, scan_mir.600_abs, scan_mir.1000_abs, scan_mir.1500_abs,
-#          scan_mir.2000_abs, scan_mir.2500_abs, scan_mir.3000_abs,
-#          scan_mir.3500_abs, scan_mir.4000_abs) %>%
-#   View()
-# 
-# kssl.mir.check %>%
-#   sample_n(100) %>%
-#   select(-id.layer_local_c) %>%
-#   pivot_longer(-id.scan_local_c, names_to = "wavenumber", values_to = "absorbance") %>%
-#   mutate(wavenumber = as.numeric(gsub("scan_mir.|_abs", "", wavenumber))) %>%
-#   ggplot(aes(x = wavenumber, y = absorbance, group = id.scan_local_c)) +
-#   geom_line(alpha = 0.25, size = 0.25) + theme_light()
+# Spectral duplicates, i.e., same spectra but different id
+sum.columns <- as.character(seq(600, 4000, by = 50))
+
+scans.duplicates <- kssl.mir %>%
+  select(-id.scan_local_c, -id.layer_local_c, contains(sum.columns)) %>%
+  apply(., 1, function(x) {sum(x, na.rm = T)}) %>%
+  tibble(sum = .) %>%
+  bind_cols({kssl.mir %>% select(id.scan_local_c)}, .)
+
+scans.duplicates %>%
+  group_by(sum) %>%
+  summarise(repeats = n()) %>%
+  group_by(repeats) %>%
+  summarise(n_spectra = n())
+
+spec.dupli.value <- scans.duplicates %>%
+  group_by(sum) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(sum)
+
+spec.dupli.id <- scans.duplicates %>%
+  filter(sum %in% spec.dupli.value) %>%
+  pull(id.scan_local_c)
+
+kssl.mir <- kssl.mir %>%
+  filter(!(id.scan_local_c %in% spec.dupli.id))
 
 # Metadata
 metadata1 <- fread(paste0(dir.mir, "/KSSL_202207_MIR_metadata_20221003.csv"), header = TRUE) %>%
