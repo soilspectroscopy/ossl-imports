@@ -180,7 +180,6 @@ ossl.mir.prep <- ossl.mir %>%
   as_tibble()
 
 ## Train and test spectra
-
 ossl.mir.prep %>%
   distinct(code)
 
@@ -248,12 +247,15 @@ mir.pca.scores.test <- bake(mir.pca.model, new_data = mir.test.spectra) %>%
   bind_cols({mir.test.spectra %>%
       select(all_of(id.columns))}, .)
 
+# Colors according to codes. KSSL must be black
+unique(ossl.mir$code)
+
 p.mir.scores.projected.pc1.pc2 <- p.mir.scores.pc1.pc2 +
   geom_point(data = mir.pca.scores.test,
              aes(x = PC1, y = PC2, color = code), size = 0.50, alpha = 0.25) +
   scale_color_manual(values = c("salmon", "orange", "red",
                                 "blue", "yellow", "black",
-                                "green", "purple")) +
+                                "green", "purple", "lightblue")) +
   xlim(-100,100) + ylim(-100,100) +
   labs(x = paste0("PC1 (", mir.pca.xve[1], "%)"),
        y = paste0("PC2 (", mir.pca.xve[2], "%)")) +
@@ -265,6 +267,10 @@ p.mir.scores.projected.pc1.pc2
 ggsave(paste0(dir.figures, paste0("plot_pca_scores_mir_ossl.png")),
        p.mir.scores.projected.pc1.pc2, dpi = 300, width = 8, height = 6,
        units = "in", scale = 0.75)
+
+# ## Inspect
+# library(plotly)
+# ggplotly(p.mir.scores.projected.pc1.pc2)
 
 ###################
 ##### Summary #####
@@ -279,5 +285,7 @@ summary <- ossl.mir %>%
       summarise(visnir_count = n())
   }, by = "code") %>%
   rename(dataset = code)
+
+summary
 
 write_csv(summary, paste0(dir.output, paste0("tab_dataset_count.csv")))

@@ -1,0 +1,9 @@
+table,original_name,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+SSSL.xlsx,silt_perc,silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct
+SSSL.xlsx,clay_perc,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct
+SSSL.xlsx,sand_perc,sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct
+SSSL.xlsx,carbon_tot_gkg,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",c.tot_usda.a622_w.pct
+SSSL.xlsx,carbon_org_gkg,oc,usda.c729,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",oc_usda.c729_w.pct
+SSSL.xlsx,ph,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+SSSL.xlsx,nitrogen_tot_gkg,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_usda.a623_w.pct
+SSSL.xlsx,caco3_gkg,caco3,usda.a54,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_usda.a54_w.pct

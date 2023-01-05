@@ -3,7 +3,7 @@ Binding all datasets
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-28 December, 2022
+05 January, 2023
 
 
 
@@ -17,6 +17,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
         covariates](#overlay-with-spatial-covariates)
 -   [OSSL level 1](#ossl-level-1)
     -   [Getting OSSL level 0 names](#getting-ossl-level-0-names)
+    -   [Producing level 1](#producing-level-1)
 -   [Golden subset](#golden-subset)
     -   [Map visualization](#map-visualization)
 -   [References](#references)
@@ -34,7 +35,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-28
+Last update: 2023-01-05
 
 All the external SSLs were prepared and harmonized to the OSSL naming
 conventions as described in the `README` files present in each specific
@@ -98,16 +99,16 @@ ossl.soilsite <- map_dfr(.x = qs.soilsite,
                            mutate_all(as.character)},
                        .id = "file_sequence") %>%
   left_join(qs.soilsite.ids, by = "file_sequence") %>%
-  relocate(code, .before = 1)
+  relocate(code, .before = 1) %>%
+  select(-file_sequence)
 
 ossl.soilsite %>%
   glimpse()
 ```
 
-    ## Rows: 158,555
-    ## Columns: 35
+    ## Rows: 158,690
+    ## Columns: 34
     ## $ code                                       <chr> "AFSIS", "AFSIS", "AFSIS", …
-    ## $ file_sequence                              <chr> "1", "1", "1", "1", "1", "1…
     ## $ id.layer_local_c                           <chr> "icr025136", "icr068579", "…
     ## $ longitude.point_wgs84_dd                   <chr> "34.24331284", "8.166768333…
     ## $ latitude.point_wgs84_dd                    <chr> "-6.8516202", "11.28065833"…
@@ -150,16 +151,15 @@ ossl.soillab <- map_dfr(.x = qs.soillab,
   left_join(qs.soillab.ids, by = "file_sequence") %>%
   relocate(code, .before = 1) %>%
   select(order(colnames(.))) %>%
-  select(code, file_sequence, id.layer_local_c, everything())
+  select(code, id.layer_local_c, everything())
 
 ossl.soillab %>%
   glimpse()
 ```
 
-    ## Rows: 151,187
+    ## Rows: 151,322
     ## Columns: 81
     ## $ code                           <chr> "AFSIS", "AFSIS", "AFSIS", "AFSIS", "AF…
-    ## $ file_sequence                  <chr> "1", "1", "1", "1", "1", "1", "1", "1",…
     ## $ id.layer_local_c               <chr> "icr074433", "icr075957", "icr074336", …
     ## $ acidity_usda.a795_cmolc.kg     <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ aggstb_usda.a1_w.pct           <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
@@ -194,6 +194,7 @@ ossl.soillab %>%
     ## $ fe.ext_aquaregia_g.kg          <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ fe.ext_usda.a1064_mg.kg        <dbl> 51.00, 92.50, 36.20, 87.73, 119.00, 179…
     ## $ fe.ox_usda.a60_w.pct           <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+    ## $ file_sequence                  <chr> "1", "1", "1", "1", "1", "1", "1", "1",…
     ## $ k.ext_aquaregia_mg.kg          <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
     ## $ k.ext_usda.a1065_mg.kg         <dbl> 178.000, 114.000, 387.000, 88.712, 29.8…
     ## $ k.ext_usda.a725_cmolc.kg       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
@@ -247,7 +248,8 @@ ossl.visnir <- map_dfr(.x = qs.visnir,
                        .id = "file_sequence") %>%
   left_join(qs.visnir.ids, by = "file_sequence") %>%
   relocate(contains("_ref"), .after = last_col()) %>%
-  relocate(code, .before = 1)
+  relocate(code, .before = 1) %>%
+  select(-file_sequence)
 
 ossl.visnir %>%
   select(!contains("_ref"), scan_visnir.1000_ref) %>%
@@ -255,9 +257,8 @@ ossl.visnir %>%
 ```
 
     ## Rows: 65,063
-    ## Columns: 16
+    ## Columns: 15
     ## $ code                                       <chr> "ICRAF_ISRIC", "ICRAF_ISRIC…
-    ## $ file_sequence                              <chr> "1", "1", "1", "1", "1", "1…
     ## $ id.layer_local_c                           <chr> "FS15R_FS4068", "FS15R_FS40…
     ## $ id.scan_local_c                            <chr> "FS15R_FS4068", "FS15R_FS40…
     ## $ scan.visnir.date.begin_iso.8601_yyyy.mm.dd <date> 2004-02-01, 2004-02-01, 20…
@@ -280,17 +281,17 @@ ossl.mir <- map_dfr(.x = qs.mir,
                        .id = "file_sequence") %>%
   left_join(qs.mir.ids, by = "file_sequence") %>%
   relocate(contains("_abs"), .after = last_col()) %>%
-  relocate(code, .before = 1)
+  relocate(code, .before = 1) %>%
+  select(-file_sequence)
 
 ossl.mir %>%
   select(!contains("_abs"), scan_mir.1000_abs) %>%
   glimpse()
 ```
 
-    ## Rows: 91,575
-    ## Columns: 17
+    ## Rows: 91,710
+    ## Columns: 16
     ## $ code                                    <chr> "AFSIS", "AFSIS", "AFSIS", "AF…
-    ## $ file_sequence                           <chr> "1", "1", "1", "1", "1", "1", …
     ## $ id.layer_local_c                        <chr> "icr072246", "icr072247", "icr…
     ## $ id.scan_local_c                         <chr> "icr072246", "icr072247", "icr…
     ## $ scan.mir.date.begin_iso.8601_yyyy.mm.dd <date> 2009-01-01, 2009-01-01, 2009-…
@@ -312,26 +313,21 @@ ossl.mir %>%
 ``` r
 # First full joining mir and visnir as some observations might not have both spectra types
 # NOTE: this requires the use of na filters when modeling to check availability of soil and spectra type
-ossl.spectra <- full_join(ossl.mir, ossl.visnir, by = "id.layer_local_c")
+ossl.spectra <- full_join(ossl.mir, ossl.visnir, by = c("code", "id.layer_local_c"))
 
 ossl.spectra %>%
   select(ends_with(".x")) %>%
   names()
 ```
 
-    ## [1] "code.x"            "file_sequence.x"   "id.scan_local_c.x"
+    ## [1] "id.scan_local_c.x"
 
 ``` r
 # Coalescing repeated columns, especially because we have LUCAS.WOODWELL MIR
 ossl.spectra <- ossl.spectra %>%
   mutate(id.scan_local_c = coalesce(id.scan_local_c.x, id.scan_local_c.y, NA),
          .after = id.scan_local_c.x) %>%
-  mutate(code = coalesce(code.x, code.y, NA),
-         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
-         .after = code.x) %>%
-  select(-id.scan_local_c.x, -id.scan_local_c.y,
-         -code.x, -code.y,
-         -file_sequence.x, -file_sequence.y)
+  select(-id.scan_local_c.x, -id.scan_local_c.y)
 
 ossl.spectra %>%
   select(ends_with(".x")) %>%
@@ -344,15 +340,14 @@ ossl.spectra %>%
 # View(ossl.spectra %>% select(!contains("_ref|_abs")))
 
 # Left joining site to soil info, as some site does not have lab data
-ossl.info <- left_join(ossl.soillab, ossl.soilsite, by = "id.layer_local_c")
+ossl.info <- left_join(ossl.soillab, ossl.soilsite, by = c("code", "id.layer_local_c"))
 
 ossl.info %>%
   select(ends_with(".x")) %>%
   names()
 ```
 
-    ## [1] "code.x"                      "file_sequence.x"            
-    ## [3] "layer.lower.depth_usda_cm.x" "layer.upper.depth_usda_cm.x"
+    ## [1] "layer.lower.depth_usda_cm.x" "layer.upper.depth_usda_cm.x"
 
 ``` r
 # Coalescing repeated columns, especially because some depth info was available from soillab data, not site
@@ -361,13 +356,8 @@ ossl.info <- ossl.info %>%
   mutate(layer.upper.depth_usda_cm = coalesce(layer.upper.depth_usda_cm.x, layer.upper.depth_usda_cm.y, NA),
          layer.lower.depth_usda_cm = coalesce(layer.lower.depth_usda_cm.x, layer.lower.depth_usda_cm.y, NA),
          .after = layer.lower.depth_usda_cm.x) %>%
-  mutate(code = coalesce(code.x, code.y, NA),
-         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
-         .after = code.x) %>%
   select(-layer.upper.depth_usda_cm.x, -layer.upper.depth_usda_cm.y,
-         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y,
-         -code.x, -code.y,
-         -file_sequence.x, -file_sequence.y) %>%
+         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y) %>%
   mutate_all(list(~na_if(.,"")))
 
 ossl.info %>%
@@ -380,27 +370,21 @@ ossl.info %>%
 ``` r
 # Producing level 0 by left joining site and soil data to spectra data
 ossl.level0 <- ossl.spectra %>%
-  left_join(ossl.info, by = "id.layer_local_c")
+  left_join(ossl.info, by = c("code", "id.layer_local_c"))
 
 ossl.level0 %>%
   select(ends_with(".x")) %>%
   names()
 ```
 
-    ## [1] "code.x"                   "file_sequence.x"         
-    ## [3] "dataset.code_ascii_txt.x"
+    ## [1] "dataset.code_ascii_txt.x"
 
 ``` r
 # Coalescing repeated columns, especially because we have LUCAS.WOODWELL code
 ossl.level0 <- ossl.level0 %>%
   mutate(dataset.code_ascii_txt = coalesce(dataset.code_ascii_txt.x, dataset.code_ascii_txt.y, NA),
          .after = dataset.code_ascii_txt.x) %>%
-  mutate(code = coalesce(code.x, code.y, NA),
-         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
-         .after = code.x) %>%
-  select(-dataset.code_ascii_txt.x, -dataset.code_ascii_txt.y,
-         -code.x, -code.y,
-         -file_sequence.x, -file_sequence.y)
+  select(-dataset.code_ascii_txt.x, -dataset.code_ascii_txt.y)
 
 ossl.level0 %>%
   select(ends_with(".x")) %>%
@@ -437,10 +421,10 @@ ossl.level0.export <- ossl.level0 %>%
 # We will drop them
 soil.na <- ossl.level0.export %>%
   select(all_of(names(ossl.soillab))) %>%
-  select(-code, -file_sequence, - id.layer_local_c) %>%
+  select(-code, -id.layer_local_c) %>%
   apply(., 1, function(x) sum(is.na(x))/length(x)) %>%
   tibble(proportion_NA = .) %>%
-  bind_cols({ossl.level0.export %>% select(code, file_sequence, id.layer_local_c)}, .)
+  bind_cols({ossl.level0.export %>% select(code, id.layer_local_c)}, .)
 
 soil.na %>%
   filter(proportion_NA == 1) %>%
@@ -514,7 +498,7 @@ ossl.level0.export %>%
     ## # A tibble: 1 × 2
     ##   incomplete_location      n
     ##   <lgl>                <int>
-    ## 1 FALSE               135556
+    ## 1 FALSE               135725
 
 ``` r
 # Checking for missing spatial locations
@@ -526,7 +510,7 @@ ossl.level0.export %>%
     ## # A tibble: 2 × 2
     ##   missing_location     n
     ##   <lgl>            <int>
-    ## 1 FALSE            87565
+    ## 1 FALSE            87734
     ## 2 TRUE             47991
 
 ``` r
@@ -537,7 +521,7 @@ ossl.level0.export <- ossl.level0.export %>%
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10)) %>%
   mutate(id.layer_uuid_txt = as.character(id.layer_uuid_txt),
          id.location_olc_txt = as.character(id.location_olc_txt)) %>%
-  select(-code, -file_sequence) %>%
+  select(-code) %>%
   relocate(id.layer_uuid_txt, .after = id.layer_local_c)
 
 # # Checking
@@ -554,22 +538,23 @@ ossl.level0.export %>%
   mutate(perc_dataset = round(n/sum(n)*100, 2))
 ```
 
-    ## # A tibble: 12 × 5
-    ## # Groups:   dataset.code_ascii_txt [9]
+    ## # A tibble: 13 × 5
+    ## # Groups:   dataset.code_ascii_txt [10]
     ##    dataset.code_ascii_txt available_mir available_visnir     n perc_dataset
     ##    <chr>                  <lgl>         <lgl>            <int>        <dbl>
     ##  1 AFSIS1.SSL             TRUE          FALSE             1904       100   
     ##  2 AFSIS2.SSL             TRUE          FALSE              151       100   
-    ##  3 CAF.SSL                TRUE          FALSE             1561       100   
+    ##  3 CAF.SSL                TRUE          FALSE             1578       100   
     ##  4 GARRETT.SSL            TRUE          FALSE              184       100   
     ##  5 ICRAF.ISRIC            FALSE         TRUE                 2         0.05
     ##  6 ICRAF.ISRIC            TRUE          TRUE              4071       100.  
     ##  7 KSSL.SSL               FALSE         TRUE              9789        11.3 
-    ##  8 KSSL.SSL               TRUE          FALSE            66853        77.1 
+    ##  8 KSSL.SSL               TRUE          FALSE            66870        77.2 
     ##  9 KSSL.SSL               TRUE          TRUE             10018        11.6 
     ## 10 LUCAS.SSL              FALSE         TRUE             40175       100   
     ## 11 LUCAS.WOODWELL.SSL     TRUE          TRUE               589       100   
-    ## 12 SCHIEDUNG.SSL          TRUE          FALSE              259       100
+    ## 12 SCHIEDUNG.SSL          TRUE          FALSE              259       100   
+    ## 13 SERBIA.SSL             TRUE          FALSE              135       100
 
 ``` r
 # Final spatial counts
@@ -580,22 +565,23 @@ ossl.level0.export %>%
   mutate(perc_dataset = round(n/sum(n)*100, 2))
 ```
 
-    ## # A tibble: 12 × 4
-    ## # Groups:   dataset.code_ascii_txt [9]
+    ## # A tibble: 13 × 4
+    ## # Groups:   dataset.code_ascii_txt [10]
     ##    dataset.code_ascii_txt missing_location     n perc_dataset
     ##    <chr>                  <lgl>            <int>        <dbl>
     ##  1 AFSIS1.SSL             FALSE             1838        96.5 
     ##  2 AFSIS1.SSL             TRUE                66         3.47
     ##  3 AFSIS2.SSL             TRUE               151       100   
-    ##  4 CAF.SSL                FALSE             1561       100   
+    ##  4 CAF.SSL                FALSE             1578       100   
     ##  5 GARRETT.SSL            FALSE              184       100   
     ##  6 ICRAF.ISRIC            FALSE             4013        98.5 
     ##  7 ICRAF.ISRIC            TRUE                60         1.47
-    ##  8 KSSL.SSL               FALSE            38946        44.9 
-    ##  9 KSSL.SSL               TRUE             47714        55.1 
+    ##  8 KSSL.SSL               FALSE            38963        45.0 
+    ##  9 KSSL.SSL               TRUE             47714        55.0 
     ## 10 LUCAS.SSL              FALSE            40175       100   
     ## 11 LUCAS.WOODWELL.SSL     FALSE              589       100   
-    ## 12 SCHIEDUNG.SSL          FALSE              259       100
+    ## 12 SCHIEDUNG.SSL          FALSE              259       100   
+    ## 13 SERBIA.SSL             FALSE              135       100
 
 ### Saving files
 
@@ -706,7 +692,7 @@ st_write(ossl.points, "../out/ossl_locations.gpkg", append = FALSE)
 
     ## Writing layer `ossl_locations' to data source 
     ##   `../out/ossl_locations.gpkg' using driver `GPKG'
-    ## Writing 87565 features with 2 fields and geometry type Point.
+    ## Writing 87734 features with 2 fields and geometry type Point.
 
 VisNIR locations
 <img src="../img/visnir.pnts_sites.png" heigth=100% width=100%>
@@ -941,7 +927,9 @@ chunks.
 <!-- readr::write_csv(ossl.soillab.harmonization, "../out/ossl_level0_to_level1_soillab_harmonization.csv") -->
 <!-- ``` -->
 
-Producing level 1 (L1) as a regression matrix for fitting models
+### Producing level 1
+
+This can be used as a regression matrix for fitting prediction models
 
 ``` r
 ## Reading harmonization rules
@@ -1183,7 +1171,7 @@ Golden subset locations
 toc()
 ```
 
-    ## 259.115 sec elapsed
+    ## 261.229 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1191,8 +1179,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells 3658645 195.4   11291639   603.1   17643184   942.3
-    ## Vcells 7022638  53.6 2882679460 21993.1 3002720155 22909.0
+    ## Ncells 3658631 195.4   13696239   731.5   17120298   914.4
+    ## Vcells 7022626  53.6 2881102557 21981.1 3001081830 22896.5
 
 ## References
 

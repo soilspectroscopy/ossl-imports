@@ -71,9 +71,11 @@ The OSSL includes the USDA NRCS NCSS-KSSL MIR & VNIR libraries (labeled
 (labeled [AFIS1](dataset/AFIS1) & [AFSIS2](dataset/AFSIS2)), ESDAC LUCAS
 VNIR library (labeled [LUCAS](dataset/LUCAS)), ETH Congo Basin MIR
 library (labeled [CASSL](dataset/CASSL)), the Scion Research NZ MIR
-library (labeled [Garrett](dataset/Garrett)), and the University of
-Zurich permafrost MIR library (labeled [Schiedung)](dataset/Schiedung)).
-The KSSL database represents a snapshot from July 2022.
+library (labeled [Garrett](dataset/Garrett)), the University of Zurich
+permafrost MIR library (labeled [Schiedung](dataset/Schiedung)), and the
+Serbian SSL from University of Novi Sad (labeled
+[Serbia](dataset/Serbia)). The KSSL database represents a snapshot from
+July 2022.
 
 -   Spectral diversity  
     <img src="img/plot_pca_scores_mir_ossl.png" heigth=100% width=100%>
@@ -84,15 +86,12 @@ The KSSL database represents a snapshot from July 2022.
 -   VisNIR locations  
     <img src="img/visnir.pnts_sites.png" heigth=100% width=100%>
 
-To load the complete analysis-ready dataset (486MB) as a single table in
-R and run predictive modeling please use:
+To load the complete analysis-ready dataset as a single table in R and
+run predictive modeling please use:
 
     rm.ossl = readRDS(url("http://s3.us-east-1.wasabisys.com/soilspectroscopy/ossl_import/rm.ossl_v1.rds", "rb"))
     dim(rm.ossl)
     ## 152,146 obs. of 2962 variables
-
-The compilation currently contains training MIR (70k) and VisNIR (70k)
-spectral scans + soil calibration data (51,732 unique locations).
 
 ### Other tools and repositories
 

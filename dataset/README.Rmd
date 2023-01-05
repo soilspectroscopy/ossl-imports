@@ -88,7 +88,8 @@ ossl.soilsite <- map_dfr(.x = qs.soilsite,
                            mutate_all(as.character)},
                        .id = "file_sequence") %>%
   left_join(qs.soilsite.ids, by = "file_sequence") %>%
-  relocate(code, .before = 1)
+  relocate(code, .before = 1) %>%
+  select(-file_sequence)
 
 ossl.soilsite %>%
   glimpse()
@@ -100,7 +101,7 @@ ossl.soillab <- map_dfr(.x = qs.soillab,
   left_join(qs.soillab.ids, by = "file_sequence") %>%
   relocate(code, .before = 1) %>%
   select(order(colnames(.))) %>%
-  select(code, file_sequence, id.layer_local_c, everything())
+  select(code, id.layer_local_c, everything())
 
 ossl.soillab %>%
   glimpse()
@@ -111,7 +112,8 @@ ossl.visnir <- map_dfr(.x = qs.visnir,
                        .id = "file_sequence") %>%
   left_join(qs.visnir.ids, by = "file_sequence") %>%
   relocate(contains("_ref"), .after = last_col()) %>%
-  relocate(code, .before = 1)
+  relocate(code, .before = 1) %>%
+  select(-file_sequence)
 
 ossl.visnir %>%
   select(!contains("_ref"), scan_visnir.1000_ref) %>%
@@ -123,7 +125,8 @@ ossl.mir <- map_dfr(.x = qs.mir,
                        .id = "file_sequence") %>%
   left_join(qs.mir.ids, by = "file_sequence") %>%
   relocate(contains("_abs"), .after = last_col()) %>%
-  relocate(code, .before = 1)
+  relocate(code, .before = 1) %>%
+  select(-file_sequence)
 
 ossl.mir %>%
   select(!contains("_abs"), scan_mir.1000_abs) %>%
@@ -134,7 +137,7 @@ ossl.mir %>%
 ```{r join, include=TRUE, echo=TRUE, eval=TRUE}
 # First full joining mir and visnir as some observations might not have both spectra types
 # NOTE: this requires the use of na filters when modeling to check availability of soil and spectra type
-ossl.spectra <- full_join(ossl.mir, ossl.visnir, by = "id.layer_local_c")
+ossl.spectra <- full_join(ossl.mir, ossl.visnir, by = c("code", "id.layer_local_c"))
 
 ossl.spectra %>%
   select(ends_with(".x")) %>%
@@ -144,12 +147,7 @@ ossl.spectra %>%
 ossl.spectra <- ossl.spectra %>%
   mutate(id.scan_local_c = coalesce(id.scan_local_c.x, id.scan_local_c.y, NA),
          .after = id.scan_local_c.x) %>%
-  mutate(code = coalesce(code.x, code.y, NA),
-         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
-         .after = code.x) %>%
-  select(-id.scan_local_c.x, -id.scan_local_c.y,
-         -code.x, -code.y,
-         -file_sequence.x, -file_sequence.y)
+  select(-id.scan_local_c.x, -id.scan_local_c.y)
 
 ossl.spectra %>%
   select(ends_with(".x")) %>%
@@ -158,7 +156,7 @@ ossl.spectra %>%
 # View(ossl.spectra %>% select(!contains("_ref|_abs")))
 
 # Left joining site to soil info, as some site does not have lab data
-ossl.info <- left_join(ossl.soillab, ossl.soilsite, by = "id.layer_local_c")
+ossl.info <- left_join(ossl.soillab, ossl.soilsite, by = c("code", "id.layer_local_c"))
 
 ossl.info %>%
   select(ends_with(".x")) %>%
@@ -170,13 +168,8 @@ ossl.info <- ossl.info %>%
   mutate(layer.upper.depth_usda_cm = coalesce(layer.upper.depth_usda_cm.x, layer.upper.depth_usda_cm.y, NA),
          layer.lower.depth_usda_cm = coalesce(layer.lower.depth_usda_cm.x, layer.lower.depth_usda_cm.y, NA),
          .after = layer.lower.depth_usda_cm.x) %>%
-  mutate(code = coalesce(code.x, code.y, NA),
-         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
-         .after = code.x) %>%
   select(-layer.upper.depth_usda_cm.x, -layer.upper.depth_usda_cm.y,
-         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y,
-         -code.x, -code.y,
-         -file_sequence.x, -file_sequence.y) %>%
+         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y) %>%
   mutate_all(list(~na_if(.,"")))
 
 ossl.info %>%
@@ -185,7 +178,7 @@ ossl.info %>%
 
 # Producing level 0 by left joining site and soil data to spectra data
 ossl.level0 <- ossl.spectra %>%
-  left_join(ossl.info, by = "id.layer_local_c")
+  left_join(ossl.info, by = c("code", "id.layer_local_c"))
 
 ossl.level0 %>%
   select(ends_with(".x")) %>%
@@ -195,12 +188,7 @@ ossl.level0 %>%
 ossl.level0 <- ossl.level0 %>%
   mutate(dataset.code_ascii_txt = coalesce(dataset.code_ascii_txt.x, dataset.code_ascii_txt.y, NA),
          .after = dataset.code_ascii_txt.x) %>%
-  mutate(code = coalesce(code.x, code.y, NA),
-         file_sequence = coalesce(file_sequence.x, file_sequence.y, NA),
-         .after = code.x) %>%
-  select(-dataset.code_ascii_txt.x, -dataset.code_ascii_txt.y,
-         -code.x, -code.y,
-         -file_sequence.x, -file_sequence.y)
+  select(-dataset.code_ascii_txt.x, -dataset.code_ascii_txt.y)
 
 ossl.level0 %>%
   select(ends_with(".x")) %>%
@@ -233,10 +221,10 @@ ossl.level0.export <- ossl.level0 %>%
 # We will drop them
 soil.na <- ossl.level0.export %>%
   select(all_of(names(ossl.soillab))) %>%
-  select(-code, -file_sequence, - id.layer_local_c) %>%
+  select(-code, -id.layer_local_c) %>%
   apply(., 1, function(x) sum(is.na(x))/length(x)) %>%
   tibble(proportion_NA = .) %>%
-  bind_cols({ossl.level0.export %>% select(code, file_sequence, id.layer_local_c)}, .)
+  bind_cols({ossl.level0.export %>% select(code, id.layer_local_c)}, .)
 
 soil.na %>%
   filter(proportion_NA == 1) %>%
@@ -308,7 +296,7 @@ ossl.level0.export <- ossl.level0.export %>%
          id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10)) %>%
   mutate(id.layer_uuid_txt = as.character(id.layer_uuid_txt),
          id.location_olc_txt = as.character(id.location_olc_txt)) %>%
-  select(-code, -file_sequence) %>%
+  select(-code) %>%
   relocate(id.layer_uuid_txt, .after = id.layer_local_c)
 
 # # Checking
