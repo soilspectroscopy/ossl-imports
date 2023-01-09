@@ -4,7 +4,7 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>), Develyn Bloom
 (<develyn.bloom@ufl.edu>) -
-28 December, 2022
+09 January, 2023
 
 
 
@@ -32,7 +32,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2022-12-28  
+Last update: 2023-01-09  
 Dataset:
 [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
@@ -704,7 +704,7 @@ dir.mir <- paste0(dir.files, "/KSSL_MIR_export")
 dir.db <- paste0(dir.files, "/All_Spectra_Access_Portable_20220712")
 
 # Already formatted to 600-4000 cm-1, with 2 cm-1 interval
-mir.scans <- fread(paste0(dir.mir, "/KSSL_202207_MIR_spectra_all_avg.csv"), header = TRUE)
+mir.scans <- fread(paste0(dir.mir, "/KSSL_202207_MIR_spectra_all_avg_clean.csv"), header = TRUE)
 
 sample <- fread(paste0(dir.db, "/sample.csv"))
 
@@ -787,11 +787,8 @@ scans.summary %>%
   summarise(count = n())
 ```
 
-    ## # A tibble: 2 × 2
-    ##   check                 count
-    ##   <chr>                 <int>
-    ## 1 proportion_higherAbs5    31
-    ## 2 proportion_lower0        34
+    ## # A tibble: 0 × 2
+    ## # … with 2 variables: check <chr>, count <int>
 
 ``` r
 # These few scans with extreme values are removed - getting ids
@@ -822,8 +819,8 @@ scans.duplicates %>%
     ## # A tibble: 2 × 2
     ##   repeats n_spectra
     ##     <int>     <int>
-    ## 1       1     82745
-    ## 2       2        58
+    ## 1       1     82666
+    ## 2       2        35
 
 ``` r
 spec.dupli.value <- scans.duplicates %>%
@@ -1031,11 +1028,11 @@ kssl.availability %>%
     ## # A tibble: 6 × 2
     ##   column                    count
     ##   <chr>                     <int>
-    ## 1 c.tot_usda.a622_w.pct     86532
-    ## 2 id.layer_local_c          92512
-    ## 3 id.scan_local_c           92512
-    ## 4 layer.upper.depth_usda_cm 92071
-    ## 5 scan_mir.600_abs          82723
+    ## 1 c.tot_usda.a622_w.pct     86461
+    ## 2 id.layer_local_c          92436
+    ## 3 id.scan_local_c           92436
+    ## 4 layer.upper.depth_usda_cm 91995
+    ## 5 scan_mir.600_abs          82646
     ## 6 scan_visnir.350_ref       19807
 
 ``` r
@@ -1054,9 +1051,9 @@ kssl.availability %>%
     ## # Groups:   column [2]
     ##   column           repeats count
     ##   <chr>              <int> <int>
-    ## 1 id.layer_local_c       1 92436
+    ## 1 id.layer_local_c       1 92360
     ## 2 id.layer_local_c       2    38
-    ## 3 id.scan_local_c        1 92512
+    ## 3 id.scan_local_c        1 92436
 
 This summary shows that, at total, about 92k observations are available.
 Some rows have both MIR and VisNIR scans, many not. As we have repeats
@@ -1220,16 +1217,16 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 197.208 sec elapsed
+    ## 258.121 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-    ##            used (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2619664  140   15686490  837.8   19608112 1047.2
-    ## Vcells 35781256  273  801767152 6117.0 1002208640 7646.3
+    ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
+    ## Ncells  2620849 140.0   15686492  837.8   19608115 1047.2
+    ## Vcells 50286565 383.7  817128434 6234.2 1021410542 7792.8
 
 ## References
 

@@ -616,7 +616,7 @@ dir.mir <- paste0(dir.files, "/KSSL_MIR_export")
 dir.db <- paste0(dir.files, "/All_Spectra_Access_Portable_20220712")
 
 # Already formatted to 600-4000 cm-1, with 2 cm-1 interval
-mir.scans <- fread(paste0(dir.mir, "/KSSL_202207_MIR_spectra_all_avg.csv"), header = TRUE)
+mir.scans <- fread(paste0(dir.mir, "/KSSL_202207_MIR_spectra_all_avg_clean.csv"), header = TRUE)
 
 sample <- fread(paste0(dir.db, "/sample.csv"))
 
