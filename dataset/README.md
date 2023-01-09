@@ -3,7 +3,7 @@ Binding all datasets
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-05 January, 2023
+09 January, 2023
 
 
 
@@ -35,7 +35,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2023-01-05
+Last update: 2023-01-09
 
 All the external SSLs were prepared and harmonized to the OSSL naming
 conventions as described in the `README` files present in each specific
@@ -289,7 +289,7 @@ ossl.mir %>%
   glimpse()
 ```
 
-    ## Rows: 91,710
+    ## Rows: 91,631
     ## Columns: 16
     ## $ code                                    <chr> "AFSIS", "AFSIS", "AFSIS", "AF…
     ## $ id.layer_local_c                        <chr> "icr072246", "icr072247", "icr…
@@ -436,7 +436,7 @@ soil.na %>%
     ##   code        count
     ##   <chr>       <int>
     ## 1 ICRAF_ISRIC   365
-    ## 2 KSSL         5781
+    ## 2 KSSL         5777
     ## 3 LUCAS           2
     ## 4 Schiedung      12
 
@@ -498,7 +498,7 @@ ossl.level0.export %>%
     ## # A tibble: 1 × 2
     ##   incomplete_location      n
     ##   <lgl>                <int>
-    ## 1 FALSE               135725
+    ## 1 FALSE               135651
 
 ``` r
 # Checking for missing spatial locations
@@ -510,8 +510,8 @@ ossl.level0.export %>%
     ## # A tibble: 2 × 2
     ##   missing_location     n
     ##   <lgl>            <int>
-    ## 1 FALSE            87734
-    ## 2 TRUE             47991
+    ## 1 FALSE            87707
+    ## 2 TRUE             47944
 
 ``` r
 # Running unique id with dataset and layer id combination, and olc location code 
@@ -548,9 +548,9 @@ ossl.level0.export %>%
     ##  4 GARRETT.SSL            TRUE          FALSE              184       100   
     ##  5 ICRAF.ISRIC            FALSE         TRUE                 2         0.05
     ##  6 ICRAF.ISRIC            TRUE          TRUE              4071       100.  
-    ##  7 KSSL.SSL               FALSE         TRUE              9789        11.3 
-    ##  8 KSSL.SSL               TRUE          FALSE            66870        77.2 
-    ##  9 KSSL.SSL               TRUE          TRUE             10018        11.6 
+    ##  7 KSSL.SSL               FALSE         TRUE              9790        11.3 
+    ##  8 KSSL.SSL               TRUE          FALSE            66796        77.1 
+    ##  9 KSSL.SSL               TRUE          TRUE             10017        11.6 
     ## 10 LUCAS.SSL              FALSE         TRUE             40175       100   
     ## 11 LUCAS.WOODWELL.SSL     TRUE          TRUE               589       100   
     ## 12 SCHIEDUNG.SSL          TRUE          FALSE              259       100   
@@ -576,8 +576,8 @@ ossl.level0.export %>%
     ##  5 GARRETT.SSL            FALSE              184       100   
     ##  6 ICRAF.ISRIC            FALSE             4013        98.5 
     ##  7 ICRAF.ISRIC            TRUE                60         1.47
-    ##  8 KSSL.SSL               FALSE            38963        45.0 
-    ##  9 KSSL.SSL               TRUE             47714        55.0 
+    ##  8 KSSL.SSL               FALSE            38936        45.0 
+    ##  9 KSSL.SSL               TRUE             47667        55.0 
     ## 10 LUCAS.SSL              FALSE            40175       100   
     ## 11 LUCAS.WOODWELL.SSL     FALSE              589       100   
     ## 12 SCHIEDUNG.SSL          FALSE              259       100   
@@ -692,7 +692,7 @@ st_write(ossl.points, "../out/ossl_locations.gpkg", append = FALSE)
 
     ## Writing layer `ossl_locations' to data source 
     ##   `../out/ossl_locations.gpkg' using driver `GPKG'
-    ## Writing 87734 features with 2 fields and geometry type Point.
+    ## Writing 87707 features with 2 fields and geometry type Point.
 
 VisNIR locations
 <img src="../img/visnir.pnts_sites.png" heigth=100% width=100%>
@@ -1171,7 +1171,7 @@ Golden subset locations
 toc()
 ```
 
-    ## 261.229 sec elapsed
+    ## 362.997 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1179,8 +1179,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells 3658631 195.4   13696239   731.5   17120298   914.4
-    ## Vcells 7022626  53.6 2881102557 21981.1 3001081830 22896.5
+    ## Ncells 3658631 195.4   13812172   737.7   17265215   922.1
+    ## Vcells 7022625  53.6 2871870989 21910.7 2991447537 22823.0
 
 ## References
 
