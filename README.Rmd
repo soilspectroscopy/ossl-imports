@@ -20,12 +20,62 @@ editor_options:
 
 [<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />](http://creativecommons.org/licenses/by-sa/4.0/)
 
-### Description
-
-This is a repository for all data import development work for the [Soil Spectroscopy for Global
+This is a repository for data import development of the [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org) project.
 
 The full documentation is available in the [OSSL manual](https://soilspectroscopy.github.io/ossl-manual/).
+
+The OSSL is distributed through [APIs](https://soilspectroscopy.github.io/ossl-manual/#ossl-api), [MongoDB](https://soilspectroscopy.github.io/ossl-manual/#ossl-mongodb), and as a Google Cloud storage bucket: two file formats are available: **compressed csv** (`.csv.gz`) and **qs** (`qs R package`).
+
+**Note: the datasets in the public bucket can be updated without notice.**
+
+Use the following URLs to load the whole OSSL levels:
+```
+## Compressed csv
+https://storage.googleapis.com/soilspec4gg-public/ossl_all_L0_v1.2.csv.gz
+https://storage.googleapis.com/soilspec4gg-public/ossl_all_L1_v1.2.csv.gz
+
+## qs format (preferred on R)
+https://storage.googleapis.com/soilspec4gg-public/ossl_all_L0_v1.2.qs
+https://storage.googleapis.com/soilspec4gg-public/ossl_all_L1_v1.2.qs
+```
+
+Use these alternative URLs to load the OSSL as separate files:
+```
+## Compressed csv
+https://storage.googleapis.com/soilspec4gg-public/ossl_soilsite_L0_v1.2.csv.gz
+https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L0_v1.2.csv.gz
+https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L1_v1.2.csv.gz
+https://storage.googleapis.com/soilspec4gg-public/ossl_mir_L0_v1.2.csv.gz
+https://storage.googleapis.com/soilspec4gg-public/ossl_visnir_L0_v1.2.csv.gz
+
+## qs format (preferred on R)
+https://storage.googleapis.com/soilspec4gg-public/ossl_soilsite_L0_v1.2.qs
+https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L0_v1.2.qs
+https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L1_v1.2.qs
+https://storage.googleapis.com/soilspec4gg-public/ossl_mir_L0_v1.2.qs
+https://storage.googleapis.com/soilspec4gg-public/ossl_visnir_L0_v1.2.qs
+```
+
+Example with R:
+```r
+## Packages
+library("tidyverse")
+library("curl")
+library("qs")
+
+## Separate files
+soil <-  "https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L1_v1.2.qs"
+soil <- curl_fetch_memory(soil)
+soil <- qdeserialize(soil$content)
+
+mir <- "https://storage.googleapis.com/soilspec4gg-public/ossl_mir_L0_v1.2.qs"
+mir <- curl_fetch_memory(mir)
+mir <- qdeserialize(mir$content)
+
+## Join
+ossl <- left_join(mir, soil, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt"))
+```
 
 ### Importing new datasets
 
@@ -40,7 +90,7 @@ In order to maximize transparency, for now, we have decided to produce two diffe
 
 NOTE: for more advanced users of the soil spectral libraries **we advise to contact the original data producers**, especially to get help with using, extending, and improving the original SSL data. Note: we **do NOT provide support with issues that my arise with the original soil spectral libraries**.
 
-### Using the OSSL
+### The OSSL database
 
 The OSSL includes the USDA NRCS NCSS-KSSL MIR & VNIR libraries (labeled [KSSL](dataset/KSSL)), ICRAF-ISRIC MIR & VNIR libraries (labeled [ICRAF_ISRIC](dataset/ICRAF_ISRIC)), AFSIS I & AFSIS II MIR libraries (labeled [AFIS1](dataset/AFIS1) & [AFSIS2](dataset/AFSIS2)), ESDAC LUCAS VNIR library (labeled [LUCAS](dataset/LUCAS)), ETH Congo Basin MIR library (labeled [CASSL](dataset/CASSL)), the Scion Research NZ MIR library (labeled [Garrett](dataset/Garrett)), the University of Zurich permafrost MIR library (labeled [Schiedung](dataset/Schiedung)), and the Serbian SSL from University of Novi Sad (labeled [Serbia](dataset/Serbia)). The KSSL database represents a snapshot from July 2022.
 
@@ -52,14 +102,6 @@ The OSSL includes the USDA NRCS NCSS-KSSL MIR & VNIR libraries (labeled [KSSL](d
 
 - VisNIR locations  
 <img src="img/visnir.pnts_sites.png" heigth=100% width=100%>
-
-To load the complete analysis-ready dataset as a single table in R and run predictive modeling please use:
-
-```
-rm.ossl = readRDS(url("http://s3.us-east-1.wasabisys.com/soilspectroscopy/ossl_import/rm.ossl_v1.rds", "rb"))
-dim(rm.ossl)
-## 152,146 obs. of 2962 variables
-```
 
 ### Other tools and repositories
 
