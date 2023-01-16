@@ -69,6 +69,12 @@ mir <- qdeserialize(mir$content)
 ossl <- left_join(mir, soil, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt"))
 ```
 
+**Note: some original dataset share common ids across the VisNIR and MIR
+range. Some ids, however, have only one range represented. OSSL is a
+tabular database keeping at least one spectral range. A filter must be
+run before using the separate tables to remove observations with missing
+spectra in the desired range.**
+
 ### Importing new datasets
 
 -   Define a dataset code following the format in [manual project
