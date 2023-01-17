@@ -22,7 +22,10 @@ and as a Google Cloud storage bucket: two file formats are available:
 **Note: the datasets in the public bucket can be updated without
 notice.**
 
-Use the following URLs to load the whole OSSL levels:
+**Note: you can both run the link on a browser to download the files, or
+provide the URLs in a programming language to read them**
+
+Use the following URLs to access the whole OSSL levels:
 
     ## Compressed csv
     https://storage.googleapis.com/soilspec4gg-public/ossl_all_L0_v1.2.csv.gz
@@ -32,7 +35,7 @@ Use the following URLs to load the whole OSSL levels:
     https://storage.googleapis.com/soilspec4gg-public/ossl_all_L0_v1.2.qs
     https://storage.googleapis.com/soilspec4gg-public/ossl_all_L1_v1.2.qs
 
-Use these alternative URLs to load the OSSL as separate files:
+Use these alternative URLs to access the OSSL as separate files:
 
     ## Compressed csv
     https://storage.googleapis.com/soilspec4gg-public/ossl_soilsite_L0_v1.2.csv.gz
@@ -70,10 +73,10 @@ ossl <- left_join(mir, soil, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt
 ```
 
 **Note: some original dataset share common ids across the VisNIR and MIR
-range. Some ids, however, have only one range represented. OSSL is a
-tabular database keeping at least one spectral range. A filter must be
-run before using the separate tables to remove observations with missing
-spectra in the desired range.**
+range. Some ids, however, have only one range represented (either VisNIR
+or MIR). OSSL is a tabular database keeping at least one spectral range.
+A filter must be run before using the database to remove observations
+with missing spectra for a desired range.**
 
 ### Importing new datasets
 
