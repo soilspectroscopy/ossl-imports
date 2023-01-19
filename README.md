@@ -10,73 +10,15 @@
 This is a repository for data import development of the [Soil
 Spectroscopy for Global Good](https://soilspectroscopy.org) project.
 
-The full documentation is available in the [OSSL
-manual](https://soilspectroscopy.github.io/ossl-manual/).
-
 The OSSL is distributed through
-[APIs](https://soilspectroscopy.github.io/ossl-manual/#ossl-api),
-[MongoDB](https://soilspectroscopy.github.io/ossl-manual/#ossl-mongodb),
-and as a Google Cloud storage bucket: two file formats are available:
-**compressed csv** (`.csv.gz`) and **qs** (`qs R package`).
+[API](https://soilspectroscopy.github.io/ossl-manual/ossl-database-access.html#api),
+[MongoDB](https://soilspectroscopy.github.io/ossl-manual/ossl-database-access.html#mongodb),
+and as static files hosted on a [Google Cloud storage
+bucket](https://soilspectroscopy.github.io/ossl-manual/ossl-database-access.html#google-cloud-storage).
 
-**Note: the datasets in the public bucket can be updated without
-notice.**
-
-**Note: you can both run the link on a browser to download the files, or
-provide the URLs in a programming language to read them**
-
-Use the following URLs to access the whole OSSL levels:
-
-    ## Compressed csv
-    https://storage.googleapis.com/soilspec4gg-public/ossl_all_L0_v1.2.csv.gz
-    https://storage.googleapis.com/soilspec4gg-public/ossl_all_L1_v1.2.csv.gz
-
-    ## qs format (preferred on R)
-    https://storage.googleapis.com/soilspec4gg-public/ossl_all_L0_v1.2.qs
-    https://storage.googleapis.com/soilspec4gg-public/ossl_all_L1_v1.2.qs
-
-Use these alternative URLs to access the OSSL as separate files:
-
-    ## Compressed csv
-    https://storage.googleapis.com/soilspec4gg-public/ossl_soilsite_L0_v1.2.csv.gz
-    https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L0_v1.2.csv.gz
-    https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L1_v1.2.csv.gz
-    https://storage.googleapis.com/soilspec4gg-public/ossl_mir_L0_v1.2.csv.gz
-    https://storage.googleapis.com/soilspec4gg-public/ossl_visnir_L0_v1.2.csv.gz
-
-    ## qs format (preferred on R)
-    https://storage.googleapis.com/soilspec4gg-public/ossl_soilsite_L0_v1.2.qs
-    https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L0_v1.2.qs
-    https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L1_v1.2.qs
-    https://storage.googleapis.com/soilspec4gg-public/ossl_mir_L0_v1.2.qs
-    https://storage.googleapis.com/soilspec4gg-public/ossl_visnir_L0_v1.2.qs
-
-Example with R:
-
-``` r
-## Packages
-library("tidyverse")
-library("curl")
-library("qs")
-
-## Separate files
-soil <-  "https://storage.googleapis.com/soilspec4gg-public/ossl_soillab_L1_v1.2.qs"
-soil <- curl_fetch_memory(soil)
-soil <- qdeserialize(soil$content)
-
-mir <- "https://storage.googleapis.com/soilspec4gg-public/ossl_mir_L0_v1.2.qs"
-mir <- curl_fetch_memory(mir)
-mir <- qdeserialize(mir$content)
-
-## Join
-ossl <- left_join(mir, soil, by = c("dataset.code_ascii_txt", "id.layer_uuid_txt"))
-```
-
-**Note: some original dataset share common ids across the VisNIR and MIR
-range. Some ids, however, have only one range represented (either VisNIR
-or MIR). OSSL is a tabular database keeping at least one spectral range.
-A filter must be run before using the database to remove observations
-with missing spectra for a desired range.**
+The full documentation about the database and access options are
+available in the [OSSL
+manual](https://soilspectroscopy.github.io/ossl-manual/).
 
 ### Importing new datasets
 
