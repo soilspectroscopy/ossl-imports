@@ -148,7 +148,7 @@ neospectra.sitedata <- neospectra %>%
   summarise_all(first)
 
 # Saving version to dataset root dir
-site.qs = paste0(dir, "/ossl_soilsite_v1.2.qs")
+site.qs = paste0(dir, "ossl/neospectra_soilsite_v1.2.qs")
 qs::qsave(neospectra.sitedata, site.qs, preset = "high")
 ```
 
@@ -229,7 +229,8 @@ NOTE: The code chunk below this paragraph is hidden. Run once for importing the 
 
 Reading AFSIS1-to-OSSL transformation values:
 ```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
-transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv"))
+transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv")) %>%
+  select(-comment)
 knitr::kable(transvalues)
 ```
 
@@ -284,65 +285,151 @@ neospectra.soildata %>%
   summarise(count = n())
 
 # Saving version to dataset root dir
-soillab.qs = paste0(dir, "/ossl_soillab_v1.2.qs")
+soillab.qs = paste0(dir, "ossl/neospectra_soillab_v1.2.qs")
 qs::qsave(neospectra.soildata, soillab.qs, preset = "high")
+```
+
+### Near-infrared spectroscopy data
+
+```{r nir, include=TRUE, echo=TRUE, eval=TRUE}
+# Floating wavelength
+neospectra <- read_csv(paste0(dir, "/Neospectra_WoodwellKSSL_avg_soil+site+NIR.csv"))
+# names(neospectra[,1:56])
+
+# Resampling to 2 nm interval
+# Formatting as fraction percent with 5 digits of precision
+old.spectra.columns <- neospectra %>%
+  select(56:ncol(neospectra)) %>%
+  names()
+
+neospectra.nir <- neospectra %>%
+  rename(id.scan_local_c = Lab_ID) %>%
+  select(id.scan_local_c, all_of(old.spectra.columns))
+
+new.spectra.columns <- seq(2550, 1350, by = -2)
+
+neospectra.nir.2nm <- neospectra.nir %>%
+  select(all_of(old.spectra.columns)) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = as.numeric(old.spectra.columns), new.wav = new.spectra.columns, interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({neospectra.nir %>%
+      select(id.scan_local_c)}, .) %>%
+  select(id.scan_local_c, all_of(rev(as.character(new.spectra.columns)))) %>%
+  mutate_if(is.numeric, function(x){round(x/100, 5)})
+
+# Gaps
+scans.na.gaps <- neospectra.nir.2nm %>%
+  select(-id.scan_local_c) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({neospectra.nir.2nm %>% select(id.scan_local_c)}, .)
+
+# Extreme negative - irreversible erratic patterns
+scans.extreme.neg <- neospectra.nir.2nm %>%
+  select(-id.scan_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({neospectra.nir.2nm %>% select(id.scan_local_c)}, .)
+
+# Extreme positive, irreversible erratic patterns
+scans.extreme.pos <- neospectra.nir.2nm %>%
+  select(-id.scan_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherRef1 = .) %>%
+  bind_cols({neospectra.nir.2nm %>% select(id.scan_local_c)}, .)
+
+# Consistency summary - problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.scan_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.scan_local_c")
+
+scans.summary %>%
+  select(-id.scan_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+
+# Renaming
+old.wavenumbers <- seq(1350, 2250, by = 2)
+new.wavenumbers <- paste0("scan_nir.", old.wavenumbers, "_ref")
+
+neospectra.nir.2nm <- neospectra.nir.2nm %>%
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
+
+# Metadata
+neospectra.nir.metadata <- neospectra %>%
+  rename(id.sample_local_c = kssl_id,
+         id.scan_local_c = Lab_ID,
+         scan.lab_utf8_txt = Lab,
+         scan.nir.model.name_utf8_txt = scanner_name,
+         scan.nir.model.serialnumber_utf8_int = scanner_SerialNo,
+         scan.nir.accessory.used_utf8_txt = saucer) %>%
+  mutate(scan.nir.date.begin_iso.8601_yyyy.mm.dd = "2021-01-01",
+         scan.nir.date.end_iso.8601_yyyy.mm.dd = "2022-12-31",
+         scan.nir.method.preparation_any_txt = "<2 mm",
+         scan.nir.license.title_ascii_txt = "CC-BY",
+         scan.nir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
+         scan.nir.doi_idf_url = "https://doi.org/10.5281/zenodo.7586622",
+         scan.nir.contact.name_utf8_txt = "Jonathan Sanderman",
+         scan.nir.contact.email_ietf_txt = "jsanderman@woodwellclimate.org") %>%
+  select(id.sample_local_c, id.scan_local_c, scan.lab_utf8_txt,
+         scan.nir.date.begin_iso.8601_yyyy.mm.dd, scan.nir.date.end_iso.8601_yyyy.mm.dd,
+         scan.nir.model.name_utf8_txt, scan.nir.model.serialnumber_utf8_int,
+         scan.nir.accessory.used_utf8_txt, scan.nir.method.preparation_any_txt,
+         scan.nir.license.title_ascii_txt, scan.nir.license.address_idn_url,
+         scan.nir.doi_idf_url, scan.nir.contact.name_utf8_txt, scan.nir.contact.email_ietf_txt)
+
+# Final preparation
+neospectra.nir.export <- neospectra.nir.metadata %>%
+  left_join(neospectra.nir.2nm, by = "id.scan_local_c") %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Saving version to dataset root dir
+nir.qs = paste0(dir, "ossl/neospectra_nir_v1.2.qs")
+qs::qsave(neospectra.nir.export, nir.qs, preset = "high")
 ```
 
 ### Mid-infrared spectroscopy data
 
+The MIR spectra available on Zenodo is already formatted to OSSL specifications. It was fetched from the OSSL database rather than the original KSSL database.
+
 ```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
 # Floating wavenumbers
-caf.spectra <- fread(paste0(dir, "spectra_data/cssl_spectra.csv"), header = T)
+neospectra.mir <- read_csv(paste0(dir, "/Neospectra_WoodwellKSSL_avg_MIR.csv"))
 
-# Renaming
-old.names <- names(caf.spectra)
-
-caf.mir <- caf.spectra %>%
-  rename(id.layer_local_c = sample_id) %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
-  mutate_at(vars(all_of(old.names[-1])), as.numeric)
-
-# Need to resample spectra
-old.wavenumber <- na.omit(as.numeric(names(caf.mir)))
-new.wavenumbers <- rev(seq(600, 4000, by = 2))
-
-caf.mir <- caf.mir %>%
-  select(-id.layer_local_c) %>%
-  as.matrix() %>%
-  prospectr::resample(X = ., wav = old.wavenumber, new.wav = new.wavenumbers, interpol = "spline") %>%
-  as_tibble() %>%
-  bind_cols({caf.mir %>%
-      select(id.layer_local_c)}, .) %>%
-  select(id.layer_local_c, as.character(rev(new.wavenumbers)))
+neospectra.mir <- neospectra.mir %>%
+  rename(id.sample_local_c = kssl_id)
 
 # Gaps
-scans.na.gaps <- caf.mir %>%
-  select(-id.layer_local_c) %>%
+scans.na.gaps <- neospectra.mir %>%
+  select(-id.sample_local_c) %>%
   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
-  bind_cols({caf.mir %>% select(id.layer_local_c)}, .)
+  bind_cols({neospectra.mir %>% select(id.sample_local_c)}, .)
 
 # Extreme negative - irreversible erratic patterns
-scans.extreme.neg <- caf.mir %>%
-  select(-id.layer_local_c) %>%
+scans.extreme.neg <- neospectra.mir %>%
+  select(-id.sample_local_c) %>%
   apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
-  bind_cols({caf.mir %>% select(id.layer_local_c)}, .)
+  bind_cols({neospectra.mir %>% select(id.sample_local_c)}, .)
 
 # Extreme positive, irreversible erratic patterns
-scans.extreme.pos <- caf.mir %>%
-  select(-id.layer_local_c) %>%
+scans.extreme.pos <- neospectra.mir %>%
+  select(-id.sample_local_c) %>%
   apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_higherAbs5 = .) %>%
-  bind_cols({caf.mir %>% select(id.layer_local_c)}, .)
+  bind_cols({neospectra.mir %>% select(id.sample_local_c)}, .)
 
 # Consistency summary - problematic scans
 scans.summary <- scans.na.gaps %>%
-  left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
-  left_join(scans.extreme.pos, by = "id.layer_local_c")
+  left_join(scans.extreme.neg, by = "id.sample_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.sample_local_c")
 
 scans.summary %>%
-  select(-id.layer_local_c) %>%
+  select(-id.sample_local_c) %>%
   pivot_longer(everything(), names_to = "check", values_to = "value") %>%
   filter(value > 0) %>%
   group_by(check) %>%
@@ -352,19 +439,17 @@ scans.summary %>%
 old.wavenumbers <- seq(600, 4000, by = 2)
 new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
 
-caf.mir <- caf.mir %>%
+neospectra.mir <- neospectra.mir %>%
   rename_with(~new.wavenumbers, as.character(old.wavenumbers))
 
 # Preparing metadata
-caf.mir.metadata <- caf.mir %>%
-  select(id.layer_local_c) %>%
-  mutate(id.scan_local_c = id.layer_local_c) %>%
-  mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2014-01-01"),
-         scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2018-12-31"),
+neospectra.mir.metadata <- neospectra.mir %>%
+  select(id.sample_local_c) %>%
+  mutate(scan.mir.date.begin_iso.8601_yyyy.mm.dd = ymd("2022-01-01"),
+         scan.mir.date.end_iso.8601_yyyy.mm.dd = ymd("2022-12-31"),
          scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with HTS-XT accessory",
-         scan.mir.model.code_any_txt = "Bruker_Vertex_70.HTS.XT",
-         scan.mir.method.optics_any_txt = "",
-         scan.mir.method.preparation_any_txt = "",
+         scan.mir.method.optics_any_txt = "KSSL SOPs",
+         scan.mir.method.preparation_any_txt = "Finely ground <80 mesh",
          scan.mir.license.title_ascii_txt = "CC-BY",
          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
          scan.mir.doi_idf_url = "https://doi.org/10.5281/zenodo.4351254",
@@ -372,45 +457,46 @@ caf.mir.metadata <- caf.mir %>%
          scan.mir.contact.email_ietf_txt = "laura.summerauer@usys.ethz.ch")
 
 # Final preparation
-caf.mir.export <- caf.mir.metadata %>%
-  left_join(caf.mir, by = "id.layer_local_c") %>%
+neospectra.mir.export <- neospectra.mir.metadata %>%
+  left_join(neospectra.mir, by = "id.sample_local_c") %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
-soilmir.qs = paste0(dir, "/ossl_mir_v1.2.qs")
-qs::qsave(caf.mir.export, soilmir.qs, preset = "high")
+mir.qs = paste0(dir, "ossl/neospectra_mir_v1.2.qs")
+qs::qsave(neospectra.mir.export, mir.qs, preset = "high")
 ```
 
 ### Quality control
 
 The final table must be joined as:
 
-- MIR is used as first reference.
-- Then it is left joined with the site and soil lab data. This drop data without any scan.
+- For NIR, left_join site and soil to NIR using "id.scan_local_c".
+- For MIR, left_join site and soil to MIR using "id.sample_local_c".
 
 The availabilty of data is summarised below:
 ```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
 # Taking a few representative columns for checking the consistency of joins
-caf.availability <- caf.mir.export %>%
-  select(id.layer_local_c, scan_mir.600_abs) %>%
-  left_join({caf.sitedata %>%
-      select(id.layer_local_c, layer.upper.depth_usda_cm)}, by = "id.layer_local_c") %>%
-  left_join({caf.soildata %>%
-      select(id.layer_local_c, ph.h2o_usda.a268_index)}, by = "id.layer_local_c") %>%
-  filter(!is.na(id.layer_local_c))
+neospectra.availability <- neospectra.nir.export %>%
+  select(id.scan_local_c, id.sample_local_c, scan_nir.2000_ref) %>%
+  left_join({neospectra.mir.export %>%
+      select(id.sample_local_c, scan_mir.1000_abs)}, by = "id.sample_local_c") %>%
+  left_join({neospectra.sitedata %>%
+      select(id.sample_local_c, layer.upper.depth_usda_cm)}, by = "id.sample_local_c") %>%
+  left_join({neospectra.soildata %>%
+      select(id.sample_local_c, ph.h2o_usda.a268_index)}, by = "id.sample_local_c")
 
-# Availability of information from caf
-caf.availability %>%
+# Availability of information from neospectra
+neospectra.availability %>%
   mutate_all(as.character) %>%
   pivot_longer(everything(), names_to = "column", values_to = "value") %>%
   filter(!is.na(value)) %>%
   group_by(column) %>%
   summarise(count = n())
 
-# Repeats check - Duplicates are dropped
-caf.availability %>%
+# Repeats check - scans may have same id but different metadata (scanning device, accessory, etc)
+neospectra.availability %>%
   mutate_all(as.character) %>%
-  select(id.layer_local_c) %>%
+  select(id.scan_local_c) %>%
   pivot_longer(everything(), names_to = "column", values_to = "value") %>%
   group_by(column, value) %>%
   summarise(repeats = n()) %>%
@@ -422,7 +508,7 @@ Plotting sites map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
 
-points <- caf.sitedata %>%
+points <- neospectra.sitedata %>%
   filter(!is.na(longitude.point_wgs84_dd)) %>%
   st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
 
@@ -434,25 +520,43 @@ tm_shape(World) +
   tm_dots()
 ```
 
-Soil analytical data summary. Note: many scans could not be linked with the wetchem.
+Soil analytical data summary.
 ```{r summary, include=TRUE, echo=TRUE, eval=TRUE}
-caf.soildata %>%
-  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+neospectra.soildata %>%
+  mutate(id.sample_local_c = factor(id.sample_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
+```
+
+NIR spectral visualization:
+```{r nir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+set.seed(1993)
+selected.ids <- sample(neospectra.nir.export$id.sample_local_c, 20)
+neospectra.nir.export %>%
+  filter(id.sample_local_c %in% selected.ids) %>%
+  select(all_of(c("id.scan_local_c", "scan.nir.model.serialnumber_utf8_int")), starts_with("scan_nir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.scan_local_c", "scan.nir.model.serialnumber_utf8_int")),
+                      names_to = "wavelength", values_to = "reflectance") %>%
+  dplyr::mutate(wavelength = gsub("scan_nir.|_ref", "", wavelength)) %>%
+  dplyr::mutate(wavelength = as.numeric(wavelength)) %>%
+  ggplot(aes(x = wavelength, y = reflectance, group = id.scan_local_c)) +
+  geom_line(alpha = 0.5, size = 0.5) +
+  scale_x_continuous(breaks = c(1350, 1500, 1750, 2000, 2250)) +
+  labs(x = "Wavelength (nm)", y = "Reflectance", color = "") +
+  theme_light()
 ```
 
 MIR spectral visualization:
 ```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
 set.seed(1993)
-caf.mir %>%
-  sample_n(500) %>%
-  select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
-  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+neospectra.mir %>%
+  sample_n(100) %>%
+  select(all_of(c("id.sample_local_c")), starts_with("scan_mir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.sample_local_c")),
                       names_to = "wavenumber", values_to = "absorbance") %>%
   dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
-  ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.sample_local_c)) +
   geom_line(alpha = 0.1) +
   scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000)) +
   labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
