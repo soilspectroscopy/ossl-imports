@@ -1,0 +1,67 @@
+---
+title: "Dataset import: Neospectra"
+author: "Jose Lucas Safanelli (jsafanelli@woodwellclimate.org), Colleen Smith (csmith@woodwellclimate.org), Jonathan Sanderman (jsanderman@woodwellclimate.org) - "
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  github_document:
+    toc: true
+    toc_depth: 4
+bibliography: ../../tex/refs.bib
+csl: ../../tex/apa.csl  
+fig_caption: yes
+link-citations: yes
+twitter-handle: soilspec
+header-includes:
+- \usepackage{caption}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+[<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
+
+[<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />](http://creativecommons.org/licenses/by-sa/4.0/)
+
+This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
+
+```{r setup, include=FALSE}
+library(captioner)
+fig_nums <- captioner(prefix = "Fig.")
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+options(scipen = 999)
+```
+
+## Neospectra database
+
+Part of: <https://github.com/soilspectroscopy>  
+Project: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)  
+Last update: `r Sys.Date()`  
+Dataset: [Neospectra database](https://soilspectroscopy.github.io/ossl-manual/neospectra-database.html)
+
+A NIR soil spectral library was compiled using the NeoSpectra Handheld NIR Analyzer developed by Si-Ware (@sanderman_jonathan_2023_7586622). This library includes 2,106 distinct mineral soil samples scanned across 9 of these portable low-cost NIR spectrometers (indicated by serial no). All samples were scanned on dry and 2mm sieved soil. Site, soil and MIR spectra were fetched from KSSL database.
+
+The database is available in <https://doi.org/10.5281/zenodo.7586622>.
+
+Input datasets:  
+- `Neospectra_WoodwellKSSL_avg_soil+site+NIR.csv`.  
+- `Neospectra_WoodwellKSSL_avg_MIR.csv`.  
+
+```{r packages, include=TRUE, echo=FALSE, eval=TRUE}
+packages <- c("tidyverse", "prospectr", "measurements", "readxl", "stringr",
+              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
+              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc", "qs")
+new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+invisible(lapply(packages, library, character.only = TRUE))
+source("../../R-code/functions/SSL_functions.R")
+```
+
+Directory/folder path
+```{r}
+dir = "/mnt/soilspec4gg/ossl/dataset/Neospectra/"
+tic()
+```
+
+## References
