@@ -3,20 +3,25 @@ Dataset import: Neospectra
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Colleen Smith
 (<csmith@woodwellclimate.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-31 January, 2023
+04 May, 2023
 
 
 
--   [Neospectra database](#neospectra-database)
--   [Data import](#data-import)
-    -   [Soil site information](#soil-site-information)
-    -   [Soil lab information](#soil-lab-information)
-    -   [Near-infrared spectroscopy
-        data](#near-infrared-spectroscopy-data)
-    -   [Mid-infrared spectroscopy
-        data](#mid-infrared-spectroscopy-data)
-    -   [Quality control](#quality-control)
--   [References](#references)
+- <a href="#neospectra-database" id="toc-neospectra-database">Neospectra
+  database</a>
+- <a href="#data-import" id="toc-data-import">Data import</a>
+  - <a href="#soil-site-information" id="toc-soil-site-information">Soil
+    site information</a>
+  - <a href="#soil-lab-information" id="toc-soil-lab-information">Soil lab
+    information</a>
+  - <a href="#near-infrared-spectroscopy-data"
+    id="toc-near-infrared-spectroscopy-data">Near-infrared spectroscopy
+    data</a>
+  - <a href="#mid-infrared-spectroscopy-data"
+    id="toc-mid-infrared-spectroscopy-data">Mid-infrared spectroscopy
+    data</a>
+  - <a href="#quality-control" id="toc-quality-control">Quality control</a>
+- <a href="#references" id="toc-references">References</a>
 
 [<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
 
@@ -31,13 +36,12 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2023-01-31  
+Last update: 2023-05-04  
 Dataset: [Neospectra
 database](https://soilspectroscopy.github.io/ossl-manual/neospectra-database.html)
 
 A NIR soil spectral library was compiled using the NeoSpectra Handheld
-NIR Analyzer developed by Si-Ware ([Sanderman et
-al.](#ref-sanderman_jonathan_2023_7586622)
+NIR Analyzer developed by Si-Ware (Sanderman et al.
 ([2023](#ref-sanderman_jonathan_2023_7586622))). This library includes
 2,106 distinct mineral soil samples scanned across 9 of these portable
 low-cost NIR spectrometers (indicated by serial no). All samples were
@@ -217,31 +221,31 @@ transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv")) %>%
 knitr::kable(transvalues)
 ```
 
-| table                | original\_name | ossl\_abbrev | ossl\_method | ossl\_unit | ossl\_convert | ossl\_name                   |
-|:---------------------|:---------------|:-------------|:-------------|:-----------|:--------------|:-----------------------------|
-| \_avg\_soil+site+NIR | eoc\_tot\_c    | oc           | usda.c729    | w.pct      | x             | oc\_usda.c729\_w.pct         |
-| \_avg\_soil+site+NIR | c\_tot\_ncs    | c.tot        | usda.a622    | w.pct      | x             | c.tot\_usda.a622\_w.pct      |
-| \_avg\_soil+site+NIR | n\_tot\_ncs    | n.tot        | usda.a623    | w.pct      | x             | n.tot\_usda.a623\_w.pct      |
-| \_avg\_soil+site+NIR | s\_tot\_ncs    | s.tot        | usda.a624    | w.pct      | x             | s.tot\_usda.a624\_w.pct      |
-| \_avg\_soil+site+NIR | ph\_h2o        | ph.h2o       | usda.a268    | index      | x             | ph.h2o\_usda.a268\_index     |
-| \_avg\_soil+site+NIR | db\_13b        | bd           | usda.a4      | g.cm3      | x             | bd\_usda.a4\_g.cm3           |
-| \_avg\_soil+site+NIR | clay\_tot\_psa | clay.tot     | usda.a334    | w.pct      | x             | clay.tot\_usda.a334\_w.pct   |
-| \_avg\_soil+site+NIR | silt\_tot\_psa | silt.tot     | usda.c62     | w.pct      | x             | silt.tot\_usda.c62\_w.pct    |
-| \_avg\_soil+site+NIR | sand\_tot\_psa | sand.tot     | usda.c60     | w.pct      | x             | sand.tot\_usda.c60\_w.pct    |
-| \_avg\_soil+site+NIR | caco3          | caco3        | usda.a54     | w.pct      | x             | caco3\_usda.a54\_w.pct       |
-| \_avg\_soil+site+NIR | efferv\_1nhcl  | efferv       | usda.a479    | class      | x             | efferv\_usda.a479\_class     |
-| \_avg\_soil+site+NIR | cecd\_nh4      | cec          | usda.a723    | cmolc.kg   | x             | cec\_usda.a723\_cmolc.kg     |
-| \_avg\_soil+site+NIR | ca\_nh4d       | ca.ext       | usda.a722    | cmolc.kg   | x             | ca.ext\_usda.a722\_cmolc.kg  |
-| \_avg\_soil+site+NIR | mg\_nh4d       | mg.ext       | usda.a724    | cmolc.kg   | x             | mg.ext\_usda.a724\_cmolc.kg  |
-| \_avg\_soil+site+NIR | k\_nh4d        | k.ext        | usda.a725    | cmolc.kg   | x             | k.ext\_usda.a725\_cmolc.kg   |
-| \_avg\_soil+site+NIR | na\_nh4d       | na.ext       | usda.a726    | cmolc.kg   | x             | na.ext\_usda.a726\_cmolc.kg  |
-| \_avg\_soil+site+NIR | w32l2          | wr.33kPa     | usda.a415    | w.pct      | x             | wr.33kPa\_usda.a415\_w.pct   |
-| \_avg\_soil+site+NIR | w15l2          | wr.1500kPa   | usda.a417    | w.pct      | x             | wr.1500kPa\_usda.a417\_w.pct |
-| \_avg\_soil+site+NIR | al\_dith       | al.dith      | usda.a65     | w.pct      | x             | al.dith\_usda.a65\_w.pct     |
-| \_avg\_soil+site+NIR | p\_mehlich3    | p.ext        | usda.a652    | mg.kg      | x             | p.ext\_usda.a652\_mg.kg      |
-| \_avg\_soil+site+NIR | p\_el\_meh3    | p.ext        | usda.a1070   | mg.kg      | x             | p.ext\_usda.a1070\_mg.kg     |
-| \_avg\_soil+site+NIR | k\_el\_meh3    | k.ext        | usda.a1065   | mg.kg      | x             | k.ext\_usda.a1065\_mg.kg     |
-| \_avg\_soil+site+NIR | ec\_12pre      | ec           | usda.a364    | ds.m       | x             | ec\_usda.a364\_ds.m          |
+| table               | original_name | ossl_abbrev | ossl_method | ossl_unit | ossl_convert | ossl_name                  |
+|:--------------------|:--------------|:------------|:------------|:----------|:-------------|:---------------------------|
+| \_avg_soil+site+NIR | eoc_tot_c     | oc          | usda.c729   | w.pct     | x            | oc_usda.c729_w.pct         |
+| \_avg_soil+site+NIR | c_tot_ncs     | c.tot       | usda.a622   | w.pct     | x            | c.tot_usda.a622_w.pct      |
+| \_avg_soil+site+NIR | n_tot_ncs     | n.tot       | usda.a623   | w.pct     | x            | n.tot_usda.a623_w.pct      |
+| \_avg_soil+site+NIR | s_tot_ncs     | s.tot       | usda.a624   | w.pct     | x            | s.tot_usda.a624_w.pct      |
+| \_avg_soil+site+NIR | ph_h2o        | ph.h2o      | usda.a268   | index     | x            | ph.h2o_usda.a268_index     |
+| \_avg_soil+site+NIR | db_13b        | bd          | usda.a4     | g.cm3     | x            | bd_usda.a4_g.cm3           |
+| \_avg_soil+site+NIR | clay_tot_psa  | clay.tot    | usda.a334   | w.pct     | x            | clay.tot_usda.a334_w.pct   |
+| \_avg_soil+site+NIR | silt_tot_psa  | silt.tot    | usda.c62    | w.pct     | x            | silt.tot_usda.c62_w.pct    |
+| \_avg_soil+site+NIR | sand_tot_psa  | sand.tot    | usda.c60    | w.pct     | x            | sand.tot_usda.c60_w.pct    |
+| \_avg_soil+site+NIR | caco3         | caco3       | usda.a54    | w.pct     | x            | caco3_usda.a54_w.pct       |
+| \_avg_soil+site+NIR | efferv_1nhcl  | efferv      | usda.a479   | class     | x            | efferv_usda.a479_class     |
+| \_avg_soil+site+NIR | cecd_nh4      | cec         | usda.a723   | cmolc.kg  | x            | cec_usda.a723_cmolc.kg     |
+| \_avg_soil+site+NIR | ca_nh4d       | ca.ext      | usda.a722   | cmolc.kg  | x            | ca.ext_usda.a722_cmolc.kg  |
+| \_avg_soil+site+NIR | mg_nh4d       | mg.ext      | usda.a724   | cmolc.kg  | x            | mg.ext_usda.a724_cmolc.kg  |
+| \_avg_soil+site+NIR | k_nh4d        | k.ext       | usda.a725   | cmolc.kg  | x            | k.ext_usda.a725_cmolc.kg   |
+| \_avg_soil+site+NIR | na_nh4d       | na.ext      | usda.a726   | cmolc.kg  | x            | na.ext_usda.a726_cmolc.kg  |
+| \_avg_soil+site+NIR | w32l2         | wr.33kPa    | usda.a415   | w.pct     | x            | wr.33kPa_usda.a415_w.pct   |
+| \_avg_soil+site+NIR | w15l2         | wr.1500kPa  | usda.a417   | w.pct     | x            | wr.1500kPa_usda.a417_w.pct |
+| \_avg_soil+site+NIR | al_dith       | al.dith     | usda.a65    | w.pct     | x            | al.dith_usda.a65_w.pct     |
+| \_avg_soil+site+NIR | p_mehlich3    | p.ext       | usda.a652   | mg.kg     | x            | p.ext_usda.a652_mg.kg      |
+| \_avg_soil+site+NIR | p_el_meh3     | p.ext       | usda.a1070  | mg.kg     | x            | p.ext_usda.a1070_mg.kg     |
+| \_avg_soil+site+NIR | k_el_meh3     | k.ext       | usda.a1065  | mg.kg     | x            | k.ext_usda.a1065_mg.kg     |
+| \_avg_soil+site+NIR | ec_12pre      | ec          | usda.a364   | ds.m      | x            | ec_usda.a364_ds.m          |
 
 Preparing soil data:
 
@@ -468,7 +472,7 @@ scans.summary %>%
 ```
 
     ## # A tibble: 0 × 2
-    ## # … with 2 variables: check <chr>, count <int>
+    ## # ℹ 2 variables: check <chr>, count <int>
 
 ``` r
 # Renaming
@@ -506,9 +510,8 @@ qs::qsave(neospectra.mir.export, mir.qs, preset = "high")
 
 The final table must be joined as:
 
--   For NIR, left\_join site and soil to NIR using “id.scan\_local\_c.”
--   For MIR, left\_join site and soil to MIR using
-    “id.sample\_local\_c.”
+- For NIR, left_join site and soil to NIR using “id.scan_local_c”.
+- For MIR, left_join site and soil to MIR using “id.sample_local_c”.
 
 The availabilty of data is summarised below:
 
@@ -606,42 +609,42 @@ Data summary
 
 **Variable type: character**
 
-| skim\_variable           | n\_missing | min | max | empty | n\_unique | whitespace |
-|:-------------------------|-----------:|----:|----:|------:|----------:|-----------:|
-| efferv\_usda.a479\_class |         93 |   4 |  11 |     0 |         5 |          0 |
+| skim_variable          | n_missing | min | max | empty | n_unique | whitespace |
+|:-----------------------|----------:|----:|----:|------:|---------:|-----------:|
+| efferv_usda.a479_class |        93 |   4 |  11 |     0 |        5 |          0 |
 
 **Variable type: factor**
 
-| skim\_variable      | n\_missing | ordered | n\_unique | top\_counts                    |
-|:--------------------|-----------:|:--------|----------:|:-------------------------------|
-| id.sample\_local\_c |          0 | FALSE   |      2106 | 100: 1, 101: 1, 101: 1, 101: 1 |
+| skim_variable     | n_missing | ordered | n_unique | top_counts                     |
+|:------------------|----------:|:--------|---------:|:-------------------------------|
+| id.sample_local_c |         0 | FALSE   |     2106 | 100: 1, 101: 1, 101: 1, 101: 1 |
 
 **Variable type: numeric**
 
-| skim\_variable               | n\_missing |   mean |     sd |    p0 |   p25 |    p50 |    p75 |    p100 |
-|:-----------------------------|-----------:|-------:|-------:|------:|------:|-------:|-------:|--------:|
-| oc\_usda.c729\_w.pct         |          0 |   2.00 |   2.71 | -0.03 |  0.59 |   1.31 |   2.63 |   53.88 |
-| c.tot\_usda.a622\_w.pct      |         90 |   2.29 |   2.80 |  0.02 |  0.82 |   1.59 |   2.97 |   53.88 |
-| n.tot\_usda.a623\_w.pct      |          0 |   0.17 |   0.18 |  0.00 |  0.06 |   0.12 |   0.22 |    3.02 |
-| s.tot\_usda.a624\_w.pct      |         90 |   0.13 |   1.02 |  0.00 |  0.00 |   0.01 |   0.03 |   18.38 |
-| ph.h2o\_usda.a268\_index     |         10 |   6.25 |   1.26 |  3.69 |  5.21 |   6.12 |   7.35 |    9.52 |
-| bd\_usda.a4\_g.cm3           |       1142 |   1.31 |   0.24 |  0.30 |  1.18 |   1.34 |   1.47 |    2.03 |
-| clay.tot\_usda.a334\_w.pct   |          0 |  20.55 |  14.54 |  0.00 |  9.08 |  18.33 |  28.82 |   86.69 |
-| silt.tot\_usda.c62\_w.pct    |          0 |  37.57 |  20.30 |  0.00 | 21.80 |  37.40 |  52.10 |   87.90 |
-| sand.tot\_usda.c60\_w.pct    |          0 |  41.88 |  27.95 |  0.30 | 17.60 |  39.25 |  64.38 |  100.00 |
-| caco3\_usda.a54\_w.pct       |       1413 |   5.91 |   9.49 | -0.57 |  0.26 |   1.64 |   7.61 |   89.03 |
-| cec\_usda.a723\_cmolc.kg     |         10 |  16.05 |  12.11 |  0.13 |  7.74 |  14.08 |  21.96 |  190.11 |
-| ca.ext\_usda.a722\_cmolc.kg  |         10 |  19.23 |  31.73 |  0.00 |  2.52 |   9.78 |  22.19 |  363.64 |
-| mg.ext\_usda.a724\_cmolc.kg  |         10 |   3.24 |   4.52 |  0.00 |  0.68 |   1.98 |   4.29 |   82.14 |
-| k.ext\_usda.a725\_cmolc.kg   |         10 |   0.55 |   0.73 |  0.00 |  0.14 |   0.33 |   0.68 |   11.25 |
-| na.ext\_usda.a726\_cmolc.kg  |         10 |   0.88 |   8.10 |  0.00 |  0.00 |   0.00 |   0.05 |  202.96 |
-| wr.33kPa\_usda.a415\_w.pct   |       1875 |  23.87 |  13.74 |  1.00 | 14.17 |  24.22 |  31.44 |  127.90 |
-| wr.1500kPa\_usda.a417\_w.pct |         35 |  11.59 |   7.27 |  0.08 |  6.49 |  10.81 |  15.21 |   96.14 |
-| al.dith\_usda.a65\_w.pct     |        231 |   0.18 |   0.25 |  0.00 |  0.04 |   0.10 |   0.19 |    2.28 |
-| p.ext\_usda.a652\_mg.kg      |       1378 |  35.21 |  81.75 |  0.00 |  2.96 |  11.25 |  34.89 | 1358.90 |
-| p.ext\_usda.a1070\_mg.kg     |       2030 |  27.26 |  35.04 |  0.36 |  6.52 |  15.96 |  39.22 |  256.44 |
-| k.ext\_usda.a1065\_mg.kg     |       2030 | 185.49 | 136.84 |  0.00 | 82.01 | 147.45 | 256.33 |  730.19 |
-| ec\_usda.a364\_ds.m          |       1154 |   1.00 |   4.72 |  0.01 |  0.13 |   0.23 |   0.46 |   81.93 |
+| skim_variable              | n_missing |   mean |     sd |    p0 |   p25 |    p50 |    p75 |    p100 |
+|:---------------------------|----------:|-------:|-------:|------:|------:|-------:|-------:|--------:|
+| oc_usda.c729_w.pct         |         0 |   2.00 |   2.71 | -0.03 |  0.59 |   1.31 |   2.63 |   53.88 |
+| c.tot_usda.a622_w.pct      |        90 |   2.29 |   2.80 |  0.02 |  0.82 |   1.59 |   2.97 |   53.88 |
+| n.tot_usda.a623_w.pct      |         0 |   0.17 |   0.18 |  0.00 |  0.06 |   0.12 |   0.22 |    3.02 |
+| s.tot_usda.a624_w.pct      |        90 |   0.13 |   1.02 |  0.00 |  0.00 |   0.01 |   0.03 |   18.38 |
+| ph.h2o_usda.a268_index     |        10 |   6.25 |   1.26 |  3.69 |  5.21 |   6.12 |   7.35 |    9.52 |
+| bd_usda.a4_g.cm3           |      1142 |   1.31 |   0.24 |  0.30 |  1.18 |   1.34 |   1.47 |    2.03 |
+| clay.tot_usda.a334_w.pct   |         0 |  20.55 |  14.54 |  0.00 |  9.08 |  18.33 |  28.82 |   86.69 |
+| silt.tot_usda.c62_w.pct    |         0 |  37.57 |  20.30 |  0.00 | 21.80 |  37.40 |  52.10 |   87.90 |
+| sand.tot_usda.c60_w.pct    |         0 |  41.88 |  27.95 |  0.30 | 17.60 |  39.25 |  64.38 |  100.00 |
+| caco3_usda.a54_w.pct       |      1413 |   5.91 |   9.49 | -0.57 |  0.26 |   1.64 |   7.61 |   89.03 |
+| cec_usda.a723_cmolc.kg     |        10 |  16.05 |  12.11 |  0.13 |  7.74 |  14.08 |  21.96 |  190.11 |
+| ca.ext_usda.a722_cmolc.kg  |        10 |  19.23 |  31.73 |  0.00 |  2.52 |   9.78 |  22.19 |  363.64 |
+| mg.ext_usda.a724_cmolc.kg  |        10 |   3.24 |   4.52 |  0.00 |  0.68 |   1.98 |   4.29 |   82.14 |
+| k.ext_usda.a725_cmolc.kg   |        10 |   0.55 |   0.73 |  0.00 |  0.14 |   0.33 |   0.68 |   11.25 |
+| na.ext_usda.a726_cmolc.kg  |        10 |   0.88 |   8.10 |  0.00 |  0.00 |   0.00 |   0.05 |  202.96 |
+| wr.33kPa_usda.a415_w.pct   |      1875 |  23.87 |  13.74 |  1.00 | 14.17 |  24.22 |  31.44 |  127.90 |
+| wr.1500kPa_usda.a417_w.pct |        35 |  11.59 |   7.27 |  0.08 |  6.49 |  10.81 |  15.21 |   96.14 |
+| al.dith_usda.a65_w.pct     |       231 |   0.18 |   0.25 |  0.00 |  0.04 |   0.10 |   0.19 |    2.28 |
+| p.ext_usda.a652_mg.kg      |      1378 |  35.21 |  81.75 |  0.00 |  2.96 |  11.25 |  34.89 | 1358.90 |
+| p.ext_usda.a1070_mg.kg     |      2030 |  27.26 |  35.04 |  0.36 |  6.52 |  15.96 |  39.22 |  256.44 |
+| k.ext_usda.a1065_mg.kg     |      2030 | 185.49 | 136.84 |  0.00 | 82.01 | 147.45 | 256.33 |  730.19 |
+| ec_usda.a364_ds.m          |      1154 |   1.00 |   4.72 |  0.01 |  0.13 |   0.23 |   0.46 |   81.93 |
 
 NIR spectral visualization:
 
@@ -688,7 +691,7 @@ neospectra.mir %>%
 toc()
 ```
 
-    ## 23.728 sec elapsed
+    ## 23.614 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -696,8 +699,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2605548 139.2    4943240 264.0  4943240 264.0
-    ## Vcells 5080851  38.8   37338220 284.9 46672563 356.1
+    ## Ncells 3532015 188.7    5981890 319.5  5981890 319.5
+    ## Vcells 6154680  47.0   46807433 357.2 48691076 371.5
 
 ## References
 
