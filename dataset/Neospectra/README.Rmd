@@ -352,7 +352,7 @@ scans.summary %>%
   summarise(count = n())
 
 # Renaming
-old.wavenumbers <- seq(1350, 2250, by = 2)
+old.wavenumbers <- seq(1350, 2550, by = 2)
 new.wavenumbers <- paste0("scan_nir.", old.wavenumbers, "_ref")
 
 neospectra.nir.2nm <- neospectra.nir.2nm %>%
@@ -541,7 +541,7 @@ neospectra.nir.export %>%
   dplyr::mutate(wavelength = as.numeric(wavelength)) %>%
   ggplot(aes(x = wavelength, y = reflectance, group = id.scan_local_c)) +
   geom_line(alpha = 0.5, size = 0.5) +
-  scale_x_continuous(breaks = c(1350, 1500, 1750, 2000, 2250)) +
+  scale_x_continuous(breaks = c(1350, 1500, 2000, 2550)) +
   labs(x = "Wavelength (nm)", y = "Reflectance", color = "") +
   theme_light()
 ```

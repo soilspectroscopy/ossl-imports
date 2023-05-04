@@ -639,16 +639,23 @@ NOTE: The code chunk below this paragraph is hidden. Just run once for getting t
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 
 <!-- # Downloading edited names -->
-<!-- ossl.level0.names.soillab <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_soillab") -->
-<!-- ossl.level0.names.soilsite <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_soilsite") -->
-<!-- ossl.level0.names.mir <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_mir") -->
-<!-- ossl.level0.names.visnir <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_visnir") -->
+<!-- ossl.level0.names.soillab <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                        sheet = "ossl_level0_names_soillab") -->
+<!-- ossl.level0.names.soilsite <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                         sheet = "ossl_level0_names_soilsite") -->
+<!-- ossl.level0.names.mir <- googlesheets4::read_sheet(ossl.soildata.coding,  -->
+<!--                                                    sheet = "ossl_level0_names_mir") -->
+<!-- ossl.level0.names.visnir <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                       sheet = "ossl_level0_names_visnir") -->
+<!-- ossl.neospectra.names.nir <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                       sheet = "neospectra_names_nir") -->
 
 <!-- # Saving to folder -->
 <!-- readr::write_csv(ossl.level0.names.soillab, "../out/ossl_level0_names_soillab.csv") -->
 <!-- readr::write_csv(ossl.level0.names.soilsite, "../out/ossl_level0_names_soilsite.csv") -->
 <!-- readr::write_csv(ossl.level0.names.mir, "../out/ossl_level0_names_mir.csv") -->
 <!-- readr::write_csv(ossl.level0.names.visnir, "../out/ossl_level0_names_visnir.csv") -->
+<!-- readr::write_csv(ossl.neospectra.names.nir, "../out/ossl_level0_names_neospectra_nir.csv") -->
 <!-- ``` -->
 
 NOTE: The code chunk below this paragraph is hidden. Run once for downloading the harmonization rules (L0 to L1). The table is edited online on Google Sheets after the previous definitions. Copies are downloaded to github for archiving. Use `CMD + Shift + C` to uncomment chunks.
@@ -658,14 +665,16 @@ NOTE: The code chunk below this paragraph is hidden. Run once for downloading th
 <!-- library("googlesheets4") -->
 
 <!-- # FACT CIN folder id -->
-<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), pattern = "OSSL_tab1_soildata_coding") -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab1_soildata_coding") -->
 <!-- ossl.soildata.coding <- listed.table[[1,"id"]] -->
 
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 
 <!-- # Preparing soillab.names -->
-<!-- ossl.soillab.harmonization <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level1_soillab_harmonization") -->
+<!-- ossl.soillab.harmonization <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                         sheet = "ossl_level1_soillab_harmonization") -->
 
 <!-- # Downloading to folder -->
 <!-- readr::write_csv(ossl.soillab.harmonization, "../out/ossl_level0_to_level1_soillab_harmonization.csv") -->

@@ -381,7 +381,7 @@ scans.summary %>%
 
 ``` r
 # Renaming
-old.wavenumbers <- seq(1350, 2250, by = 2)
+old.wavenumbers <- seq(1350, 2550, by = 2)
 new.wavenumbers <- paste0("scan_nir.", old.wavenumbers, "_ref")
 
 neospectra.nir.2nm <- neospectra.nir.2nm %>%
@@ -657,7 +657,7 @@ neospectra.nir.export %>%
   dplyr::mutate(wavelength = as.numeric(wavelength)) %>%
   ggplot(aes(x = wavelength, y = reflectance, group = id.scan_local_c)) +
   geom_line(alpha = 0.5, size = 0.5) +
-  scale_x_continuous(breaks = c(1350, 1500, 1750, 2000, 2250)) +
+  scale_x_continuous(breaks = c(1350, 1500, 2000, 2550)) +
   labs(x = "Wavelength (nm)", y = "Reflectance", color = "") +
   theme_light()
 ```
@@ -688,7 +688,7 @@ neospectra.mir %>%
 toc()
 ```
 
-    ## 23.359 sec elapsed
+    ## 23.728 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -696,8 +696,8 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger  (Mb) max used  (Mb)
-    ## Ncells 2605095 139.2    5041442 269.3  5041442 269.3
-    ## Vcells 5080255  38.8   37338236 284.9 40205959 306.8
+    ## Ncells 2605548 139.2    4943240 264.0  4943240 264.0
+    ## Vcells 5080851  38.8   37338220 284.9 46672563 356.1
 
 ## References
 
