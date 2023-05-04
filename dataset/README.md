@@ -3,24 +3,29 @@ Binding all datasets
 Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>) -
-09 January, 2023
+04 May, 2023
 
 
 
--   [Description](#description)
--   [OSSL level 0](#ossl-level-0)
-    -   [Binding files](#binding-files)
-    -   [Joining files](#joining-files)
-    -   [Saving files](#saving-files)
-    -   [World map visualizations](#world-map-visualizations)
-    -   [Overlay with spatial
-        covariates](#overlay-with-spatial-covariates)
--   [OSSL level 1](#ossl-level-1)
-    -   [Getting OSSL level 0 names](#getting-ossl-level-0-names)
-    -   [Producing level 1](#producing-level-1)
--   [Golden subset](#golden-subset)
-    -   [Map visualization](#map-visualization)
--   [References](#references)
+- <a href="#description" id="toc-description">Description</a>
+- <a href="#ossl-level-0" id="toc-ossl-level-0">OSSL level 0</a>
+  - <a href="#binding-files" id="toc-binding-files">Binding files</a>
+  - <a href="#joining-files" id="toc-joining-files">Joining files</a>
+  - <a href="#saving-files" id="toc-saving-files">Saving files</a>
+  - <a href="#world-map-visualizations"
+    id="toc-world-map-visualizations">World map visualizations</a>
+  - <a href="#overlay-with-spatial-covariates"
+    id="toc-overlay-with-spatial-covariates">Overlay with spatial
+    covariates</a>
+- <a href="#ossl-level-1" id="toc-ossl-level-1">OSSL level 1</a>
+  - <a href="#getting-ossl-level-0-names"
+    id="toc-getting-ossl-level-0-names">Getting OSSL level 0 names</a>
+  - <a href="#producing-level-1" id="toc-producing-level-1">Producing level
+    1</a>
+- <a href="#golden-subset" id="toc-golden-subset">Golden subset</a>
+  - <a href="#map-visualization" id="toc-map-visualization">Map
+    visualization</a>
+- <a href="#references" id="toc-references">References</a>
 
 [<img src="../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
 
@@ -35,7 +40,7 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2023-01-09
+Last update: 2023-05-04
 
 All the external SSLs were prepared and harmonized to the OSSL naming
 conventions as described in the `README` files present in each specific
@@ -44,14 +49,14 @@ working server as `qs` serial files (R package `qs`). The exported
 naming convention follows the standard
 `<local DATASET folder>/ossl_<data table>_<version>.<format>`:
 
--   `<local DATASET folder>/ossl_soilsite_v1.2.qs`: Imported/harmonized
-    site data in `qs` format.  
--   `<local DATASET folder>/ossl_soilab_v1.2.qs`: Imported/harmonized
-    soil reference data in `qs` format.  
--   `<local DATASET folder>/ossl_mir_v1.2.qs`: Imported/harmonized MIR
-    data in `qs` format.  
--   `<local DATASET folder>/ossl_visnir_v1.2.qs`: Imported/harmonized
-    ViSNIR data in `qs` format.
+- `<local DATASET folder>/ossl_soilsite_v1.2.qs`: Imported/harmonized
+  site data in `qs` format.  
+- `<local DATASET folder>/ossl_soilab_v1.2.qs`: Imported/harmonized soil
+  reference data in `qs` format.  
+- `<local DATASET folder>/ossl_mir_v1.2.qs`: Imported/harmonized MIR
+  data in `qs` format.  
+- `<local DATASET folder>/ossl_visnir_v1.2.qs`: Imported/harmonized
+  ViSNIR data in `qs` format.
 
 R packages
 
@@ -80,17 +85,21 @@ Listing, reading and row binding `qs` files
 ``` r
 qs.files <- dir_ls(dir, recurse = T, regexp = glob2rx("*v1.2.qs"))
 
-qs.soilsite <- as.vector(grep("_soilsite_", qs.files, value = T))
-qs.soilsite.ids <- tibble(file_sequence = as.character(1:length(qs.soilsite)), code = basename(dirname(qs.soilsite)))
+qs.soilsite <- as.vector(grep("ossl_soilsite_", qs.files, value = T))
+qs.soilsite.ids <- tibble(file_sequence = as.character(1:length(qs.soilsite)),
+                          code = basename(dirname(qs.soilsite)))
 
-qs.soillab <- as.vector(grep("_soillab_", qs.files, value = T))
-qs.soillab.ids <- tibble(file_sequence = as.character(1:length(qs.soillab)), code = basename(dirname(qs.soillab)))
+qs.soillab <- as.vector(grep("ossl_soillab_", qs.files, value = T))
+qs.soillab.ids <- tibble(file_sequence = as.character(1:length(qs.soillab)),
+                         code = basename(dirname(qs.soillab)))
 
-qs.visnir <- as.vector(grep("_visnir_", qs.files, value = T))
-qs.visnir.ids <- tibble(file_sequence = as.character(1:length(qs.visnir)), code = basename(dirname(qs.visnir)))
+qs.visnir <- as.vector(grep("ossl_visnir_", qs.files, value = T))
+qs.visnir.ids <- tibble(file_sequence = as.character(1:length(qs.visnir)),
+                        code = basename(dirname(qs.visnir)))
 
-qs.mir <- as.vector(grep("_mir_", qs.files, value = T))
-qs.mir.ids <- tibble(file_sequence = as.character(1:length(qs.mir)), code = basename(dirname(qs.mir)))
+qs.mir <- as.vector(grep("ossl_mir_", qs.files, value = T))
+qs.mir.ids <- tibble(file_sequence = as.character(1:length(qs.mir)),
+                     code = basename(dirname(qs.mir)))
 
 ## Reading soilsite files
 ossl.soilsite <- map_dfr(.x = qs.soilsite,
@@ -146,8 +155,8 @@ ossl.soilsite %>%
 ``` r
 ## Reading soillab files
 ossl.soillab <- map_dfr(.x = qs.soillab,
-                       .f = qread,
-                       .id = "file_sequence") %>%
+                        .f = qread,
+                        .id = "file_sequence") %>%
   left_join(qs.soillab.ids, by = "file_sequence") %>%
   relocate(code, .before = 1) %>%
   select(order(colnames(.))) %>%
@@ -157,7 +166,7 @@ ossl.soillab %>%
   glimpse()
 ```
 
-    ## Rows: 151,322
+    ## Rows: 155,151
     ## Columns: 81
     ## $ code                           <chr> "AFSIS", "AFSIS", "AFSIS", "AFSIS", "AF…
     ## $ id.layer_local_c               <chr> "icr074433", "icr075957", "icr074336", …
@@ -357,8 +366,7 @@ ossl.info <- ossl.info %>%
          layer.lower.depth_usda_cm = coalesce(layer.lower.depth_usda_cm.x, layer.lower.depth_usda_cm.y, NA),
          .after = layer.lower.depth_usda_cm.x) %>%
   select(-layer.upper.depth_usda_cm.x, -layer.upper.depth_usda_cm.y,
-         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y) %>%
-  mutate_all(list(~na_if(.,"")))
+         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y)
 
 ossl.info %>%
   select(ends_with(".x")) %>%
@@ -896,15 +904,22 @@ archived in `out/`. Requires Google authentication. Use
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 <!-- # Downloading edited names -->
-<!-- ossl.level0.names.soillab <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_soillab") -->
-<!-- ossl.level0.names.soilsite <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_soilsite") -->
-<!-- ossl.level0.names.mir <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_mir") -->
-<!-- ossl.level0.names.visnir <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level0_names_visnir") -->
+<!-- ossl.level0.names.soillab <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                        sheet = "ossl_level0_names_soillab") -->
+<!-- ossl.level0.names.soilsite <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                         sheet = "ossl_level0_names_soilsite") -->
+<!-- ossl.level0.names.mir <- googlesheets4::read_sheet(ossl.soildata.coding,  -->
+<!--                                                    sheet = "ossl_level0_names_mir") -->
+<!-- ossl.level0.names.visnir <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                       sheet = "ossl_level0_names_visnir") -->
+<!-- ossl.neospectra.names.nir <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                       sheet = "neospectra_names_nir") -->
 <!-- # Saving to folder -->
 <!-- readr::write_csv(ossl.level0.names.soillab, "../out/ossl_level0_names_soillab.csv") -->
 <!-- readr::write_csv(ossl.level0.names.soilsite, "../out/ossl_level0_names_soilsite.csv") -->
 <!-- readr::write_csv(ossl.level0.names.mir, "../out/ossl_level0_names_mir.csv") -->
 <!-- readr::write_csv(ossl.level0.names.visnir, "../out/ossl_level0_names_visnir.csv") -->
+<!-- readr::write_csv(ossl.neospectra.names.nir, "../out/ossl_level0_names_neospectra_nir.csv") -->
 <!-- ``` -->
 
 NOTE: The code chunk below this paragraph is hidden. Run once for
@@ -917,12 +932,14 @@ chunks.
 <!-- library("googledrive") -->
 <!-- library("googlesheets4") -->
 <!-- # FACT CIN folder id -->
-<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), pattern = "OSSL_tab1_soildata_coding") -->
+<!-- listed.table <- googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"), -->
+<!--                                       pattern = "OSSL_tab1_soildata_coding") -->
 <!-- ossl.soildata.coding <- listed.table[[1,"id"]] -->
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id(ossl.soildata.coding) -->
 <!-- # Preparing soillab.names -->
-<!-- ossl.soillab.harmonization <- googlesheets4::read_sheet(ossl.soildata.coding, sheet = "ossl_level1_soillab_harmonization") -->
+<!-- ossl.soillab.harmonization <- googlesheets4::read_sheet(ossl.soildata.coding, -->
+<!--                                                         sheet = "ossl_level1_soillab_harmonization") -->
 <!-- # Downloading to folder -->
 <!-- readr::write_csv(ossl.soillab.harmonization, "../out/ossl_level0_to_level1_soillab_harmonization.csv") -->
 <!-- ``` -->
@@ -940,87 +957,86 @@ ossl.soillab.level1.transvalues %>%
   knitr::kable()
 ```
 
-| ossl\_name\_level0               | ossl\_name\_level1               | ossl\_level1\_transform |
-|:---------------------------------|:---------------------------------|:------------------------|
-| dataset.code\_ascii\_txt         | dataset.code\_ascii\_txt         | x                       |
-| id.layer\_uuid\_txt              | id.layer\_uuid\_txt              | x                       |
-| acidity\_usda.a795\_cmolc.kg     | acidity\_usda.a795\_cmolc.kg     | x                       |
-| aggstb\_usda.a1\_w.pct           | aggstb\_usda.a1\_w.pct           | x                       |
-| al.dith\_usda.a65\_w.pct         | al.dith\_usda.a65\_w.pct         | x                       |
-| al.ext\_aquaregia\_g.kg          | al.ext\_aquaregia\_g.kg          | x                       |
-| al.ext\_usda.a1056\_mg.kg        | al.ext\_usda.a1056\_mg.kg        | x                       |
-| al.ext\_usda.a69\_cmolc.kg       | al.ext\_usda.a69\_cmolc.kg       | x                       |
-| al.ox\_usda.a59\_w.pct           | al.ox\_usda.a59\_w.pct           | x                       |
-| awc.33.1500kPa\_usda.c80\_w.frac | awc.33.1500kPa\_usda.c80\_w.frac | x                       |
-| b.ext\_mel3\_mg.kg               | b.ext\_mel3\_mg.kg               | x                       |
-| bd\_iso.11272\_g.cm3             | bd\_usda.a4\_g.cm3               | x                       |
-| bd\_usda.a21\_g.cm3              | bd\_usda.a4\_g.cm3               | x                       |
-| bd\_usda.a4\_g.cm3               | bd\_usda.a4\_g.cm3               | x                       |
-| bd\_usda.c85\_g.cm3              | bd\_usda.a4\_g.cm3               | x                       |
-| c.tot\_iso.10694\_w.pct          | c.tot\_usda.a622\_w.pct          | x                       |
-| c.tot\_usda.a622\_w.pct          | c.tot\_usda.a622\_w.pct          | x                       |
-| ca.ext\_aquaregia\_mg.kg         | ca.ext\_aquaregia\_mg.kg         | x                       |
-| ca.ext\_usda.a1059\_mg.kg        | ca.ext\_usda.a1059\_mg.kg        | x                       |
-| ca.ext\_usda.a722\_cmolc.kg      | ca.ext\_usda.a722\_cmolc.kg      | x                       |
-| caco3\_iso.10693\_w.pct          | caco3\_usda.a54\_w.pct           | x                       |
-| caco3\_usda.a54\_w.pct           | caco3\_usda.a54\_w.pct           | x                       |
-| cec\_iso.11260\_cmolc.kg         | cec\_usda.a723\_cmolc.kg         | x                       |
-| cec\_usda.a723\_cmolc.kg         | cec\_usda.a723\_cmolc.kg         | x                       |
-| cf\_iso.11464\_w.pct             | cf\_usda.c236\_w.pct             | x                       |
-| cf\_usda.c236\_w.pct             | cf\_usda.c236\_w.pct             | x                       |
-| clay.tot\_iso.11277\_w.pct       | clay.tot\_usda.a334\_w.pct       | x                       |
-| clay.tot\_usda.a334\_w.pct       | clay.tot\_usda.a334\_w.pct       | x                       |
-| cu.ext\_usda.a1063\_mg.kg        | cu.ext\_usda.a1063\_mg.kg        | x                       |
-| ec\_iso.11265\_ds.m              | ec\_usda.a364\_ds.m              | x                       |
-| ec\_usda.a364\_ds.m              | ec\_usda.a364\_ds.m              | x                       |
-| efferv\_usda.a479\_class         | efferv\_usda.a479\_class         | x                       |
-| fe.dith\_usda.a66\_w.pct         | fe.dith\_usda.a66\_w.pct         | x                       |
-| fe.ext\_aquaregia\_g.kg          | fe.ext\_aquaregia\_g.kg          | x                       |
-| fe.ext\_usda.a1064\_mg.kg        | fe.ext\_usda.a1064\_mg.kg        | x                       |
-| fe.ox\_usda.a60\_w.pct           | fe.ox\_usda.a60\_w.pct           | x                       |
-| k.ext\_aquaregia\_mg.kg          | k.ext\_aquaregia\_mg.kg          | x                       |
-| k.ext\_usda.a1065\_mg.kg         | k.ext\_usda.a1065\_mg.kg         | x                       |
-| k.ext\_usda.a725\_cmolc.kg       | k.ext\_usda.a725\_cmolc.kg       | x                       |
-| mg.ext\_aquaregia\_mg.kg         | mg.ext\_aquaregia\_mg.kg         | x                       |
-| mg.ext\_usda.a1066\_mg.kg        | mg.ext\_usda.a1066\_mg.kg        | x                       |
-| mg.ext\_usda.a724\_cmolc.kg      | mg.ext\_usda.a724\_cmolc.kg      | x                       |
-| mn.ext\_aquaregia\_mg.kg         | mn.ext\_aquaregia\_mg.kg         | x                       |
-| mn.ext\_usda.a1067\_mg.kg        | mn.ext\_usda.a1066\_mg.kg        | x                       |
-| mn.ext\_usda.a70\_mg.kg          | mn.ext\_usda.a70\_mg.kg          | x                       |
-| n.tot\_iso.11261\_w.pct          | n.tot\_usda.a623\_w.pct          | x                       |
-| n.tot\_iso.13878\_w.pct          | n.tot\_usda.a623\_w.pct          | x                       |
-| n.tot\_usda.a623\_w.pct          | n.tot\_usda.a623\_w.pct          | x                       |
-| na.ext\_aquaregia\_mg.kg         | na.ext\_aquaregia\_mg.kg         | x                       |
-| na.ext\_usda.a1068\_mg.kg        | na.ext\_usda.a1068\_mg.kg        | x                       |
-| na.ext\_usda.a726\_cmolc.kg      | na.ext\_usda.a726\_cmolc.kg      | x                       |
-| oc\_iso.10694\_w.pct             | oc\_usda.c729\_w.pct             | x                       |
-| oc\_usda.c1059\_w.pct            | oc\_usda.c729\_w.pct             | x                       |
-| oc\_usda.c729\_w.pct             | oc\_usda.c729\_w.pct             | x                       |
-| p.ext\_aquaregia\_mg.kg          | p.ext\_aquaregia\_mg.kg          | x                       |
-| p.ext\_iso.11263\_mg.kg          | p.ext\_usda.a274\_mg.kg          | x                       |
-| p.ext\_usda.a1070\_mg.kg         | p.ext\_usda.a1070\_mg.kg         | x                       |
-| p.ext\_usda.a270\_mg.kg          | p.ext\_usda.a270\_mg.kg          | x                       |
-| p.ext\_usda.a274\_mg.kg          | p.ext\_usda.a274\_mg.kg          | x                       |
-| p.ext\_usda.a652\_mg.kg          | p.ext\_usda.a1070\_mg.kg         | x                       |
-| ph.cacl2\_iso.10390\_index       | ph.cacl2\_usda.a481\_index       | x                       |
-| ph.cacl2\_usda.a477\_index       | ph.cacl2\_usda.a481\_index       | x                       |
-| ph.cacl2\_usda.a481\_index       | ph.cacl2\_usda.a481\_index       | x                       |
-| ph.h2o\_iso.10390\_index         | ph.h2o\_usda.a268\_index         | x                       |
-| ph.h2o\_usda.a268\_index         | ph.h2o\_usda.a268\_index         | x                       |
-| s.ext\_mel3\_mg.kg               | s.ext\_mel3\_mg.kg               | x                       |
-| s.tot\_usda.a624\_w.pct          | s.tot\_usda.a624\_w.pct          | x                       |
-| sand.tot\_iso.11277\_w.pct       | sand.tot\_usda.c60\_w.pct        | x                       |
-| sand.tot\_usda.c405\_w.pct       | sand.tot\_usda.c60\_w.pct        | x                       |
-| sand.tot\_usda.c60\_w.pct        | sand.tot\_usda.c60\_w.pct        | x                       |
-| silt.tot\_iso.11277\_w.pct       | silt.tot\_usda.c62\_w.pct        | x                       |
-| silt.tot\_usda.c407\_w.pct       | silt.tot\_usda.c62\_w.pct        | x                       |
-| silt.tot\_usda.c62\_w.pct        | silt.tot\_usda.c62\_w.pct        | x                       |
-| wr.10kPa\_usda.a414\_w.pct       | wr.10kPa\_usda.a414\_w.pct       | x                       |
-| wr.10kPa\_usda.a8\_w.pct         | wr.10kPa\_usda.a414\_w.pct       | x                       |
-| wr.1500kPa\_usda.a417\_w.pct     | wr.1500kPa\_usda.a417\_w.pct     | x                       |
-| wr.33kPa\_usda.a415\_w.pct       | wr.33kPa\_usda.a415\_w.pct       | x                       |
-| wr.33kPa\_usda.a9\_w.pct         | wr.33kPa\_usda.a415\_w.pct       | x                       |
-| zn.ext\_usda.a1073\_mg.kg        | zn.ext\_usda.a1073\_mg.kg        | x                       |
+| ossl_name_level0               | ossl_name_level1               | ossl_level1_transform |
+|:-------------------------------|:-------------------------------|:----------------------|
+| dataset.code_ascii_txt         | dataset.code_ascii_txt         | x                     |
+| id.layer_uuid_txt              | id.layer_uuid_txt              | x                     |
+| acidity_usda.a795_cmolc.kg     | acidity_usda.a795_cmolc.kg     | x                     |
+| aggstb_usda.a1_w.pct           | aggstb_usda.a1_w.pct           | x                     |
+| al.dith_usda.a65_w.pct         | al.dith_usda.a65_w.pct         | x                     |
+| al.ext_aquaregia_g.kg          | al.ext_aquaregia_g.kg          | x                     |
+| al.ext_usda.a1056_mg.kg        | al.ext_usda.a1056_mg.kg        | x                     |
+| al.ext_usda.a69_cmolc.kg       | al.ext_usda.a69_cmolc.kg       | x                     |
+| al.ox_usda.a59_w.pct           | al.ox_usda.a59_w.pct           | x                     |
+| awc.33.1500kPa_usda.c80_w.frac | awc.33.1500kPa_usda.c80_w.frac | x                     |
+| b.ext_mel3_mg.kg               | b.ext_mel3_mg.kg               | x                     |
+| bd_iso.11272_g.cm3             | bd_usda.a4_g.cm3               | x                     |
+| bd_usda.a21_g.cm3              | bd_usda.a4_g.cm3               | x                     |
+| bd_usda.a4_g.cm3               | bd_usda.a4_g.cm3               | x                     |
+| c.tot_iso.10694_w.pct          | c.tot_usda.a622_w.pct          | x                     |
+| c.tot_usda.a622_w.pct          | c.tot_usda.a622_w.pct          | x                     |
+| ca.ext_aquaregia_mg.kg         | ca.ext_aquaregia_mg.kg         | x                     |
+| ca.ext_usda.a1059_mg.kg        | ca.ext_usda.a1059_mg.kg        | x                     |
+| ca.ext_usda.a722_cmolc.kg      | ca.ext_usda.a722_cmolc.kg      | x                     |
+| caco3_iso.10693_w.pct          | caco3_usda.a54_w.pct           | x                     |
+| caco3_usda.a54_w.pct           | caco3_usda.a54_w.pct           | x                     |
+| cec_iso.11260_cmolc.kg         | cec_usda.a723_cmolc.kg         | x                     |
+| cec_usda.a723_cmolc.kg         | cec_usda.a723_cmolc.kg         | x                     |
+| cf_iso.11464_w.pct             | cf_usda.c236_w.pct             | x                     |
+| cf_usda.c236_w.pct             | cf_usda.c236_w.pct             | x                     |
+| clay.tot_iso.11277_w.pct       | clay.tot_usda.a334_w.pct       | x                     |
+| clay.tot_usda.a334_w.pct       | clay.tot_usda.a334_w.pct       | x                     |
+| cu.ext_usda.a1063_mg.kg        | cu.ext_usda.a1063_mg.kg        | x                     |
+| ec_iso.11265_ds.m              | ec_usda.a364_ds.m              | x                     |
+| ec_usda.a364_ds.m              | ec_usda.a364_ds.m              | x                     |
+| efferv_usda.a479_class         | efferv_usda.a479_class         | x                     |
+| fe.dith_usda.a66_w.pct         | fe.dith_usda.a66_w.pct         | x                     |
+| fe.ext_aquaregia_g.kg          | fe.ext_aquaregia_g.kg          | x                     |
+| fe.ext_usda.a1064_mg.kg        | fe.ext_usda.a1064_mg.kg        | x                     |
+| fe.ox_usda.a60_w.pct           | fe.ox_usda.a60_w.pct           | x                     |
+| k.ext_aquaregia_mg.kg          | k.ext_aquaregia_mg.kg          | x                     |
+| k.ext_usda.a1065_mg.kg         | k.ext_usda.a1065_mg.kg         | x                     |
+| k.ext_usda.a725_cmolc.kg       | k.ext_usda.a725_cmolc.kg       | x                     |
+| mg.ext_aquaregia_mg.kg         | mg.ext_aquaregia_mg.kg         | x                     |
+| mg.ext_usda.a1066_mg.kg        | mg.ext_usda.a1066_mg.kg        | x                     |
+| mg.ext_usda.a724_cmolc.kg      | mg.ext_usda.a724_cmolc.kg      | x                     |
+| mn.ext_aquaregia_mg.kg         | mn.ext_aquaregia_mg.kg         | x                     |
+| mn.ext_usda.a1067_mg.kg        | mn.ext_usda.a1067_mg.kg        | x                     |
+| mn.ext_usda.a70_mg.kg          | mn.ext_usda.a70_mg.kg          | x                     |
+| n.tot_iso.11261_w.pct          | n.tot_usda.a623_w.pct          | x                     |
+| n.tot_iso.13878_w.pct          | n.tot_usda.a623_w.pct          | x                     |
+| n.tot_usda.a623_w.pct          | n.tot_usda.a623_w.pct          | x                     |
+| na.ext_aquaregia_mg.kg         | na.ext_aquaregia_mg.kg         | x                     |
+| na.ext_usda.a1068_mg.kg        | na.ext_usda.a1068_mg.kg        | x                     |
+| na.ext_usda.a726_cmolc.kg      | na.ext_usda.a726_cmolc.kg      | x                     |
+| oc_iso.10694_w.pct             | oc_usda.c729_w.pct             | x                     |
+| oc_usda.c1059_w.pct            | oc_usda.c729_w.pct             | x                     |
+| oc_usda.c729_w.pct             | oc_usda.c729_w.pct             | x                     |
+| p.ext_aquaregia_mg.kg          | p.ext_aquaregia_mg.kg          | x                     |
+| p.ext_iso.11263_mg.kg          | p.ext_usda.a274_mg.kg          | x                     |
+| p.ext_usda.a1070_mg.kg         | p.ext_usda.a1070_mg.kg         | x                     |
+| p.ext_usda.a270_mg.kg          | p.ext_usda.a270_mg.kg          | x                     |
+| p.ext_usda.a274_mg.kg          | p.ext_usda.a274_mg.kg          | x                     |
+| p.ext_usda.a652_mg.kg          | p.ext_usda.a1070_mg.kg         | x                     |
+| ph.cacl2_iso.10390_index       | ph.cacl2_usda.a481_index       | x                     |
+| ph.cacl2_usda.a477_index       | ph.cacl2_usda.a481_index       | x                     |
+| ph.cacl2_usda.a481_index       | ph.cacl2_usda.a481_index       | x                     |
+| ph.h2o_iso.10390_index         | ph.h2o_usda.a268_index         | x                     |
+| ph.h2o_usda.a268_index         | ph.h2o_usda.a268_index         | x                     |
+| s.ext_mel3_mg.kg               | s.ext_mel3_mg.kg               | x                     |
+| s.tot_usda.a624_w.pct          | s.tot_usda.a624_w.pct          | x                     |
+| sand.tot_iso.11277_w.pct       | sand.tot_usda.c60_w.pct        | x                     |
+| sand.tot_usda.c405_w.pct       | sand.tot_usda.c60_w.pct        | x                     |
+| sand.tot_usda.c60_w.pct        | sand.tot_usda.c60_w.pct        | x                     |
+| silt.tot_iso.11277_w.pct       | silt.tot_usda.c62_w.pct        | x                     |
+| silt.tot_usda.c407_w.pct       | silt.tot_usda.c62_w.pct        | x                     |
+| silt.tot_usda.c62_w.pct        | silt.tot_usda.c62_w.pct        | x                     |
+| wr.10kPa_usda.a414_w.pct       | wr.10kPa_usda.a414_w.pct       | x                     |
+| wr.10kPa_usda.a8_w.pct         | wr.10kPa_usda.a414_w.pct       | x                     |
+| wr.1500kPa_usda.a417_w.pct     | wr.1500kPa_usda.a417_w.pct     | x                     |
+| wr.33kPa_usda.a415_w.pct       | wr.33kPa_usda.a415_w.pct       | x                     |
+| wr.33kPa_usda.a9_w.pct         | wr.33kPa_usda.a415_w.pct       | x                     |
+| zn.ext_usda.a1073_mg.kg        | zn.ext_usda.a1073_mg.kg        | x                     |
 
 ``` r
 ## Reading soilab level 0
@@ -1171,7 +1187,7 @@ Golden subset locations
 toc()
 ```
 
-    ## 362.997 sec elapsed
+    ## 248.848 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1179,25 +1195,22 @@ gc()
 ```
 
     ##           used  (Mb) gc trigger    (Mb)   max used    (Mb)
-    ## Ncells 3658631 195.4   13812172   737.7   17265215   922.1
-    ## Vcells 7022625  53.6 2871870989 21910.7 2991447537 22823.0
+    ## Ncells 2572209 137.4    9121055   487.2   14251647   761.2
+    ## Vcells 5942040  45.4 2751140284 20989.6 2953862773 22536.2
 
 ## References
 
-This data processing follows the principles of `tidyverse` ([Wickham et
-al.](#ref-package_tidyverse) ([2019](#ref-package_tidyverse))) and takes
-advantage of several amazing packages, such as `tictoc`
-([Izrailev](#ref-package_tictoc) ([2022](#ref-package_tictoc))),
-`data.table` ([Dowle & Srinivasan](#ref-package_datatable)
-([2021](#ref-package_datatable))), `lubridate` ([Grolemund &
-Wickham](#ref-package_lubridate) ([2011](#ref-package_lubridate))), `fs`
-([Hester, Wickham, & Csárdi](#ref-package_fs)
-([2021](#ref-package_fs))), `qs` ([Ching](#ref-package_qs)
-([2022](#ref-package_qs))), `openssl` ([Ooms](#ref-package_openssl)
-([2022](#ref-package_openssl))), `olctools`
-([Keyes](#ref-package_olctools) ([2016](#ref-package_olctools))), `sf`
-([Pebesma](#ref-package_sf) ([2018](#ref-package_sf))), and `terra`
-([Hijmans](#ref-package_terra) ([2021](#ref-package_terra))).
+This data processing follows the principles of `tidyverse` (Wickham et
+al. ([2019](#ref-package_tidyverse))) and takes advantage of several
+amazing packages, such as `tictoc` (Izrailev
+([2022](#ref-package_tictoc))), `data.table` (Dowle & Srinivasan
+([2021](#ref-package_datatable))), `lubridate` (Grolemund & Wickham
+([2011](#ref-package_lubridate))), `fs` (Hester, Wickham, & Csárdi
+([2021](#ref-package_fs))), `qs` (Ching ([2022](#ref-package_qs))),
+`openssl` (Ooms ([2022](#ref-package_openssl))), `olctools` (Keyes
+([2016](#ref-package_olctools))), `sf` (Pebesma
+([2018](#ref-package_sf))), and `terra` (Hijmans
+([2021](#ref-package_terra))).
 
 <div id="refs" class="references csl-bib-body hanging-indent"
 line-spacing="2">

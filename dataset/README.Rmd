@@ -69,17 +69,21 @@ Listing, reading and row binding `qs` files
 ```{r qs, include=TRUE, echo=TRUE, eval=TRUE}
 qs.files <- dir_ls(dir, recurse = T, regexp = glob2rx("*v1.2.qs"))
 
-qs.soilsite <- as.vector(grep("_soilsite_", qs.files, value = T))
-qs.soilsite.ids <- tibble(file_sequence = as.character(1:length(qs.soilsite)), code = basename(dirname(qs.soilsite)))
+qs.soilsite <- as.vector(grep("ossl_soilsite_", qs.files, value = T))
+qs.soilsite.ids <- tibble(file_sequence = as.character(1:length(qs.soilsite)),
+                          code = basename(dirname(qs.soilsite)))
 
-qs.soillab <- as.vector(grep("_soillab_", qs.files, value = T))
-qs.soillab.ids <- tibble(file_sequence = as.character(1:length(qs.soillab)), code = basename(dirname(qs.soillab)))
+qs.soillab <- as.vector(grep("ossl_soillab_", qs.files, value = T))
+qs.soillab.ids <- tibble(file_sequence = as.character(1:length(qs.soillab)),
+                         code = basename(dirname(qs.soillab)))
 
-qs.visnir <- as.vector(grep("_visnir_", qs.files, value = T))
-qs.visnir.ids <- tibble(file_sequence = as.character(1:length(qs.visnir)), code = basename(dirname(qs.visnir)))
+qs.visnir <- as.vector(grep("ossl_visnir_", qs.files, value = T))
+qs.visnir.ids <- tibble(file_sequence = as.character(1:length(qs.visnir)),
+                        code = basename(dirname(qs.visnir)))
 
-qs.mir <- as.vector(grep("_mir_", qs.files, value = T))
-qs.mir.ids <- tibble(file_sequence = as.character(1:length(qs.mir)), code = basename(dirname(qs.mir)))
+qs.mir <- as.vector(grep("ossl_mir_", qs.files, value = T))
+qs.mir.ids <- tibble(file_sequence = as.character(1:length(qs.mir)),
+                     code = basename(dirname(qs.mir)))
 
 ## Reading soilsite files
 ossl.soilsite <- map_dfr(.x = qs.soilsite,
@@ -96,8 +100,8 @@ ossl.soilsite %>%
 
 ## Reading soillab files
 ossl.soillab <- map_dfr(.x = qs.soillab,
-                       .f = qread,
-                       .id = "file_sequence") %>%
+                        .f = qread,
+                        .id = "file_sequence") %>%
   left_join(qs.soillab.ids, by = "file_sequence") %>%
   relocate(code, .before = 1) %>%
   select(order(colnames(.))) %>%
@@ -169,8 +173,7 @@ ossl.info <- ossl.info %>%
          layer.lower.depth_usda_cm = coalesce(layer.lower.depth_usda_cm.x, layer.lower.depth_usda_cm.y, NA),
          .after = layer.lower.depth_usda_cm.x) %>%
   select(-layer.upper.depth_usda_cm.x, -layer.upper.depth_usda_cm.y,
-         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y) %>%
-  mutate_all(list(~na_if(.,"")))
+         -layer.lower.depth_usda_cm.x, -layer.lower.depth_usda_cm.y)
 
 ossl.info %>%
   select(ends_with(".x")) %>%
@@ -431,7 +434,7 @@ MIR locations
 ### Overlay with spatial covariates
 
 NOTE: This is a time-consuming step. Must switch `eval` to TRUE for new overlaying.
-```{r overlay, include=TRUE, eval=FALSE, echo=TRUE}
+```{r overlay, include=TRUE, echo=TRUE, eval=FALSE}
 # Reading ossl points 
 # st_layers("../out/ossl_locations.gpkg")
 ossl.points <- st_read(dsn = "../out/ossl_locations.gpkg", layer = "ossl_locations")

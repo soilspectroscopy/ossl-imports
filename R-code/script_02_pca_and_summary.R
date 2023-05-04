@@ -6,6 +6,8 @@ library("tidymodels")
 library("data.table")
 library("fs")
 library("qs")
+library("future")
+library("foreach")
 
 ## Folders
 
@@ -17,8 +19,8 @@ dir.output <- "out/"
 
 qs.files <- dir_ls(dir.input, recurse = T, regexp = glob2rx("*v1.2.qs"))
 
-qs.mir <- as.vector(grep("_mir_", qs.files, value = T))
-qs.visnir <- as.vector(grep("_visnir_", qs.files, value = T))
+qs.mir <- as.vector(grep("ossl_mir_", qs.files, value = T))
+qs.visnir <- as.vector(grep("ossl_visnir_", qs.files, value = T))
 
 qs.mir.ids <- tibble(file_sequence = as.character(1:length(qs.mir)), code = basename(dirname(qs.mir)))
 qs.visnir.ids <- tibble(file_sequence = as.character(1:length(qs.visnir)), code = basename(dirname(qs.visnir)))
@@ -34,9 +36,6 @@ id.columns <- c("code", "id.layer_local_c")
 
 ossl.visnir <- map_dfr(.x = qs.visnir,
                        .f = qread,
-                       # .f = function(.x) {
-                       #   qread(.x) %>%
-                       #     mutate_all(as.character)},
                        .id= "file_sequence") %>%
   left_join(qs.visnir.ids, by = "file_sequence") %>%
   select(all_of(id.columns), all_of(ossl.visnir.columns)) %>%
@@ -46,7 +45,7 @@ ossl.visnir <- map_dfr(.x = qs.visnir,
 new.spec.range <- gsub("scan_visnir.|_ref", "", ossl.visnir.columns)
 
 ossl.visnir <- ossl.visnir %>%
-  rename_with(~new.spec.range, ossl.visnir.columns)
+  rename_with(~new.spec.range, all_of(ossl.visnir.columns))
 
 ## Preprocess with SNV
 ossl.visnir.prep <- ossl.visnir %>%
@@ -154,9 +153,6 @@ id.columns <- c("code", "id.layer_local_c")
 
 ossl.mir <- map_dfr(.x = qs.mir,
                     .f = qread,
-                    # .f = function(.x) {
-                    #   qread(.x) %>%
-                    #     mutate_all(as.character)},
                     .id= "file_sequence") %>%
   left_join(qs.mir.ids, by = "file_sequence") %>%
   select(all_of(id.columns), all_of(ossl.mir.columns)) %>%
@@ -166,7 +162,7 @@ ossl.mir <- map_dfr(.x = qs.mir,
 new.spec.range <- gsub("scan_mir.|_abs", "", ossl.mir.columns)
 
 ossl.mir <- ossl.mir %>%
-  rename_with(~new.spec.range, ossl.mir.columns)
+  rename_with(~new.spec.range, all_of(ossl.mir.columns))
 
 ## Preprocess with SNV
 ossl.mir.prep <- ossl.mir %>%
@@ -276,16 +272,97 @@ ggsave(paste0(dir.figures, paste0("plot_pca_scores_mir_ossl.png")),
 ##### Summary #####
 ###################
 
-summary <- ossl.mir %>%
-  group_by(code) %>%
-  summarise(mir_count = n()) %>%
-  left_join({
-    ossl.visnir %>%
-      group_by(code) %>%
-      summarise(visnir_count = n())
-  }, by = "code") %>%
-  rename(dataset = code)
+ossl <- qread("/mnt/soilspec4gg/ossl/ossl_import/ossl_all_L1_v1.2.qs")
+neospectra <- qread("/mnt/soilspec4gg/ossl/dataset/Neospectra/ossl/neospectra_nir_v1.2.qs")
 
-summary
+neospectra <- neospectra %>%
+  select(id.sample_local_c, starts_with("scan_nir")) %>%
+  group_by(id.sample_local_c) %>%
+  summarise_all(mean)
 
-write_csv(summary, paste0(dir.output, paste0("tab_dataset_count.csv")))
+ossl <- ossl %>%
+  mutate(temp_id = gsub("XS|XN", "", id.scan_local_c)) %>%
+  left_join(neospectra, by = c("temp_id" = "id.sample_local_c")) %>%
+  select(-temp_id)
+
+## Overview and preparation
+ossl %>%
+  select(scan_mir.1500_abs, scan_visnir.1500_ref, scan_nir.1500_ref) %>%
+  summarise_all(~sum(!is.na(.)))
+
+## Soil lab level 1
+ossl.soillab <- read_csv("./out/ossl_level0_to_level1_soillab_harmonization.csv")
+
+soil.properties <- ossl.soillab %>%
+  distinct(ossl_name_level1) %>%
+  pull(ossl_name_level1)
+
+ossl.count <- ossl %>%
+  select(dataset.code_ascii_txt, all_of(soil.properties), scan_mir.1500_abs,
+         scan_visnir.1500_ref, scan_nir.1500_ref)
+
+## Datasets
+datasets <- ossl.count %>%
+  distinct(dataset.code_ascii_txt) %>%
+  pull(dataset.code_ascii_txt) %>%
+  c("OSSL")
+
+## Modeling combinations
+modeling.combinations <- tibble(soil_property = soil.properties) %>%
+  crossing(dataset = datasets) %>%
+  crossing(tibble(spectra = c("scan_mir.1500_abs",
+                              "scan_visnir.1500_ref",
+                              "scan_nir.1500_ref")))
+
+modeling.combinations
+
+## Count
+
+f_count <- function(i) {
+
+  isoil.property <- modeling.combinations[[i,"soil_property"]]
+  idataset <- modeling.combinations[[i,"dataset"]]
+  ispectra <- modeling.combinations[[i,"spectra"]]
+
+  if(idataset == "OSSL") {
+
+    ossl.count %>%
+      filter(!is.na(!!as.name(isoil.property))) %>%
+      filter(!is.na(!!as.name(ispectra))) %>%
+      nrow()
+
+  } else {
+
+    ossl.count %>%
+        filter(dataset.code_ascii_txt == idataset) %>%
+        filter(!is.na(!!as.name(isoil.property))) %>%
+        filter(!is.na(!!as.name(ispectra))) %>%
+        nrow()
+
+  }
+
+  # cat(paste0("Run ", i, "/", nrow(modeling.combinations), "\n"))
+
+}
+
+## Applying f_count with parallelization
+
+doFuture::registerDoFuture()
+future::plan("multisession")
+options(future.globals.maxSize = 1000 * 1024^2)
+
+count.list <- foreach(i = 1:nrow(modeling.combinations),
+                      .combine = c) %dopar% {
+  f_count(i)
+}
+
+## Exporting results
+final.counts <- modeling.combinations %>%
+  mutate(count = count.list) %>%
+  mutate(spectra = recode(spectra,
+                          "scan_mir.1500_abs" = "n_mir",
+                          "scan_visnir.1500_ref" = "n_visnir",
+                          "scan_nir.1500_ref" = "n_neospectra")) %>%
+  pivot_wider(names_from = "spectra", values_from = "count")
+
+write_csv(final.counts, "./out/tab_dataset_count.csv")

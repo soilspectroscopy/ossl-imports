@@ -126,7 +126,7 @@ area <- area %>%
 site.area <- site.area %>%
   select(lims.site.id, area.id)
 
-# Site area with county coordiantes
+# Site area with county coordinates
 site.overview <- site.area %>%
   left_join(area, by = "area.id") %>%
   left_join(centroid, by = "area.id") %>%
