@@ -490,7 +490,8 @@ layer <- fread(paste0(dir.db, "/layer.csv"))
 sample <- fread(paste0(dir.db, "/sample.csv"))
 layer.analyte <- fread(paste0(dir.db, "/layer_analyte.csv"))
 result <- fread(paste0(dir.db, "/result.csv"))
-
+raca.samples <- fread(paste0(dirname(dir.db), "/RACA_VisNIR_Jun2022/RaCA_samples.csv"))
+  
 # Analyte selection
 analyte.sel.ids <- transvalues %>%
   filter(source == "kssl_analyte") %>%
@@ -505,6 +506,16 @@ layer.analyte.sel <- layer.analyte %>%
   select(analyte.id, lay.id, calc.value, master.prep.id) %>%
   left_join(analyte.sel.names, by = c("analyte.id" = "id")) %>%
   rename(value = calc.value, prep = master.prep.id) %>%
+  select(contains("ossl"), lay.id, value, prep)
+
+# RaCA selection
+layer.analyte.raca <- raca.samples %>%
+  filter(!is.na(lay_id)) %>%
+  select(lay_id, Bulkdensity) %>%
+  rename(lay.id = lay_id, value = Bulkdensity) %>%
+  mutate(analyte.id = 4, .before = 1) %>%
+  mutate(prep = 2, value = as.character(value)) %>%
+  left_join(analyte.sel.names, by = c("analyte.id" = "id")) %>%
   select(contains("ossl"), lay.id, value, prep)
 
 # Calc selection
@@ -524,7 +535,7 @@ layer.calc.sel <- result %>%
   select(contains("ossl"), lay.id, value)
 
 # Binding determined and calculated analytes
-kssl.soildata <- bind_rows(layer.analyte.sel, layer.calc.sel)
+kssl.soildata <- bind_rows(layer.analyte.sel, layer.analyte.raca, layer.calc.sel)
 
 # Averaging minor repeats by unique numeric variable.
 # The same soil property can have some different preps

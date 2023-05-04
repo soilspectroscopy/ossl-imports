@@ -4,20 +4,25 @@ Jose Lucas Safanelli (<jsafanelli@woodwellclimate.org>), Tomislav Hengl
 (<tom.hengl@opengeohub.org>), Jonathan Sanderman
 (<jsanderman@woodwellclimate.org>), Develyn Bloom
 (<develyn.bloom@ufl.edu>) -
-09 January, 2023
+04 May, 2023
 
 
 
--   [Kellogg Soil Survey Laboratory
-    inputs](#kellogg-soil-survey-laboratory-inputs)
-    -   [Soil site information](#soil-site-information)
-    -   [Soil lab information](#soil-lab-information)
-    -   [Mid-infrared spectroscopy
-        data](#mid-infrared-spectroscopy-data)
-    -   [Visible and Near-infrared spectroscopy
-        data](#visible-and-near-infrared-spectroscopy-data)
-    -   [Quality control](#quality-control)
--   [References](#references)
+- <a href="#kellogg-soil-survey-laboratory-inputs"
+  id="toc-kellogg-soil-survey-laboratory-inputs">Kellogg Soil Survey
+  Laboratory inputs</a>
+  - <a href="#soil-site-information" id="toc-soil-site-information">Soil
+    site information</a>
+  - <a href="#soil-lab-information" id="toc-soil-lab-information">Soil lab
+    information</a>
+  - <a href="#mid-infrared-spectroscopy-data"
+    id="toc-mid-infrared-spectroscopy-data">Mid-infrared spectroscopy
+    data</a>
+  - <a href="#visible-and-near-infrared-spectroscopy-data"
+    id="toc-visible-and-near-infrared-spectroscopy-data">Visible and
+    Near-infrared spectroscopy data</a>
+  - <a href="#quality-control" id="toc-quality-control">Quality control</a>
+- <a href="#references" id="toc-references">References</a>
 
 [<img src="../../img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
 
@@ -32,27 +37,25 @@ License](http://creativecommons.org/licenses/by-sa/4.0/).
 Part of: <https://github.com/soilspectroscopy>  
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
-Last update: 2023-01-09  
+Last update: 2023-05-04  
 Dataset:
 [KSSL.SSL](https://soilspectroscopy.github.io/ossl-manual/soil-spectroscopy-tools-and-users.html#kssl.ssl)
 
 The USDA-NRCS NCSS Kellogg Soil Survey Laboratory has a large and
 growing mid-infrared (MIR) spectral library. Calibration models are
 being developed to predict soil properties from MIR spectra. Dataset
-properties are explained in detail in [Wijewardane, Ge, Wills, &
-Libohova](#ref-wijewardane2018predicting)
-([2018](#ref-wijewardane2018predicting)) and [Sanderman, Savage, &
-Dangal](#ref-sanderman2020mid) ([2020](#ref-sanderman2020mid)).
+properties are explained in detail in Wijewardane, Ge, Wills, & Libohova
+([2018](#ref-wijewardane2018predicting)) and Sanderman, Savage, & Dangal
+([2020](#ref-sanderman2020mid)).
 
 Input datasets (snapshot from Jul 2022):
 
--   `KSSL_202207_MIR_spectra_all_avg.csv`: csv/rds file with averaged
-    MIR scans;
--   `RaCA_measured.csv`: csv/rds file with averaged VNIR scans (from
-    [RaCA
-    project](https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca));
--   `All_Spectra_Access_Portable_20220712`: a folder with all tables
-    exported from a Microsoft Access database;
+- `KSSL_202207_MIR_spectra_all_avg.csv`: csv/rds file with averaged MIR
+  scans;
+- `RaCA_measured.csv`: csv/rds file with averaged VNIR scans (from [RaCA
+  project](https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca));
+- `All_Spectra_Access_Portable_20220712`: a folder with all tables
+  exported from a Microsoft Access database;
 
 For the DB structure and use refer to “Introduction to the KSSL
 Laboratory Information Management System” contacts: Rich Ferguson &
@@ -176,8 +179,8 @@ datum.summary
     ## 2 "NAD27"         1938
     ## 3 "NAD83"        21994
     ## 4 "NULL"            39
-    ## 5 "old hawaiian"    49
-    ## 6 "WGS84"        17035
+    ## 5 "WGS84"        17035
+    ## 6 "old hawaiian"    49
     ## 7  <NA>           5057
 
 ``` r
@@ -206,8 +209,8 @@ datum.summary.cor
     ##   <chr>        <int>
     ## 1 NAD27         1927
     ## 2 NAD83        27501
-    ## 3 old hawaiian    49
-    ## 4 WGS84        15872
+    ## 3 WGS84        15872
+    ## 4 old hawaiian    49
     ## 5 <NA>         60253
 
 ``` r
@@ -503,59 +506,59 @@ transvalues <- read_csv(paste0(getwd(), "/OSSL_transvalues.csv"))
 knitr::kable(transvalues)
 ```
 
-| source        |   id | kssl\_original\_name                                       | ossl\_abbrev   | ossl\_method | ossl\_unit | ossl\_convert                                      | ossl\_name                       |
-|:--------------|-----:|:-----------------------------------------------------------|:---------------|:-------------|:-----------|:---------------------------------------------------|:---------------------------------|
-| kssl\_analyte |    4 | Bulk Density, &lt;2mm Fraction, 1/3 Bar                    | bd             | usda.a4      | g.cm3      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | bd\_usda.a4\_g.cm3               |
-| kssl\_analyte |   21 | Bulk Density, Core, &lt;2 mm fraction, Field Moist         | bd             | usda.a21     | g.cm3      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | bd\_usda.a21\_g.cm3              |
-| kssl\_calc    |  236 | Coarse Fragments, Greater 2mm, Wt Percent, Whole Soil Base | cf             | usda.c236    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | cf\_usda.c236\_w.pct             |
-| kssl\_analyte |    9 | Water Retention, 1/3 Bar, &lt;2mm Clod                     | wr.33kPa       | usda.a9      | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | wr.33kPa\_usda.a9\_w.pct         |
-| kssl\_analyte |  415 | Water Retention, 1/3 Bar, &lt;2mm Sieve                    | wr.33kPa       | usda.a415    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | wr.33kPa\_usda.a415\_w.pct       |
-| kssl\_analyte |    8 | Water Retention, 1/10 Bar, &lt;2mm Clod                    | wr.10kPa       | usda.a8      | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | wr.10kPa\_usda.a8\_w.pct         |
-| kssl\_analyte |  414 | Water Retention, 1/10 Bar, &lt;2mm Sieve, Air-dry          | wr.10kPa       | usda.a414    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | wr.10kPa\_usda.a414\_w.pct       |
-| kssl\_analyte |  417 | Water Retention, 15 Bar, &lt;2mm, Air-dry                  | wr.1500kPa     | usda.a417    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | wr.1500kPa\_usda.a417\_w.pct     |
-| kssl\_calc    |   80 | Water Retention Difference, 1/3 to 15 Bar, &lt;2mm         | awc.33.1500kPa | usda.c80     | w.frac     | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | awc.33.1500kPa\_usda.c80\_w.frac |
-| kssl\_calc    |   60 | Sand, Total                                                | sand.tot       | usda.c60     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | sand.tot\_usda.c60\_w.pct        |
-| kssl\_calc    |  405 | Sand, Total, N prep                                        | sand.tot       | usda.c405    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | sand.tot\_usda.c405\_w.pct       |
-| kssl\_calc    |   62 | Silt, Total                                                | silt.tot       | usda.c62     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | silt.tot\_usda.c62\_w.pct        |
-| kssl\_calc    |  407 | Silt, Total, N prep                                        | silt.tot       | usda.c407    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | silt.tot\_usda.c407\_w.pct       |
-| kssl\_analyte |  334 | Clay                                                       | clay.tot       | usda.a334    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | clay.tot\_usda.a334\_w.pct       |
-| kssl\_analyte |    1 | Aggregate Stability, 0.5-2mm Aggregates                    | aggstb         | usda.a1      | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | aggstb\_usda.a1\_w.pct           |
-| kssl\_analyte |  268 | pH, 1:1 Soil-Water Suspension                              | ph.h2o         | usda.a268    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ph.h2o\_usda.a268\_index         |
-| kssl\_analyte |  481 | pH, 1:2 Soil-CaCl2 Suspension                              | ph.cacl2       | usda.a481    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ph.cacl2\_usda.a481\_index       |
-| kssl\_analyte |  477 | pH, 0.01M CaCl2, Histosol                                  | ph.cacl2       | usda.a477    | index      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ph.cacl2\_usda.a477\_index       |
-| kssl\_analyte |  364 | Electrical Conductivity, Predict, 1:2 (w/w)                | ec             | usda.a364    | ds.m       | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ec\_usda.a364\_ds.m              |
-| kssl\_analyte |  479 | Effervescence, 1N HCl                                      | efferv         | usda.a479    | class      | x                                                  | efferv\_usda.a479\_class         |
-| kssl\_analyte |   54 | Carbonate, &lt;2mm Fraction                                | caco3          | usda.a54     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | caco3\_usda.a54\_w.pct           |
-| kssl\_calc    | 1059 | Estimated Organic Carbon, Total C, N prep                  | oc             | usda.c1059   | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | oc\_usda.c1059\_w.pct            |
-| kssl\_calc    |  729 | Estimated Organic Carbon, Total C, S prep                  | oc             | usda.c729    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | oc\_usda.c729\_w.pct             |
-| kssl\_analyte |  622 | Carbon, Total NCS                                          | c.tot          | usda.a622    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | c.tot\_usda.a622\_w.pct          |
-| kssl\_analyte |  623 | Nitrogen, Total NCS                                        | n.tot          | usda.a623    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | n.tot\_usda.a623\_w.pct          |
-| kssl\_analyte |  624 | Sulfur, Total NCS                                          | s.tot          | usda.a624    | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | s.tot\_usda.a624\_w.pct          |
-| kssl\_analyte |  723 | CEC, NH4OAc, pH 7.0, 2M KCl displacement                   | cec            | usda.a723    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | cec\_usda.a723\_cmolc.kg         |
-| kssl\_analyte |  722 | Calcium, NH4OAc Extractable, 2M KCl displacement           | ca.ext         | usda.a722    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ca.ext\_usda.a722\_cmolc.kg      |
-| kssl\_analyte | 1059 | Calcium, Element Mehlich3 Extractable                      | ca.ext         | usda.a1059   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | ca.ext\_usda.a1059\_mg.kg        |
-| kssl\_analyte |  724 | Magnesium, NH4OAc Extractable, 2M KCl displacement         | mg.ext         | usda.a724    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | mg.ext\_usda.a724\_cmolc.kg      |
-| kssl\_analyte | 1066 | Magnesium, Element Mehlich3 Extractable                    | mg.ext         | usda.a1066   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | mg.ext\_usda.a1066\_mg.kg        |
-| kssl\_analyte |  726 | Sodium, NH4OAc Extractable, 2M KCl displacement            | na.ext         | usda.a726    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | na.ext\_usda.a726\_cmolc.kg      |
-| kssl\_analyte | 1068 | Sodium, Element Mehlich3 Extractable                       | na.ext         | usda.a1068   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | na.ext\_usda.a1068\_mg.kg        |
-| kssl\_analyte |  725 | Potassium, NH4OAc Extractable, 2M KCl displacement         | k.ext          | usda.a725    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | k.ext\_usda.a725\_cmolc.kg       |
-| kssl\_analyte | 1065 | Potassium, Element Mehlich3 Extractable                    | k.ext          | usda.a1065   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | k.ext\_usda.a1065\_mg.kg         |
-| kssl\_analyte |   69 | Aluminum, KCl Extractable                                  | al.ext         | usda.a69     | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | al.ext\_usda.a69\_cmolc.kg       |
-| kssl\_analyte | 1056 | Aluminum, Element Mehlich3 Extractable                     | al.ext         | usda.a1056   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | al.ext\_usda.a1056\_mg.kg        |
-| kssl\_analyte |  795 | Acidity, BaCl2-TEA Extractable, pH 8.2, centrifuge         | acidity        | usda.a795    | cmolc.kg   | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | acidity\_usda.a795\_cmolc.kg     |
-| kssl\_analyte |  274 | Phosphorus, Olsen Extractable                              | p.ext          | usda.a274    | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | p.ext\_usda.a274\_mg.kg          |
-| kssl\_analyte |  652 | Phosphorus, Mehlich3 Extractable                           | p.ext          | usda.a652    | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | p.ext\_usda.a652\_mg.kg          |
-| kssl\_analyte | 1070 | Phosphorus, Element Mehlich3 Extractable                   | p.ext          | usda.a1070   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | p.ext\_usda.a1070\_mg.kg         |
-| kssl\_analyte |  270 | Phosphorus, Bray-1 Extractable                             | p.ext          | usda.a270    | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | p.ext\_usda.a270\_mg.kg          |
-| kssl\_analyte |   70 | Manganese, KCl Extractable                                 | mn.ext         | usda.a70     | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | mn.ext\_usda.a70\_mg.kg          |
-| kssl\_analyte | 1067 | Manganese, Element Mehlich3 Extractable                    | mn.ext         | usda.a1067   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | mn.ext\_usda.a1067\_mg.kg        |
-| kssl\_analyte | 1063 | Copper, Element Mehlich3 Extractable                       | cu.ext         | usda.a1063   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | cu.ext\_usda.a1063\_mg.kg        |
-| kssl\_analyte | 1064 | Iron, Element Mehlich3 Extractable                         | fe.ext         | usda.a1064   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | fe.ext\_usda.a1064\_mg.kg        |
-| kssl\_analyte | 1073 | Zinc, Element Mehlich3 Extractable                         | zn.ext         | usda.a1073   | mg.kg      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | zn.ext\_usda.a1073\_mg.kg        |
-| kssl\_analyte |   66 | Iron, Dithionite Citrate Extractable                       | fe.dith        | usda.a66     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | fe.dith\_usda.a66\_w.pct         |
-| kssl\_analyte |   65 | Aluminum, Dithionite Citrate Extractable                   | al.dith        | usda.a65     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | al.dith\_usda.a65\_w.pct         |
-| kssl\_analyte |   60 | Iron, Oxalate Extractable                                  | fe.ox          | usda.a60     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | fe.ox\_usda.a60\_w.pct           |
-| kssl\_analyte |   59 | Aluminum, Oxalate Extractable                              | al.ox          | usda.a59     | w.pct      | ifelse(as.numeric(x) &lt; 0, NA, as.numeric(x)\*1) | al.ox\_usda.a59\_w.pct           |
+| source       |   id | kssl_original_name                                         | ossl_abbrev    | ossl_method | ossl_unit | ossl_convert                                     | ossl_name                      |
+|:-------------|-----:|:-----------------------------------------------------------|:---------------|:------------|:----------|:-------------------------------------------------|:-------------------------------|
+| kssl_analyte |    4 | Bulk Density, \<2mm Fraction, 1/3 Bar                      | bd             | usda.a4     | g.cm3     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | bd_usda.a4_g.cm3               |
+| kssl_analyte |   21 | Bulk Density, Core, \<2 mm fraction, Field Moist           | bd             | usda.a21    | g.cm3     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | bd_usda.a21_g.cm3              |
+| kssl_calc    |  236 | Coarse Fragments, Greater 2mm, Wt Percent, Whole Soil Base | cf             | usda.c236   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | cf_usda.c236_w.pct             |
+| kssl_analyte |    9 | Water Retention, 1/3 Bar, \<2mm Clod                       | wr.33kPa       | usda.a9     | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.33kPa_usda.a9_w.pct         |
+| kssl_analyte |  415 | Water Retention, 1/3 Bar, \<2mm Sieve                      | wr.33kPa       | usda.a415   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.33kPa_usda.a415_w.pct       |
+| kssl_analyte |    8 | Water Retention, 1/10 Bar, \<2mm Clod                      | wr.10kPa       | usda.a8     | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.10kPa_usda.a8_w.pct         |
+| kssl_analyte |  414 | Water Retention, 1/10 Bar, \<2mm Sieve, Air-dry            | wr.10kPa       | usda.a414   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.10kPa_usda.a414_w.pct       |
+| kssl_analyte |  417 | Water Retention, 15 Bar, \<2mm, Air-dry                    | wr.1500kPa     | usda.a417   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.1500kPa_usda.a417_w.pct     |
+| kssl_calc    |   80 | Water Retention Difference, 1/3 to 15 Bar, \<2mm           | awc.33.1500kPa | usda.c80    | w.frac    | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | awc.33.1500kPa_usda.c80_w.frac |
+| kssl_calc    |   60 | Sand, Total                                                | sand.tot       | usda.c60    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | sand.tot_usda.c60_w.pct        |
+| kssl_calc    |  405 | Sand, Total, N prep                                        | sand.tot       | usda.c405   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | sand.tot_usda.c405_w.pct       |
+| kssl_calc    |   62 | Silt, Total                                                | silt.tot       | usda.c62    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | silt.tot_usda.c62_w.pct        |
+| kssl_calc    |  407 | Silt, Total, N prep                                        | silt.tot       | usda.c407   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | silt.tot_usda.c407_w.pct       |
+| kssl_analyte |  334 | Clay                                                       | clay.tot       | usda.a334   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | clay.tot_usda.a334_w.pct       |
+| kssl_analyte |    1 | Aggregate Stability, 0.5-2mm Aggregates                    | aggstb         | usda.a1     | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | aggstb_usda.a1_w.pct           |
+| kssl_analyte |  268 | pH, 1:1 Soil-Water Suspension                              | ph.h2o         | usda.a268   | index     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.h2o_usda.a268_index         |
+| kssl_analyte |  481 | pH, 1:2 Soil-CaCl2 Suspension                              | ph.cacl2       | usda.a481   | index     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.cacl2_usda.a481_index       |
+| kssl_analyte |  477 | pH, 0.01M CaCl2, Histosol                                  | ph.cacl2       | usda.a477   | index     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.cacl2_usda.a477_index       |
+| kssl_analyte |  364 | Electrical Conductivity, Predict, 1:2 (w/w)                | ec             | usda.a364   | ds.m      | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ec_usda.a364_ds.m              |
+| kssl_analyte |  479 | Effervescence, 1N HCl                                      | efferv         | usda.a479   | class     | x                                                | efferv_usda.a479_class         |
+| kssl_analyte |   54 | Carbonate, \<2mm Fraction                                  | caco3          | usda.a54    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | caco3_usda.a54_w.pct           |
+| kssl_calc    | 1059 | Estimated Organic Carbon, Total C, N prep                  | oc             | usda.c1059  | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | oc_usda.c1059_w.pct            |
+| kssl_calc    |  729 | Estimated Organic Carbon, Total C, S prep                  | oc             | usda.c729   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | oc_usda.c729_w.pct             |
+| kssl_analyte |  622 | Carbon, Total NCS                                          | c.tot          | usda.a622   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | c.tot_usda.a622_w.pct          |
+| kssl_analyte |  623 | Nitrogen, Total NCS                                        | n.tot          | usda.a623   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | n.tot_usda.a623_w.pct          |
+| kssl_analyte |  624 | Sulfur, Total NCS                                          | s.tot          | usda.a624   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | s.tot_usda.a624_w.pct          |
+| kssl_analyte |  723 | CEC, NH4OAc, pH 7.0, 2M KCl displacement                   | cec            | usda.a723   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | cec_usda.a723_cmolc.kg         |
+| kssl_analyte |  722 | Calcium, NH4OAc Extractable, 2M KCl displacement           | ca.ext         | usda.a722   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ca.ext_usda.a722_cmolc.kg      |
+| kssl_analyte | 1059 | Calcium, Element Mehlich3 Extractable                      | ca.ext         | usda.a1059  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ca.ext_usda.a1059_mg.kg        |
+| kssl_analyte |  724 | Magnesium, NH4OAc Extractable, 2M KCl displacement         | mg.ext         | usda.a724   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mg.ext_usda.a724_cmolc.kg      |
+| kssl_analyte | 1066 | Magnesium, Element Mehlich3 Extractable                    | mg.ext         | usda.a1066  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mg.ext_usda.a1066_mg.kg        |
+| kssl_analyte |  726 | Sodium, NH4OAc Extractable, 2M KCl displacement            | na.ext         | usda.a726   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | na.ext_usda.a726_cmolc.kg      |
+| kssl_analyte | 1068 | Sodium, Element Mehlich3 Extractable                       | na.ext         | usda.a1068  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | na.ext_usda.a1068_mg.kg        |
+| kssl_analyte |  725 | Potassium, NH4OAc Extractable, 2M KCl displacement         | k.ext          | usda.a725   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | k.ext_usda.a725_cmolc.kg       |
+| kssl_analyte | 1065 | Potassium, Element Mehlich3 Extractable                    | k.ext          | usda.a1065  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | k.ext_usda.a1065_mg.kg         |
+| kssl_analyte |   69 | Aluminum, KCl Extractable                                  | al.ext         | usda.a69    | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | al.ext_usda.a69_cmolc.kg       |
+| kssl_analyte | 1056 | Aluminum, Element Mehlich3 Extractable                     | al.ext         | usda.a1056  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | al.ext_usda.a1056_mg.kg        |
+| kssl_analyte |  795 | Acidity, BaCl2-TEA Extractable, pH 8.2, centrifuge         | acidity        | usda.a795   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | acidity_usda.a795_cmolc.kg     |
+| kssl_analyte |  274 | Phosphorus, Olsen Extractable                              | p.ext          | usda.a274   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_usda.a274_mg.kg          |
+| kssl_analyte |  652 | Phosphorus, Mehlich3 Extractable                           | p.ext          | usda.a652   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_usda.a652_mg.kg          |
+| kssl_analyte | 1070 | Phosphorus, Element Mehlich3 Extractable                   | p.ext          | usda.a1070  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_usda.a1070_mg.kg         |
+| kssl_analyte |  270 | Phosphorus, Bray-1 Extractable                             | p.ext          | usda.a270   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_usda.a270_mg.kg          |
+| kssl_analyte |   70 | Manganese, KCl Extractable                                 | mn.ext         | usda.a70    | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mn.ext_usda.a70_mg.kg          |
+| kssl_analyte | 1067 | Manganese, Element Mehlich3 Extractable                    | mn.ext         | usda.a1067  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mn.ext_usda.a1067_mg.kg        |
+| kssl_analyte | 1063 | Copper, Element Mehlich3 Extractable                       | cu.ext         | usda.a1063  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | cu.ext_usda.a1063_mg.kg        |
+| kssl_analyte | 1064 | Iron, Element Mehlich3 Extractable                         | fe.ext         | usda.a1064  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | fe.ext_usda.a1064_mg.kg        |
+| kssl_analyte | 1073 | Zinc, Element Mehlich3 Extractable                         | zn.ext         | usda.a1073  | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | zn.ext_usda.a1073_mg.kg        |
+| kssl_analyte |   66 | Iron, Dithionite Citrate Extractable                       | fe.dith        | usda.a66    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | fe.dith_usda.a66_w.pct         |
+| kssl_analyte |   65 | Aluminum, Dithionite Citrate Extractable                   | al.dith        | usda.a65    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | al.dith_usda.a65_w.pct         |
+| kssl_analyte |   60 | Iron, Oxalate Extractable                                  | fe.ox          | usda.a60    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | fe.ox_usda.a60_w.pct           |
+| kssl_analyte |   59 | Aluminum, Oxalate Extractable                              | al.ox          | usda.a59    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | al.ox_usda.a59_w.pct           |
 
 Preparing soil data from determined and estimated analytes:
 
@@ -567,7 +570,8 @@ layer <- fread(paste0(dir.db, "/layer.csv"))
 sample <- fread(paste0(dir.db, "/sample.csv"))
 layer.analyte <- fread(paste0(dir.db, "/layer_analyte.csv"))
 result <- fread(paste0(dir.db, "/result.csv"))
-
+raca.samples <- fread(paste0(dirname(dir.db), "/RACA_VisNIR_Jun2022/RaCA_samples.csv"))
+  
 # Analyte selection
 analyte.sel.ids <- transvalues %>%
   filter(source == "kssl_analyte") %>%
@@ -582,6 +586,16 @@ layer.analyte.sel <- layer.analyte %>%
   select(analyte.id, lay.id, calc.value, master.prep.id) %>%
   left_join(analyte.sel.names, by = c("analyte.id" = "id")) %>%
   rename(value = calc.value, prep = master.prep.id) %>%
+  select(contains("ossl"), lay.id, value, prep)
+
+# RaCA selection
+layer.analyte.raca <- raca.samples %>%
+  filter(!is.na(lay_id)) %>%
+  select(lay_id, Bulkdensity) %>%
+  rename(lay.id = lay_id, value = Bulkdensity) %>%
+  mutate(analyte.id = 4, .before = 1) %>%
+  mutate(prep = 2, value = as.character(value)) %>%
+  left_join(analyte.sel.names, by = c("analyte.id" = "id")) %>%
   select(contains("ossl"), lay.id, value, prep)
 
 # Calc selection
@@ -601,7 +615,7 @@ layer.calc.sel <- result %>%
   select(contains("ossl"), lay.id, value)
 
 # Binding determined and calculated analytes
-kssl.soildata <- bind_rows(layer.analyte.sel, layer.calc.sel)
+kssl.soildata <- bind_rows(layer.analyte.sel, layer.analyte.raca, layer.calc.sel)
 
 # Averaging minor repeats by unique numeric variable.
 # The same soil property can have some different preps
@@ -683,8 +697,8 @@ kssl.soildata %>%
   summarise(count = n())
 ```
 
-    ##   count
-    ## 1 98138
+    ##    count
+    ## 1 101967
 
 ``` r
 # Saving version to dataset root dir
@@ -788,7 +802,7 @@ scans.summary %>%
 ```
 
     ## # A tibble: 0 × 2
-    ## # … with 2 variables: check <chr>, count <int>
+    ## # ℹ 2 variables: check <chr>, count <int>
 
 ``` r
 # These few scans with extreme values are removed - getting ids
@@ -994,11 +1008,11 @@ MIR scans, on the other hand, have repeats due to different preparation
 methods. MIR `id.layer_local_c` has repeats, while MIR `id.scan_local_c`
 doesn’t. The final table must be joined as:
 
--   MIR is used as first reference due to repeats.  
--   It is fully joined with VisNIR because some MIR samples does not
-    have VisNIR scans.  
--   The result is left joined with the site and soil lab data. This drop
-    data without any scan.
+- MIR is used as first reference due to repeats.  
+- It is fully joined with VisNIR because some MIR samples does not have
+  VisNIR scans.  
+- The result is left joined with the site and soil lab data. This drop
+  data without any scan.
 
 The availabilty of data is summarised below:
 
@@ -1096,7 +1110,7 @@ kssl.soildata %>%
 |                                                  |            |
 |:-------------------------------------------------|:-----------|
 | Name                                             | Piped data |
-| Number of rows                                   | 98138      |
+| Number of rows                                   | 101967     |
 | Number of columns                                | 52         |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
 | Column type frequency:                           |            |
@@ -1110,70 +1124,70 @@ Data summary
 
 **Variable type: character**
 
-| skim\_variable           | n\_missing | min | max | empty | n\_unique | whitespace |
-|:-------------------------|-----------:|----:|----:|------:|----------:|-----------:|
-| efferv\_usda.a479\_class |       2923 |   4 |  11 |     0 |         5 |          0 |
+| skim_variable          | n_missing | min | max | empty | n_unique | whitespace |
+|:-----------------------|----------:|----:|----:|------:|---------:|-----------:|
+| efferv_usda.a479_class |      6751 |   4 |  11 |     0 |        5 |          0 |
 
 **Variable type: factor**
 
-| skim\_variable     | n\_missing | ordered | n\_unique | top\_counts                  |
-|:-------------------|-----------:|:--------|----------:|:-----------------------------|
-| id.layer\_local\_c |          0 | FALSE   |     98138 | 1: 1, 100: 1, 100: 1, 100: 1 |
+| skim_variable    | n_missing | ordered | n_unique | top_counts                   |
+|:-----------------|----------:|:--------|---------:|:-----------------------------|
+| id.layer_local_c |         0 | FALSE   |   101967 | 1: 1, 100: 1, 100: 1, 100: 1 |
 
 **Variable type: numeric**
 
-| skim\_variable                   | n\_missing |    mean |      sd |   p0 |    p25 |     p50 |     p75 |     p100 |
-|:---------------------------------|-----------:|--------:|--------:|-----:|-------:|--------:|--------:|---------:|
-| acidity\_usda.a795\_cmolc.kg     |      65426 |   14.52 |   24.20 | 0.00 |   3.72 |    7.17 |   13.65 |   291.92 |
-| aggstb\_usda.a1\_w.pct           |      94525 |   37.51 |   30.59 | 0.00 |   9.00 |   29.00 |   64.00 |   123.00 |
-| al.dith\_usda.a65\_w.pct         |      62389 |    0.19 |    0.31 | 0.00 |   0.04 |    0.10 |    0.21 |     7.70 |
-| al.ext\_usda.a1056\_mg.kg        |      96393 |  855.81 |  745.07 | 0.00 | 318.66 |  742.53 | 1121.08 |  6748.01 |
-| al.ext\_usda.a69\_cmolc.kg       |      81971 |    2.23 |    3.40 | 0.00 |   0.30 |    1.00 |    2.80 |    63.01 |
-| al.ox\_usda.a59\_w.pct           |      66830 |    0.25 |    0.49 | 0.00 |   0.06 |    0.12 |    0.23 |     8.80 |
-| awc.33.1500kPa\_usda.c80\_w.frac |      79289 |    0.15 |    0.07 | 0.00 |   0.11 |    0.14 |    0.18 |     0.78 |
-| bd\_usda.a21\_g.cm3              |      90292 |    0.94 |    0.50 | 0.01 |   0.53 |    1.04 |    1.32 |     8.10 |
-| bd\_usda.a4\_g.cm3               |      78305 |    1.37 |    0.26 | 0.02 |   1.25 |    1.40 |    1.54 |     2.53 |
-| c.tot\_usda.a622\_w.pct          |        310 |    6.23 |   12.46 | 0.00 |   0.52 |    1.45 |    3.81 |    78.45 |
-| ca.ext\_usda.a1059\_mg.kg        |      96393 | 5501.26 | 8941.37 | 3.09 | 645.84 | 2333.22 | 4967.32 | 44723.96 |
-| ca.ext\_usda.a722\_cmolc.kg      |      38472 |   22.09 |   32.40 | 0.00 |   3.22 |   11.84 |   28.50 |   410.41 |
-| caco3\_usda.a54\_w.pct           |      60238 |    7.24 |   12.91 | 0.00 |   0.20 |    0.90 |    9.22 |   105.77 |
-| cec\_usda.a723\_cmolc.kg         |      38477 |   20.58 |   22.78 | 0.00 |   7.65 |   15.22 |   24.32 |   584.59 |
-| cf\_usda.c236\_w.pct             |      35648 |    8.16 |   16.52 | 0.00 |   0.00 |    0.27 |    7.00 |   100.00 |
-| clay.tot\_usda.a334\_w.pct       |      41699 |   22.60 |   16.13 | 0.00 |   9.46 |   20.67 |   32.16 |    96.14 |
-| cu.ext\_usda.a1063\_mg.kg        |      96393 |    2.65 |    4.18 | 0.00 |   0.48 |    1.78 |    3.24 |    77.82 |
-| ec\_usda.a364\_ds.m              |      62620 |    2.79 |   11.89 | 0.00 |   0.11 |    0.25 |    0.85 |   313.13 |
-| fe.dith\_usda.a66\_w.pct         |      62386 |    1.21 |    1.58 | 0.00 |   0.31 |    0.79 |    1.53 |    28.44 |
-| fe.ext\_usda.a1064\_mg.kg        |      96393 |  132.09 |  149.40 | 0.00 |  56.44 |   94.14 |  160.02 |  2708.08 |
-| fe.ox\_usda.a60\_w.pct           |      66831 |    0.41 |    0.62 | 0.00 |   0.09 |    0.23 |    0.53 |    22.27 |
-| k.ext\_usda.a1065\_mg.kg         |      96393 |  183.70 |  190.44 | 0.00 |  75.18 |  141.43 |  237.52 |  3050.82 |
-| k.ext\_usda.a725\_cmolc.kg       |      38475 |    0.65 |    1.03 | 0.00 |   0.15 |    0.36 |    0.74 |    32.33 |
-| mg.ext\_usda.a1066\_mg.kg        |      96393 |  504.23 |  515.34 | 0.00 |  93.56 |  372.20 |  774.36 |  5608.60 |
-| mg.ext\_usda.a724\_cmolc.kg      |      38472 |    5.29 |    8.12 | 0.00 |   0.92 |    2.81 |    6.51 |   172.64 |
-| mn.ext\_usda.a1067\_mg.kg        |      96393 |   74.38 |   80.04 | 0.00 |  17.04 |   49.40 |  104.62 |   544.19 |
-| mn.ext\_usda.a70\_mg.kg          |      81974 |   12.81 |  104.09 | 0.00 |   0.13 |    0.85 |    3.77 |  9787.33 |
-| n.tot\_usda.a623\_w.pct          |        311 |    0.32 |    0.60 | 0.00 |   0.05 |    0.11 |    0.26 |    41.90 |
-| na.ext\_usda.a1068\_mg.kg        |      96393 |  202.61 |  775.32 | 0.00 |  11.87 |   30.05 |   99.22 | 15207.10 |
-| na.ext\_usda.a726\_cmolc.kg      |      38474 |    3.73 |   22.69 | 0.00 |   0.00 |    0.00 |    0.21 |   868.36 |
-| oc\_usda.c1059\_w.pct            |      64195 |    9.60 |   16.22 | 0.00 |   0.48 |    1.40 |    6.87 |    78.45 |
-| oc\_usda.c729\_w.pct             |      35769 |    3.96 |    9.52 | 0.00 |   0.31 |    0.91 |    2.45 |    65.60 |
-| p.ext\_usda.a1070\_mg.kg         |      96393 |   26.61 |   52.80 | 0.00 |   3.85 |   11.41 |   28.50 |   821.09 |
-| p.ext\_usda.a270\_mg.kg          |      90194 |   19.56 |   44.36 | 0.00 |   1.07 |    4.89 |   18.44 |  1436.68 |
-| p.ext\_usda.a274\_mg.kg          |      81802 |   13.69 |   22.38 | 0.00 |   1.85 |    5.68 |   16.45 |   686.28 |
-| p.ext\_usda.a652\_mg.kg          |      71193 |   30.88 |  157.07 | 0.00 |   2.79 |   11.07 |   36.81 | 24425.23 |
-| ph.cacl2\_usda.a477\_index       |      96580 |    4.76 |    1.27 | 1.74 |   3.75 |    4.68 |    5.64 |     8.27 |
-| ph.cacl2\_usda.a481\_index       |      38914 |    5.94 |    1.39 | 2.14 |   4.79 |    5.76 |    7.29 |    10.68 |
-| ph.h2o\_usda.a268\_index         |      38913 |    6.45 |    1.33 | 1.97 |   5.39 |    6.32 |    7.66 |    10.70 |
-| s.tot\_usda.a624\_w.pct          |        313 |    0.15 |    0.94 | 0.00 |   0.00 |    0.01 |    0.04 |    25.24 |
-| sand.tot\_usda.c405\_w.pct       |      96735 |   32.85 |   27.07 | 0.30 |   9.80 |   24.00 |   54.60 |   100.00 |
-| sand.tot\_usda.c60\_w.pct        |      43103 |   39.20 |   29.24 | 0.10 |  12.80 |   33.70 |   62.20 |   100.00 |
-| silt.tot\_usda.c407\_w.pct       |      96735 |   41.41 |   19.58 | 0.00 |  27.55 |   40.90 |   55.75 |    87.60 |
-| silt.tot\_usda.c62\_w.pct        |      43102 |   38.28 |   20.52 | 0.00 |  22.60 |   38.40 |   53.80 |    94.50 |
-| wr.10kPa\_usda.a414\_w.pct       |      95348 |   29.85 |   19.76 | 0.68 |  17.10 |   29.85 |   38.82 |   355.29 |
-| wr.10kPa\_usda.a8\_w.pct         |      96149 |   29.64 |   29.63 | 3.08 |  18.91 |   25.08 |   31.54 |   540.04 |
-| wr.1500kPa\_usda.a417\_w.pct     |      51645 |   14.13 |   15.51 | 0.02 |   6.52 |   11.21 |   16.48 |   244.23 |
-| wr.33kPa\_usda.a415\_w.pct       |      94796 |   25.77 |   23.89 | 0.26 |  12.44 |   22.22 |   31.92 |   200.26 |
-| wr.33kPa\_usda.a9\_w.pct         |      78301 |   26.06 |   26.63 | 1.34 |  17.76 |   23.25 |   29.01 |  2124.87 |
-| zn.ext\_usda.a1073\_mg.kg        |      96393 |    2.80 |   11.85 | 0.00 |   0.38 |    1.11 |    2.34 |   314.72 |
+| skim_variable                  | n_missing |    mean |      sd |   p0 |    p25 |     p50 |     p75 |     p100 |
+|:-------------------------------|----------:|--------:|--------:|-----:|-------:|--------:|--------:|---------:|
+| acidity_usda.a795_cmolc.kg     |     69255 |   14.52 |   24.20 | 0.00 |   3.72 |    7.17 |   13.65 |   291.92 |
+| aggstb_usda.a1_w.pct           |     98354 |   37.51 |   30.59 | 0.00 |   9.00 |   29.00 |   64.00 |   123.00 |
+| al.dith_usda.a65_w.pct         |     66218 |    0.19 |    0.31 | 0.00 |   0.04 |    0.10 |    0.21 |     7.70 |
+| al.ext_usda.a1056_mg.kg        |    100222 |  855.81 |  745.07 | 0.00 | 318.66 |  742.53 | 1121.08 |  6748.01 |
+| al.ext_usda.a69_cmolc.kg       |     85800 |    2.23 |    3.40 | 0.00 |   0.30 |    1.00 |    2.80 |    63.01 |
+| al.ox_usda.a59_w.pct           |     70659 |    0.25 |    0.49 | 0.00 |   0.06 |    0.12 |    0.23 |     8.80 |
+| awc.33.1500kPa_usda.c80_w.frac |     83118 |    0.15 |    0.07 | 0.00 |   0.11 |    0.14 |    0.18 |     0.78 |
+| bd_usda.a21_g.cm3              |     94121 |    0.94 |    0.50 | 0.01 |   0.53 |    1.04 |    1.32 |     8.10 |
+| bd_usda.a4_g.cm3               |     48528 |    1.22 |    0.37 | 0.02 |   1.04 |    1.32 |    1.47 |     2.53 |
+| c.tot_usda.a622_w.pct          |      4139 |    6.23 |   12.46 | 0.00 |   0.52 |    1.45 |    3.81 |    78.45 |
+| ca.ext_usda.a1059_mg.kg        |    100222 | 5501.26 | 8941.37 | 3.09 | 645.84 | 2333.22 | 4967.32 | 44723.96 |
+| ca.ext_usda.a722_cmolc.kg      |     42301 |   22.09 |   32.40 | 0.00 |   3.22 |   11.84 |   28.50 |   410.41 |
+| caco3_usda.a54_w.pct           |     64067 |    7.24 |   12.91 | 0.00 |   0.20 |    0.90 |    9.22 |   105.77 |
+| cec_usda.a723_cmolc.kg         |     42306 |   20.58 |   22.78 | 0.00 |   7.65 |   15.22 |   24.32 |   584.59 |
+| cf_usda.c236_w.pct             |     39477 |    8.16 |   16.52 | 0.00 |   0.00 |    0.27 |    7.00 |   100.00 |
+| clay.tot_usda.a334_w.pct       |     45528 |   22.60 |   16.13 | 0.00 |   9.46 |   20.67 |   32.16 |    96.14 |
+| cu.ext_usda.a1063_mg.kg        |    100222 |    2.65 |    4.18 | 0.00 |   0.48 |    1.78 |    3.24 |    77.82 |
+| ec_usda.a364_ds.m              |     66449 |    2.79 |   11.89 | 0.00 |   0.11 |    0.25 |    0.85 |   313.13 |
+| fe.dith_usda.a66_w.pct         |     66215 |    1.21 |    1.58 | 0.00 |   0.31 |    0.79 |    1.53 |    28.44 |
+| fe.ext_usda.a1064_mg.kg        |    100222 |  132.09 |  149.40 | 0.00 |  56.44 |   94.14 |  160.02 |  2708.08 |
+| fe.ox_usda.a60_w.pct           |     70660 |    0.41 |    0.62 | 0.00 |   0.09 |    0.23 |    0.53 |    22.27 |
+| k.ext_usda.a1065_mg.kg         |    100222 |  183.70 |  190.44 | 0.00 |  75.18 |  141.43 |  237.52 |  3050.82 |
+| k.ext_usda.a725_cmolc.kg       |     42304 |    0.65 |    1.03 | 0.00 |   0.15 |    0.36 |    0.74 |    32.33 |
+| mg.ext_usda.a1066_mg.kg        |    100222 |  504.23 |  515.34 | 0.00 |  93.56 |  372.20 |  774.36 |  5608.60 |
+| mg.ext_usda.a724_cmolc.kg      |     42301 |    5.29 |    8.12 | 0.00 |   0.92 |    2.81 |    6.51 |   172.64 |
+| mn.ext_usda.a1067_mg.kg        |    100222 |   74.38 |   80.04 | 0.00 |  17.04 |   49.40 |  104.62 |   544.19 |
+| mn.ext_usda.a70_mg.kg          |     85803 |   12.81 |  104.09 | 0.00 |   0.13 |    0.85 |    3.77 |  9787.33 |
+| n.tot_usda.a623_w.pct          |      4140 |    0.32 |    0.60 | 0.00 |   0.05 |    0.11 |    0.26 |    41.90 |
+| na.ext_usda.a1068_mg.kg        |    100222 |  202.61 |  775.32 | 0.00 |  11.87 |   30.05 |   99.22 | 15207.10 |
+| na.ext_usda.a726_cmolc.kg      |     42303 |    3.73 |   22.69 | 0.00 |   0.00 |    0.00 |    0.21 |   868.36 |
+| oc_usda.c1059_w.pct            |     68024 |    9.60 |   16.22 | 0.00 |   0.48 |    1.40 |    6.87 |    78.45 |
+| oc_usda.c729_w.pct             |     39598 |    3.96 |    9.52 | 0.00 |   0.31 |    0.91 |    2.45 |    65.60 |
+| p.ext_usda.a1070_mg.kg         |    100222 |   26.61 |   52.80 | 0.00 |   3.85 |   11.41 |   28.50 |   821.09 |
+| p.ext_usda.a270_mg.kg          |     94023 |   19.56 |   44.36 | 0.00 |   1.07 |    4.89 |   18.44 |  1436.68 |
+| p.ext_usda.a274_mg.kg          |     85631 |   13.69 |   22.38 | 0.00 |   1.85 |    5.68 |   16.45 |   686.28 |
+| p.ext_usda.a652_mg.kg          |     75022 |   30.88 |  157.07 | 0.00 |   2.79 |   11.07 |   36.81 | 24425.23 |
+| ph.cacl2_usda.a477_index       |    100409 |    4.76 |    1.27 | 1.74 |   3.75 |    4.68 |    5.64 |     8.27 |
+| ph.cacl2_usda.a481_index       |     42743 |    5.94 |    1.39 | 2.14 |   4.79 |    5.76 |    7.29 |    10.68 |
+| ph.h2o_usda.a268_index         |     42742 |    6.45 |    1.33 | 1.97 |   5.39 |    6.32 |    7.66 |    10.70 |
+| s.tot_usda.a624_w.pct          |      4142 |    0.15 |    0.94 | 0.00 |   0.00 |    0.01 |    0.04 |    25.24 |
+| sand.tot_usda.c405_w.pct       |    100564 |   32.85 |   27.07 | 0.30 |   9.80 |   24.00 |   54.60 |   100.00 |
+| sand.tot_usda.c60_w.pct        |     46932 |   39.20 |   29.24 | 0.10 |  12.80 |   33.70 |   62.20 |   100.00 |
+| silt.tot_usda.c407_w.pct       |    100564 |   41.41 |   19.58 | 0.00 |  27.55 |   40.90 |   55.75 |    87.60 |
+| silt.tot_usda.c62_w.pct        |     46931 |   38.28 |   20.52 | 0.00 |  22.60 |   38.40 |   53.80 |    94.50 |
+| wr.10kPa_usda.a414_w.pct       |     99177 |   29.85 |   19.76 | 0.68 |  17.10 |   29.85 |   38.82 |   355.29 |
+| wr.10kPa_usda.a8_w.pct         |     99978 |   29.64 |   29.63 | 3.08 |  18.91 |   25.08 |   31.54 |   540.04 |
+| wr.1500kPa_usda.a417_w.pct     |     55474 |   14.13 |   15.51 | 0.02 |   6.52 |   11.21 |   16.48 |   244.23 |
+| wr.33kPa_usda.a415_w.pct       |     98625 |   25.77 |   23.89 | 0.26 |  12.44 |   22.22 |   31.92 |   200.26 |
+| wr.33kPa_usda.a9_w.pct         |     82130 |   26.06 |   26.63 | 1.34 |  17.76 |   23.25 |   29.01 |  2124.87 |
+| zn.ext_usda.a1073_mg.kg        |    100222 |    2.80 |   11.85 | 0.00 |   0.38 |    1.11 |    2.34 |   314.72 |
 
 MIR spectral visualization:
 
@@ -1217,7 +1231,7 @@ kssl.visnir %>%
 toc()
 ```
 
-    ## 258.121 sec elapsed
+    ## 174.863 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1225,8 +1239,8 @@ gc()
 ```
 
     ##            used  (Mb) gc trigger   (Mb)   max used   (Mb)
-    ## Ncells  2620849 140.0   15686492  837.8   19608115 1047.2
-    ## Vcells 50286565 383.7  817128434 6234.2 1021410542 7792.8
+    ## Ncells  6159398 329.0   20390484 1089.0   20390484 1089.0
+    ## Vcells 66131499 504.6  841429553 6419.6 1051786425 8024.5
 
 ## References
 
