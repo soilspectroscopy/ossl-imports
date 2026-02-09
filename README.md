@@ -1,0 +1,22 @@
+
+
+\usepackage{caption}
+
+
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.5759693.svg)](https://doi.org/10.5281/zenodo.5759693)
+
+[<img src="img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
+
+[<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />](http://creativecommons.org/licenses/by-sa/4.0/)
+
+This is a repository for the **INTERNAL** data import development of the
+[Soil Spectroscopy for Global Good](https://soilspectroscopy.org)
+project to compile the **Open Soil Spectral Library**.
+
+The OSSL is distributed through static files hosted on a [Google Cloud
+storage
+bucket](https://soilspectroscopy.github.io/ossl-manual/ossl-database-access.html#google-cloud-storage).
+
+The full documentation about the database and access options are
+available in the [OSSL
+Manual](https://soilspectroscopy.github.io/ossl-manual/).
