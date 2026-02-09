@@ -9,9 +9,6 @@ cite-method: citeproc
 link-citations: true
 twitter-card:
   site: "@soilspec"
-include-in-header:
-  text: |
-    \usepackage{caption}
 editor: 
   markdown: 
     wrap: 72
