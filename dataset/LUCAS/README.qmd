@@ -1,5 +1,5 @@
 ---
-title: "KSSL preparation and import"
+title: "LUCAS dataset preparation and import"
 author: 
   - name: Jose L. Safanelli
     email: jsafanelli@woodwellclimate.org
@@ -26,4 +26,4 @@ editor:
     wrap: 72
 ---
 
-Code repository for preparing and importing the KSSL database into the Open Soil Spectral Library.
+Code repository for preparing and importing the LUCAS database into the Open Soil Spectral Library.
