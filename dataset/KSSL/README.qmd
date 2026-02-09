@@ -1,0 +1,29 @@
+---
+title: "KSSL preparation and import"
+author: 
+  - name: Jose L. Safanelli
+    email: jsafanelli@woodwellclimate.org
+  - name: Ran Zhi
+    email: jsafanelli@woodwellclimate.org
+  - name: Tomislav Hengl
+    email: tom.hengl@opengeohub.org
+  - name: Jonathan Sanderman
+    email: jsanderman@woodwellclimate.org
+date: last-modified
+date-format: "DD MMMM, YYYY"
+format: 
+  gfm:
+    toc: true
+    toc-depth: 4
+bibliography: ../../tex/refs.bib
+csl: ../../tex/apa.csl
+cite-method: citeproc
+link-citations: true
+twitter-card:
+  site: "@soilspec"
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+Code repository for preparing and importing the KSSL database into the Open Soil Spectral Library.
