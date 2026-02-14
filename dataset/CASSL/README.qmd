@@ -57,7 +57,7 @@ source("../../R/functions/SSL_functions.R")
 
 Directory/folder path with original files (not uploaded to GitHub). 
 ```{r}
-dir = "~/projects/mnt-ossl/import/dataset/CASSL/"
+dir = "./"
 tic()
 ```
 

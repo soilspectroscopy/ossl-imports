@@ -1,0 +1,239 @@
+---
+title: "BESB dataset preparation for the OSSL"
+author: 
+  - name: Ran Zhi
+    email: rzhi@woodwellclimate.org
+  - name: Jose L. Safanelli
+    email: jsafanelli@woodwellclimate.org
+  - name: Jonathan Sanderman
+    email: jsanderman@woodwellclimate.org
+date: last-modified
+date-format: "--- DD MMMM, YYYY."
+format: 
+  gfm:
+    toc: true
+    toc-depth: 2
+bibliography: reference.bib
+csl: ../../tex/apa.csl
+cite-method: citeproc
+link-citations: true
+twitter-card:
+  site: "@soilspec"
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+Code repository for preparing and importing the Brazilian Soil Spectral
+Library (BSSL) dataset into the Open Soil Spectral Library.
+
+Project: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)\
+Development: <https://github.com/soilspectroscopy>\
+Last update: `r Sys.Date()`\
+Additional documentation:
+
+## The BSSL original data
+
+Site data, Soil lab data, and Mid-Infrared Spectra (MIR), Visible to
+Near-Infrared and Shortwave-Infrared (Vis-NIR-SWIR) from the Brazilian
+Soil Spectral Library (BSSL). Further information of the dataset can be
+found in detail at @dematte_brazilian_2019 and @dematte_brazilian_2022.
+
+
+Original files:\
+- `BSSL_DB_V002.xlsx`: xlsx file with site information, soil information, and spectral data.
+
+```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
+packages <- c("tidyverse", "prospectr", "units", "readxl", "stringr",
+              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
+              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc",
+              "qs", "dplyr", "tidyr")
+
+invisible(lapply(packages, library, character.only = TRUE))
+
+source("../../R/functions/SSL_functions.R")
+```
+
+Directory/folder path with original files (not uploaded to GitHub).
+
+```{r}
+dir = "./"
+tic()
+```
+
+## Data standardization to the OSSL format
+
+### Site information
+
+```{r}
+besb.metadata <- read_excel("BSSL_DB_V002.xlsx", sheet = "BSSL_Soil_Attributes_Dataset")
+
+besb.sitedata <- besb.metadata %>%
+  select(ID_Unique, Owner_code, Vis_NIR_SWIR_availability, MIR_availability, Depth_cm,
+         Lat, Long, Region, Vegetation, Bioma, Geology) %>%
+  rename(id.layer_local_c = ID_Unique,
+         longitude.point_wgs84_dd = Long,
+         latitude.point_wgs84_dd = Lat) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  separate(Depth_cm, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>%
+  mutate(across(starts_with("layer."), as.numeric)) %>%
+  mutate(layer.sequence_usda_uint16 = ifelse(layer.upper.depth_usda_cm == 0, 1, 2)) %>%
+  mutate(id.project_ascii_txt = "Brazilian Soil Spectral Library",
+         dataset.code_ascii_txt = "Brazilian.SSL",
+         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+         surveyor.title_utf8_txt = "Luiz de Queiroz College of Agriculture, University of São Paulo, Piracicaba, São Paulo, Brazil",
+         surveyor.contact_ietf_email = "jamdemat@usp.br",
+         surveyor.address_utf8_txt = "Department of Soil Science, Luiz de Queiroz College of Agriculture (ESALQ), University of São Paulo (USP), Ave. Pádua Dias 11, Cx. Postal 9, 13418-900, Piracicaba, São Paulo, Brazil",
+         dataset.title_utf8_txt = "Brazilian Soil Spectral Library",
+         dataset.owner_utf8_txt = "Luiz de Queiroz College of Agriculture, University of São Paulo",
+         
+         dataset.address_idn_url = "https://bibliotecaespectral.wixsite.com/english",
+         dataset.doi_idf_url = "https://doi.org/10.5281/zenodo.8361419",
+         dataset.license.title_ascii_txt = "CC-BY",
+         dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+         dataset.contact.name_utf8_txt = "José A.M. Demattê",
+         dataset.contact_ietf_email = "jamdemat@usp.br") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
+         .after = id.project_ascii_txt) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Saving version to dataset root dir
+site.qs = paste0(dir, "/ossl_soilsite_v2.0.qs")
+qs::qsave(besb.sitedata, site.qs, preset = "high")
+```
+
+### Soil lab information (reference analytical data)
+
+NOTE: The code chunk below must be run just once for getting a template
+for scripted column standardization. Just run once for getting the
+original names of soil properties, descriptions, data types, and units.
+Then upload to Google Sheet for editing and manually defining the rules
+for integrating with the OSSL. Requires Google authentication. A copy of
+the output file is saved to this folder for archiving purposes.
+
+```{r soil_template, echo=TRUE, eval=FALSE}
+# Getting soillab original variables
+
+soillab.names <- besb.metadata %>%
+  select(ID_Unique, Sand_gkg, Clay_gkg, SOM_gkg, pH_H2O, 
+         Ca_mmolkg, Mg_mmolkg, Na_mmolkg, CEC_Ph7_mmolkg) %>%
+  names(.) %>%
+  tibble(original_name = .) %>%
+  dplyr::mutate(table = 'BSSL_DB_V002.xlsx', .before = 1) %>%
+  dplyr::mutate(import = '', comment = '', ossl_abbrev = '', ossl_method = '', ossl_unit = '',
+                ossl_convert = '', ossl_name = '', .after = original_name)
+
+readr::write_csv(soillab.names, paste0(getwd(), "/soillab_original_names.csv"))
+
+# Uploading to google sheet
+
+# Drive 'Open Soil Spectral Library'
+# Folder 'Database v2'
+googledrive::drive_ls(as_id("1l9VM4fFks2xBloDE69EFTfPgQeFx5aGw"))
+
+# Use the ID of the file 'OSSL_v2_tab2_soildata_importing'
+OSSL.soildata.importing <- "1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es"
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+
+# Checking readme
+googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
+
+# Preparing soillab.names for this dataset
+upload <- dplyr::as_tibble(soillab.names)
+
+# Uploading with TEMP name. Check online, move to sequence, and update name
+googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "BESB")
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+```
+
+NOTE: The code chunk below must be run just once. Run for getting the
+column standardization rules after editing online on Google Sheets. A
+copy of the output file is saved to this folder for archiving purposes.
+
+```{r soilab_download, echo=TRUE, eval=FALSE}
+# Downloading from google sheet
+
+# Checking metadata
+googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
+
+# Preparing soillab.names
+transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
+                                         sheet = "BESB") %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+
+# Saving to folder
+write_csv(transvalues, paste0(getwd(), "/soillab_standardized_names.csv"))
+```
+
+Reading standardization rules:
+
+```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+transvalues <- read_csv(paste0(getwd(), "/soillab_standardized_names.csv"),
+                        show_col_types = F)
+knitr::kable(transvalues)
+```
+
+Standardizing soil data to the OSSL format:
+
+```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+besb.reference <- besb.metadata
+
+# Harmonization of names and units
+analytes.old.names <- transvalues %>%
+  filter(table == "BSSL_DB_V002.xlsx") %>%
+  pull(original_name)
+
+analytes.new.names <- transvalues %>%
+  filter(table == "BSSL_DB_V002.xlsx") %>%
+  pull(ossl_name)
+
+# Selecting and renaming
+if("SOM_gkg" %in% names(besb.reference)) {
+  besb.reference <- besb.reference %>% rename(SOC_gkg = SOM_gkg)
+}
+
+analytes.old.names.clean <- analytes.old.names[analytes.old.names != "ID_Unique"]
+analytes.new.names.clean <- analytes.new.names[analytes.old.names != "ID_Unique"]
+
+besb.soildata <- besb.reference %>%
+  rename(id.layer_local_c = ID_Unique) %>%
+  select(id.layer_local_c, all_of(analytes.old.names.clean)) %>%
+  rename_with(~analytes.new.names.clean, all_of(analytes.old.names.clean)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  as.data.frame()
+
+# Getting the formulas
+functions.list <- transvalues %>%
+  filter(table == "BSSL_DB_V002.xlsx") %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(besb.soildata))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+besb.soildata.trans <- transform_values(df = besb.soildata,
+                                       out.name = names(besb.soildata),
+                                       in.name = names(besb.soildata),
+                                       fun.lst = functions.list)
+
+# Final soillab data
+besb.soildata <- besb.soildata.trans %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Checking total number of observations
+besb.soildata %>%
+  distinct(id.layer_local_c) %>%
+  summarise(count = n())
+  
+# Saving version to dataset root dir
+soillab.qs = paste0(dir, "/ossl_soillab_v2.0.qs")
+qs::qsave(besb.soildata, soillab.qs, preset = "high")
+```

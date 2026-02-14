@@ -1,0 +1,10 @@
+table,original_name,import,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+BSSL_DB_V002.xlsx,ID_Unique,,,,,,,
+BSSL_DB_V002.xlsx,Sand_gkg,,,,,,,
+BSSL_DB_V002.xlsx,Clay_gkg,,,,,,,
+BSSL_DB_V002.xlsx,SOM_gkg,,,,,,,
+BSSL_DB_V002.xlsx,pH_H2O,,,,,,,
+BSSL_DB_V002.xlsx,Ca_mmolkg,,,,,,,
+BSSL_DB_V002.xlsx,Mg_mmolkg,,,,,,,
+BSSL_DB_V002.xlsx,Na_mmolkg,,,,,,,
+BSSL_DB_V002.xlsx,CEC_Ph7_mmolkg,,,,,,,

@@ -51,3 +51,5 @@ vignettes/*.pdf
 *.RData
 
 ossl-import.Rproj
+BSSL_DB_V002.xlsx
+dataset/BESB/BSSL_DB_V002.xlsx
