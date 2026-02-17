@@ -1,6 +1,6 @@
 # CASSL dataset preparation for the OSSL
 Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
-— 10 February, 2026.
+— 17 February, 2026.
 
 - [The CASSL original data](#the-cassl-original-data)
 - [Data standardization to the OSSL
@@ -14,7 +14,7 @@ Spectral Library (CASSL) dataset into the Open Soil Spectral Library.
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-02-10  
+Last update: 2026-02-17  
 Additional documentation:
 [CAF.SSL](https://docs.soilspectroscopy.org/soilspec.html#caf.ssl)
 
@@ -36,7 +36,8 @@ Original files:
 Directory/folder path with original files (not uploaded to GitHub).
 
 ``` r
-dir = "~/projects/mnt-ossl/import/dataset/CASSL/"
+# dir = "./"
+dir = "~/projects/mnt-ossl/import/dataset/CASSL"
 tic()
 ```
 
@@ -45,7 +46,7 @@ tic()
 ### Site information
 
 ``` r
-caf.metadata <- fread(paste0(dir, "cssl_metadata_all.csv"), header = T)
+caf.metadata <- fread(path(dir, "cssl_metadata_all.csv"), header = T)
 
 caf.sitedata <- caf.metadata %>%
   select(sample_id, sample_location, country_code,
@@ -100,7 +101,7 @@ caf.sitedata <- caf.metadata %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
-site.qs = paste0(dir, "/ossl_soilsite_v2.0.qs")
+site.qs = path(dir, "ossl_soilsite_v2.0.qs")
 qs::qsave(caf.sitedata, site.qs, preset = "high")
 ```
 
@@ -113,10 +114,13 @@ Then upload to Google Sheet for editing and manually defining the rules
 for integrating with the OSSL. Requires Google authentication. A copy of
 the output file is saved to this folder for archiving purposes.
 
+**Always leave the sheet name as TEMP to avoid overwritting, then rename
+online to download locally.**
+
 ``` r
 # Getting soillab original variables
 
-cassl.soildata <- fread(paste0(dir, "ssl_refdata_all.csv"), header = T)
+cassl.soildata <- fread(path(dir, "ssl_refdata_all.csv"), header = T)
 
 soillab.names <- cassl.soildata %>%
   names(.) %>%
@@ -169,13 +173,13 @@ transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2
   select(contains(c("table", "id", "original_name", "ossl_")))
 
 # Saving to folder
-write_csv(transvalues, paste0(getwd(), "/soillab_standardized_names.csv"))
+write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
 ```
 
 Reading standardization rules:
 
 ``` r
-transvalues <- read_csv(paste0(getwd(), "/soillab_standardized_names.csv"),
+transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
                         show_col_types = F)
 knitr::kable(transvalues)
 ```
@@ -201,7 +205,7 @@ knitr::kable(transvalues)
 Standardizing soil data to the OSSL format:
 
 ``` r
-caf.reference <- fread(paste0(dir, "ssl_refdata_all.csv"),
+caf.reference <- fread(path(dir, "ssl_refdata_all.csv"),
                        header = T)
 
 # Harmonization of names and units
@@ -257,7 +261,7 @@ caf.soildata %>%
 
 ``` r
 # Saving version to dataset root dir
-soillab.qs = paste0(dir, "/ossl_soillab_v2.0.qs")
+soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
 qs::qsave(caf.soildata, soillab.qs, preset = "high")
 ```
 
@@ -265,7 +269,7 @@ qs::qsave(caf.soildata, soillab.qs, preset = "high")
 
 ``` r
 # Floating wavenumbers
-caf.spectra <- fread(paste0(dir, "cssl_spectra.csv"), header = T)
+caf.spectra <- fread(path(dir, "cssl_spectra.csv"), header = T)
 
 # Renaming
 old.names <- names(caf.spectra)
@@ -360,7 +364,7 @@ caf.mir.export <- caf.mir.metadata %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
-soilmir.qs = paste0(dir, "/ossl_mir_v2.0.qs")
+soilmir.qs = path(dir, "ossl_mir_v2.0.qs")
 qs::qsave(caf.mir.export, soilmir.qs, preset = "high")
 ```
 
@@ -533,7 +537,7 @@ caf.mir %>%
 toc()
 ```
 
-    4.681 sec elapsed
+    4.088 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -541,8 +545,8 @@ gc()
 ```
 
               used  (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
-    Ncells 4316289 230.6    6673171 356.4         NA  6673171 356.4
-    Vcells 7829067  59.8   29912420 228.3      32768 37390436 285.3
+    Ncells 4316898 230.6    6673241 356.4         NA  6527648 348.7
+    Vcells 7909129  60.4   29923218 228.3      32768 37404014 285.4
 
 ## References
 

@@ -1,5 +1,10 @@
 
 .DS_Store
+BSSL_DB_V002.xlsx
+~$BSSL_DB_V002.xlsx
+ossl_soilsite_v2.0.qs
+ossl_soillab_v2.0.qs
+ossl_mir_v2.0.qs
 
 # History files
 .Rhistory

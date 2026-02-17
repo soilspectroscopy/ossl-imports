@@ -1,36 +1,18 @@
----
-title: "BESB dataset preparation for the OSSL"
-author: 
-  - name: Ran Zhi
-    email: rzhi@woodwellclimate.org
-  - name: Jose L. Safanelli
-    email: jsafanelli@woodwellclimate.org
-  - name: Jonathan Sanderman
-    email: jsanderman@woodwellclimate.org
-date: last-modified
-date-format: "--- DD MMMM, YYYY."
-format: 
-  gfm:
-    toc: true
-    toc-depth: 2
-bibliography: reference.bib
-csl: ../../tex/apa.csl
-cite-method: citeproc
-link-citations: true
-twitter-card:
-  site: "@soilspec"
-editor: 
-  markdown: 
-    wrap: 72
----
+# BESB dataset preparation for the OSSL
+Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
+— 17 February, 2026.
+
+- [The BSSL original data](#the-bssl-original-data)
+- [Data standardization to the OSSL
+  format](#data-standardization-to-the-ossl-format)
 
 Code repository for preparing and importing the Brazilian Soil Spectral
 Library (BSSL) dataset into the Open Soil Spectral Library.
 
 Project: [Soil Spectroscopy for Global
-Good](https://soilspectroscopy.org)\
-Development: <https://github.com/soilspectroscopy>\
-Last update: `r Sys.Date()`\
+Good](https://soilspectroscopy.org)  
+Development: <https://github.com/soilspectroscopy>  
+Last update: 2026-02-17  
 Additional documentation:
 
 ## The BSSL original data
@@ -38,25 +20,16 @@ Additional documentation:
 Site data, Soil lab data, Mid-Infrared Spectra (MIR), and Visible,
 Near-Infrared and Shortwave-Infrared (Vis-NIR-SWIR) from the Brazilian
 Soil Spectral Library (BSSL). Further information of the dataset can be
-found in detail at @dematte_brazilian_2019 and @dematte_brazilian_2022.
+found in detail at Demattê et al. ([2019](#ref-dematte_brazilian_2019))
+and Demattê et al. ([2022](#ref-dematte_brazilian_2022)).
 
-Original files:\
-- `BSSL_DB_V002.xlsx`: xlsx file with site information, soil information, and spectral data.
-
-```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
-packages <- c("tidyverse", "prospectr", "units", "readxl", "stringr",
-              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
-              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc",
-              "qs", "dplyr", "tidyr", "fs")
-
-invisible(lapply(packages, library, character.only = TRUE))
-
-source("../../R/functions/SSL_functions.R")
-```
+Original files:  
+- `BSSL_DB_V002.xlsx`: xlsx file with site information, soil
+information, and spectral data.
 
 Directory/folder path with original files (not uploaded to GitHub).
 
-```{r}
+``` r
 # dir = "./"
 dir = "~/projects/mnt-ossl/import/dataset/BESB"
 tic()
@@ -66,10 +39,14 @@ tic()
 
 ### Site information
 
-```{r}
+``` r
 besb.metadata <- read_excel(path(dir, "BSSL_DB_V002.xlsx"),
                                  sheet = "BSSL_Soil_Attributes_Dataset")
+```
 
+    Warning: Expecting numeric in G13893 / R13893C7: got '-18.556944.'
+
+``` r
 besb.sitedata <- besb.metadata %>%
   select(ID_Unique, Owner_code, Vis_NIR_SWIR_availability, MIR_availability, Depth_cm,
          Lat, Long, Region, Vegetation, Bioma, Geology) %>%
@@ -115,9 +92,10 @@ Then upload to Google Sheet for editing and manually defining the rules
 for integrating with the OSSL. Requires Google authentication. A copy of
 the output file is saved to this folder for archiving purposes.
 
-**Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.**
+**Always leave the sheet name as TEMP to avoid overwritting, then rename
+online to download locally.**
 
-```{r soil_template, echo=TRUE, eval=FALSE}
+``` r
 # Getting soillab original variables
 
 soillab.names <- besb.metadata %>%
@@ -160,7 +138,7 @@ NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
 copy of the output file is saved to this folder for archiving purposes.
 
-```{r soilab_download, echo=TRUE, eval=FALSE}
+``` r
 # Downloading from google sheet
 
 # Checking metadata
@@ -178,15 +156,27 @@ write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
 
 Reading standardization rules:
 
-```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+``` r
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
                         show_col_types = F)
 knitr::kable(transvalues)
 ```
 
+| table             | original_name  | original_unit | ossl_abbrev | ossl_method | ossl_unit | ossl_convert                                             | ossl_name                 |
+|:------------------|:---------------|:--------------|:------------|:------------|:----------|:---------------------------------------------------------|:--------------------------|
+| BSSL_DB_V002.xlsx | ID_Unique      | NA            | NA          | NA          | NA        | NA                                                       | NA                        |
+| BSSL_DB_V002.xlsx | Sand_gkg       | g/kg          | sand.tot    | usda.c405   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) / 10)       | sand.tot_usda.c405_w.pct  |
+| BSSL_DB_V002.xlsx | Clay_gkg       | g/kg          | clay_tot    | usda.a334   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) / 10)       | clay.tot_usda.a334_w.pct  |
+| BSSL_DB_V002.xlsx | SOC_gkg        | g/kg          | oc          | iso.10694   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1.33 / 10) | oc_iso.10694_w.pct        |
+| BSSL_DB_V002.xlsx | pH_H2O         | NA            | ph.h2o      | usda.a268   | index     | NA                                                       | ph.h2o_usda.a268_index    |
+| BSSL_DB_V002.xlsx | Ca_mmolkg      | mmol/kg       | ca.ext      | usda.a722   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) / 10)       | ca.ext_usda.a722_cmolc.kg |
+| BSSL_DB_V002.xlsx | Mg_mmolkg      | mmol/kg       | mg.ext      | usda.a724   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) / 10)       | mg.ext_usda.a724_cmolc.kg |
+| BSSL_DB_V002.xlsx | Na_mmolkg      | mmol/kg       | na.ext      | usda.a726   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) / 10)       | na.ext_usda.a726_cmolc.kg |
+| BSSL_DB_V002.xlsx | CEC_Ph7_mmolkg | mmol/kg       | cec         | usda.a723   | cmolc.kg  | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) / 10)       | cec_usda.a723_cmolc.kg    |
+
 Standardizing soil data to the OSSL format:
 
-```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+``` r
 besb.reference <- besb.metadata
 
 # Harmonization of names and units
@@ -235,8 +225,38 @@ besb.soildata <- besb.soildata.trans %>%
 besb.soildata %>%
   distinct(id.layer_local_c) %>%
   summarise(count = n())
-  
+```
+
+      count
+    1 16084
+
+``` r
 # Saving version to dataset root dir
 soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
 qs::qsave(besb.soildata, soillab.qs, preset = "high")
 ```
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0" line-spacing="2">
+
+<div id="ref-dematte_brazilian_2019" class="csl-entry">
+
+Demattê, J. A. M., Dotto, A. C., Paiva, A. F. S., Sato, M. V., Dalmolin,
+R. S. D., De Araújo, M. D. S. B., … Do Couto, H. T. Z. (2019). The
+Brazilian Soil Spectral Library (BSSL): A general view, application and
+challenges. *Geoderma*, *354*, 113793.
+doi:[10.1016/j.geoderma.2019.05.043](https://doi.org/10.1016/j.geoderma.2019.05.043)
+
+</div>
+
+<div id="ref-dematte_brazilian_2022" class="csl-entry">
+
+Demattê, J. A. M., Paiva, A. F. D. S., Poppiel, R. R., Rosin, N. A.,
+Ruiz, L. F. C., Mello, F. A. D. O., … Silvero, N. E. Q. (2022). The
+Brazilian Soil Spectral Service (BraSpecS): A User-Friendly System for
+Global Soil Spectra Communication. *Remote Sensing*, *14*(3), 740.
+doi:[10.3390/rs14030740](https://doi.org/10.3390/rs14030740)
+
+</div>
+
+</div>

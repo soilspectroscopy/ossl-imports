@@ -1,8 +1,12 @@
 
 .DS_Store
-ossl-import.Rproj
-BSSL_DB_V002.xlsx
-dataset/BESB/BSSL_DB_V002.xlsx
+# Origial and outputs files
+cssl_metadata_all.csv
+ssl_refdata_all.csv
+cssl_spectra.csv
+ossl_soilsite_v2.0.qs
+ossl_soillab_v2.0.qs
+ossl_mir_v2.0.qs
 
 # History files
 .Rhistory
