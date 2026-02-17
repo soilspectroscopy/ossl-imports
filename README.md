@@ -10,10 +10,13 @@ This is a repository for the **INTERNAL** data import development of the
 [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)
 project to compile the **Open Soil Spectral Library**.
 
-The OSSL is distributed through static files hosted on a [Google Cloud
-storage
-bucket](https://soilspectroscopy.github.io/ossl-manual/ossl-database-access.html#google-cloud-storage).
+The OSSL is distributed through many options as described in the [OSSL
+Database Access](https://docs.soilspectroscopy.org/db-access.html).
 
-The full documentation about the database and access options are
-available in the [OSSL
-Manual](https://soilspectroscopy.github.io/ossl-manual/).
+Full documentation is available in the [OSSL
+Manual](https://docs.soilspectroscopy.org/).
+
+For internal development only:  
+- [Google
+Drive](https://drive.google.com/drive/u/0/folders/1l9VM4fFks2xBloDE69EFTfPgQeFx5aGw)
+with formatting and standardization tables, original data, etc.

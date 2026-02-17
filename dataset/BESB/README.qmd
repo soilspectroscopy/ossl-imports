@@ -35,11 +35,10 @@ Additional documentation:
 
 ## The BSSL original data
 
-Site data, Soil lab data, and Mid-Infrared Spectra (MIR), Visible to
+Site data, Soil lab data, Mid-Infrared Spectra (MIR), and Visible,
 Near-Infrared and Shortwave-Infrared (Vis-NIR-SWIR) from the Brazilian
 Soil Spectral Library (BSSL). Further information of the dataset can be
 found in detail at @dematte_brazilian_2019 and @dematte_brazilian_2022.
-
 
 Original files:\
 - `BSSL_DB_V002.xlsx`: xlsx file with site information, soil information, and spectral data.
@@ -48,7 +47,7 @@ Original files:\
 packages <- c("tidyverse", "prospectr", "units", "readxl", "stringr",
               "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
               "googledrive", "googlesheets4", "data.table", "doMC", "tictoc",
-              "qs", "dplyr", "tidyr")
+              "qs", "dplyr", "tidyr", "fs")
 
 invisible(lapply(packages, library, character.only = TRUE))
 
@@ -58,7 +57,8 @@ source("../../R/functions/SSL_functions.R")
 Directory/folder path with original files (not uploaded to GitHub).
 
 ```{r}
-dir = "./"
+# dir = "./"
+dir = "~/projects/mnt-ossl/import/dataset/BESB"
 tic()
 ```
 
@@ -67,7 +67,8 @@ tic()
 ### Site information
 
 ```{r}
-besb.metadata <- read_excel("BSSL_DB_V002.xlsx", sheet = "BSSL_Soil_Attributes_Dataset")
+besb.metadata <- read_excel(path(dir, "BSSL_DB_V002.xlsx"),
+                                 sheet = "BSSL_Soil_Attributes_Dataset")
 
 besb.sitedata <- besb.metadata %>%
   select(ID_Unique, Owner_code, Vis_NIR_SWIR_availability, MIR_availability, Depth_cm,
@@ -147,7 +148,7 @@ googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
 upload <- dplyr::as_tibble(soillab.names)
 
 # Uploading with TEMP name. Check online, move to sequence, and update name
-googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "BESB")
+googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP")
 
 # Checking metadata
 googlesheets4::as_sheets_id(OSSL.soildata.importing)

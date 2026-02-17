@@ -533,7 +533,7 @@ caf.mir %>%
 toc()
 ```
 
-    4.153 sec elapsed
+    4.681 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -541,7 +541,7 @@ gc()
 ```
 
               used  (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
-    Ncells 4316289 230.6    6673048 356.4         NA  6673048 356.4
+    Ncells 4316289 230.6    6673171 356.4         NA  6673171 356.4
     Vcells 7829067  59.8   29912420 228.3      32768 37390436 285.3
 
 ## References
