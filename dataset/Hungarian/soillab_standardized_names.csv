@@ -1,0 +1,8 @@
+table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+HSDOS_SSL_ver1.1.csv,pH_KCl,NA,ph_kcl,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph_kcl_iso.10390_index
+HSDOS_SSL_ver1.1.csv,SOM,%,oc,wb1934,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_wb1934_w.pct
+HSDOS_SSL_ver1.1.csv,CaCO3,%,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",caco3_iso.10693_w.pct
+HSDOS_SSL_ver1.1.csv,TSC,w/w %,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 25)",ec_iso.11265_ds.m
+HSDOS_SSL_ver1.1.csv,TN,mg/kg,n.tot,iso.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10000)",n.tot_iso.11261_w.pct
+HSDOS_SSL_ver1.1.csv,P2O5_AL,mg/kg,p.ext,msz.20135,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_msz.20135_mg.kg
+HSDOS_SSL_ver1.1.csv,K2O_AL,mg/kg,k.ext,msz.20135,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_msz.20135_mg.kg
