@@ -516,6 +516,21 @@ hsdos.visnir.export %>%
 
 ![](README_files/figure-commonmark/visnir_plot-1.png)
 
+``` r
+toc()
+```
+
+    2.907 sec elapsed
+
+``` r
+rm(list = ls())
+gc()
+```
+
+              used  (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
+    Ncells 4421248 236.2    6838175 365.2         NA  6838175 365.2
+    Vcells 7846474  59.9   66468344 507.2      24576 83085285 633.9
+
 ## References
 
 <div id="refs" class="references csl-bib-body hanging-indent"
