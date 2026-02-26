@@ -1,10 +1,11 @@
 # Hungarian dataset preparation for the OSSL
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
-— 20 February, 2026.
+— 26 February, 2026.
 
 - [The HSDOS original data](#the-hsdos-original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
+- [References](#references)
 
 Code repository for preparing and importing the Hungarian Soil
 Degradation Observation System (HSDOS) dataset into the Open Soil
@@ -13,7 +14,7 @@ Spectral Library.
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-02-20  
+Last update: 2026-02-26  
 Additional documentation:
 
 ## The HSDOS original data
@@ -82,6 +83,35 @@ hsdos.sitedata <- hsdos.metadata %>%
 site.qs = path(dir, "ossl_soilsite_v2.0.qs")
 qs::qsave(hsdos.sitedata, site.qs, preset = "high")
 ```
+
+Plotting sites map:
+
+``` r
+data("World")
+
+points <- hsdos.sitedata %>%
+  filter(!is.na(longitude.point_wgs84_dd),
+         !is.na(latitude.point_wgs84_dd)) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+
+tmap_mode("plot")
+```
+
+    ℹ tmap modes "plot" - "view"
+    ℹ toggle with `tmap::ttm()`
+
+``` r
+tm_shape(World) +
+  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+  tm_shape(points) +
+  tm_dots()
+```
+
+
+    ── tmap v3 code detected ───────────────────────────────────────────────────────
+    [v3->v4] `tm_polygons()`: use `col_alpha` instead of `border.alpha`.[tip] Consider a suitable map projection, e.g. by adding `+ tm_crs("auto")`.
+
+![](README_files/figure-commonmark/map-1.png)
 
 ### Soil lab information (reference analytical data)
 
@@ -164,8 +194,13 @@ knitr::kable(transvalues)
 
 | table | original_name | original_unit | ossl_abbrev | ossl_method | ossl_unit | ossl_convert | ossl_name |
 |:---|:---|:---|:---|:---|:---|:---|:---|
-| HSDOS_SSL_ver1.1.csv | pH_KCl | NA | NA | NA | NA | NA | NA |
+| HSDOS_SSL_ver1.1.csv | pH_KCl | NA | ph_kcl | iso.10390 | index | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph_kcl_iso.10390_index |
+| HSDOS_SSL_ver1.1.csv | SOM | % | oc | wb1934 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | oc_wb1934_w.pct |
+| HSDOS_SSL_ver1.1.csv | CaCO3 | % | caco3 | iso.10693 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | caco3_iso.10693_w.pct |
+| HSDOS_SSL_ver1.1.csv | TSC | w/w % | ec | iso.11265 | ds.m | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 25) | ec_iso.11265_ds.m |
 | HSDOS_SSL_ver1.1.csv | TN | mg/kg | n.tot | iso.11261 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) / 10000) | n.tot_iso.11261_w.pct |
+| HSDOS_SSL_ver1.1.csv | P2O5_AL | mg/kg | p.ext | msz.20135 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_msz.20135_mg.kg |
+| HSDOS_SSL_ver1.1.csv | K2O_AL | mg/kg | k.ext | msz.20135 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | k.ext_msz.20135_mg.kg |
 
 Standardizing soil data to the OSSL format:
 
@@ -223,6 +258,265 @@ hsdos.soildata %>%
 soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
 qs::qsave(hsdos.soildata, soillab.qs, preset = "high")
 ```
+
+Soil lab data summary.
+
+``` r
+hsdos.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 5490       |
+| Number of columns                                | 8          |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| factor                                           | 1          |
+| numeric                                          | 7          |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
+
+Data summary
+
+**Variable type: factor**
+
+| skim_variable    | n_missing | ordered | n_unique | top_counts                     |
+|:-----------------|----------:|:--------|---------:|:-------------------------------|
+| id.layer_local_c |         0 | FALSE   |     5490 | 020: 1, 020: 1, 020: 1, 020: 1 |
+
+**Variable type: numeric**
+
+| skim_variable          | n_missing |   mean |     sd |   p0 |    p25 |    p50 |    p75 |    p100 |
+|:-----------------------|----------:|-------:|-------:|-----:|-------:|-------:|-------:|--------:|
+| ph_kcl_iso.10390_index |         0 |   7.36 |   0.85 | 4.18 |   6.84 |   7.62 |   7.94 |    9.93 |
+| oc_wb1934_w.pct        |         0 |   1.63 |   0.99 | 0.10 |   0.84 |   1.46 |   2.21 |    8.00 |
+| caco3_iso.10693_w.pct  |         0 |   7.81 |  10.16 | 0.00 |   0.00 |   3.60 |  13.00 |   90.00 |
+| ec_iso.11265_ds.m      |         0 |   0.99 |   0.93 | 0.50 |   0.50 |   0.50 |   1.25 |   12.75 |
+| n.tot_iso.11261_w.pct  |         0 |   0.00 |   0.00 | 0.00 |   0.00 |   0.00 |   0.00 |    0.05 |
+| p.ext_msz.20135_mg.kg  |         0 | 162.69 | 297.26 | 1.50 |  38.90 |  83.70 | 176.00 | 7900.00 |
+| k.ext_msz.20135_mg.kg  |         0 | 197.12 | 160.74 | 5.10 | 103.00 | 158.00 | 242.00 | 3320.00 |
+
+### Vis-NIR spectra
+
+``` r
+# Renaming and ID Preparation
+hsdos.visnir.proc <- hsdos.metadata %>%
+  as_tibble() %>%
+  rename(id.layer_local_c = SAMPLE_TDR_ID) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
+
+# Extracting wavelengths from column names (e.g., "SPC.350" -> 350)
+spec.cols <- grep("^SPC\\.", names(hsdos.visnir.proc), value = TRUE)
+old.wavelengths <- as.numeric(gsub("SPC\\.", "", spec.cols))
+new.wavelengths <- seq(350, 2500, by = 2)
+
+# Resampling spectra
+hsdos.visnir.proc <- hsdos.visnir.proc %>%
+  select(id.layer_local_c, all_of(spec.cols)) %>%
+  { . } -> temp_data 
+
+hsdos.visnir.resampled <- temp_data %>%
+  select(all_of(spec.cols)) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = old.wavelengths, new.wav = new.wavelengths, interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols(temp_data %>% select(id.layer_local_c), .) %>%
+  select(id.layer_local_c, as.character(new.wavelengths))
+
+# Gaps Analysis
+scans.na.gaps <- hsdos.visnir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols(hsdos.visnir.resampled %>% select(id.layer_local_c), .)
+
+# Extreme negative checks
+scans.extreme.neg <- hsdos.visnir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols(hsdos.visnir.resampled %>% select(id.layer_local_c), .)
+
+# Extreme positive checks
+scans.extreme.pos <- hsdos.visnir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1.5, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols(hsdos.visnir.resampled %>% select(id.layer_local_c), .)
+
+# Consistency summary
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.layer_local_c")
+
+# Display problematic scans count
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+```
+
+    # A tibble: 0 × 2
+    # ℹ 2 variables: check <chr>, count <int>
+
+``` r
+# Final column renaming for OSSL standard
+final.visnir.names <- paste0("scan_visnir.", new.wavelengths, "_ref")
+hsdos.visnir.proc <- hsdos.visnir.resampled %>%
+  rename_with(~final.visnir.names, as.character(new.wavelengths))
+
+# Preparing metadata
+hsdos.visnir.metadata <- hsdos.visnir.proc %>%
+  select(id.layer_local_c) %>%
+  mutate(id.scan_local_c = id.layer_local_c,
+         scan.visnir.date.begin_iso.8601_yyyy = ymd("2011-01-01"), 
+         scan.visnir.date.end_iso.8601_yyyy = ymd("2011-12-31"), 
+         scan.visnir.model.name_utf8_txt = "FieldSpec 4 spectroradiometer", 
+         scan.visnir.license.title_ascii_txt = "CC-BY",
+         scan.visnir.method.optics_any_txt = "",
+         scan.visnir.method.preparation_any_txt = "Standard preparation",
+         scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+         scan.visnir.doi_idf_url = "https://zenodo.org/records/13955229",
+         scan.visnir.contact.name_utf8_txt = "János Mészáros",
+         scan.visnir.contact.email_ietf_txt = "koos.sandor@atk.hun-ren.hu")
+
+# Final preparation
+hsdos.visnir.export <- hsdos.visnir.metadata %>%
+  left_join(hsdos.visnir.proc, by = "id.layer_local_c") %>%
+  mutate(across(starts_with("id."), as.character))
+
+# Saving
+soilvisnir.qs = path(dir, "ossl_visnir_v2.0.qs")
+qs::qsave(hsdos.visnir.export, soilvisnir.qs, preset = "high")
+```
+
+### Quality control for Vis-NIR
+
+The final table must be joined as follows:
+
+- Vis-NIR is used as first reference for left join.
+- Then it is left joined with the site and soil lab data. This drop data
+  without any available scan.
+
+The availability of data is summarized below:
+
+``` r
+# Taking a few representative columns for checking the consistency of joins
+hsdos.availability <- hsdos.visnir.export %>%
+  select(id.layer_local_c, scan_visnir.600_ref) %>%
+  left_join({hsdos.metadata %>%
+      rename(id.layer_local_c = SAMPLE_TDR_ID) %>%
+      select(id.layer_local_c, LAT_WGS84, SOM, pH_KCl)}, by = "id.layer_local_c") %>%
+  filter(!is.na(id.layer_local_c))
+
+# Availability of information summary
+# This tells us how many samples have spectra vs. lab/site data
+hsdos.availability %>%
+  mutate(across(everything(), as.character)) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
+```
+
+    # A tibble: 5 × 2
+      column              count
+      <chr>               <int>
+    1 LAT_WGS84            5490
+    2 SOM                  5490
+    3 id.layer_local_c     5490
+    4 pH_KCl               5490
+    5 scan_visnir.600_ref  5490
+
+``` r
+# Repeats check - Checking for duplicate SAMPLE_TDR_IDs
+hsdos.availability %>%
+  mutate(across(everything(), as.character)) %>%
+  select(id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  group_by(column, value) %>%
+  summarise(repeats = n(), .groups = 'drop') %>%
+  group_by(column, repeats) %>%
+  summarise(count = n(), .groups = 'drop')
+```
+
+    # A tibble: 1 × 3
+      column           repeats count
+      <chr>              <int> <int>
+    1 id.layer_local_c       1  5490
+
+Soil analytical data summary for Vis-NIR. Note: many scans could not be
+linked with the wetchem.
+
+``` r
+hsdos.soildata %>%
+  filter(id.layer_local_c %in% hsdos.visnir.export$id.layer_local_c) %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 5490       |
+| Number of columns                                | 8          |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| factor                                           | 1          |
+| numeric                                          | 7          |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
+
+Data summary
+
+**Variable type: factor**
+
+| skim_variable    | n_missing | ordered | n_unique | top_counts                     |
+|:-----------------|----------:|:--------|---------:|:-------------------------------|
+| id.layer_local_c |         0 | FALSE   |     5490 | 020: 1, 020: 1, 020: 1, 020: 1 |
+
+**Variable type: numeric**
+
+| skim_variable          | n_missing |   mean |     sd |   p0 |    p25 |    p50 |    p75 |    p100 |
+|:-----------------------|----------:|-------:|-------:|-----:|-------:|-------:|-------:|--------:|
+| ph_kcl_iso.10390_index |         0 |   7.36 |   0.85 | 4.18 |   6.84 |   7.62 |   7.94 |    9.93 |
+| oc_wb1934_w.pct        |         0 |   1.63 |   0.99 | 0.10 |   0.84 |   1.46 |   2.21 |    8.00 |
+| caco3_iso.10693_w.pct  |         0 |   7.81 |  10.16 | 0.00 |   0.00 |   3.60 |  13.00 |   90.00 |
+| ec_iso.11265_ds.m      |         0 |   0.99 |   0.93 | 0.50 |   0.50 |   0.50 |   1.25 |   12.75 |
+| n.tot_iso.11261_w.pct  |         0 |   0.00 |   0.00 | 0.00 |   0.00 |   0.00 |   0.00 |    0.05 |
+| p.ext_msz.20135_mg.kg  |         0 | 162.69 | 297.26 | 1.50 |  38.90 |  83.70 | 176.00 | 7900.00 |
+| k.ext_msz.20135_mg.kg  |         0 | 197.12 | 160.74 | 5.10 | 103.00 | 158.00 | 242.00 | 3320.00 |
+
+Vis-NIR spectral visualization (100 random spectra):
+
+``` r
+set.seed(42)
+hsdos.visnir.export %>%
+  sample_n(100) %>%
+  select(all_of(c("id.layer_local_c")), starts_with("scan_visnir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+                      names_to = "wavelength", values_to = "reflectance") %>%
+  dplyr::mutate(wavelength = gsub("scan_visnir.|_ref", "", wavelength)) %>%
+  dplyr::mutate(wavelength = as.numeric(wavelength)) %>%
+  ggplot(aes(x = wavelength, y = reflectance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1, color = "darkblue") +
+  scale_x_continuous(breaks = seq(350, 2500, by = 250))+
+  labs(title = "Vis-NIR Spectra (100 random scans)",
+       x = "Wavelength (nm)",
+       y = "Reflectance")+
+  theme_light()
+```
+
+![](README_files/figure-commonmark/visnir_plot-1.png)
+
+## References
 
 <div id="refs" class="references csl-bib-body hanging-indent"
 entry-spacing="0" line-spacing="2">

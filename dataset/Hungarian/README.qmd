@@ -419,3 +419,4 @@ hsdos.visnir.export %>%
   theme_light()
 ```
 
+## References
