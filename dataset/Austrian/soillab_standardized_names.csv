@@ -1,0 +1,11 @@
+table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+Austrian NIR Soil Spectral Library_V4.xlsx,SOC,%,oc,usda.c729,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_usda.c729_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,TC,%,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",c.tot_usda.a622_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,CaCO3,%,caco3,usda.a54,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",caco3_usda.a54_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,TN,%,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",n.tot_usda.a623_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,Phosphorus,mg/kg,p.ext,austria.cal,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",p.ext_austria.cal_mg.kg
+Austrian NIR Soil Spectral Library_V4.xlsx,pH_CaCl2,NA,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
+Austrian NIR Soil Spectral Library_V4.xlsx,CEC,cmolc/kg,cec,iso.11260,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cec_iso.11260_cmolc.kg
+Austrian NIR Soil Spectral Library_V4.xlsx,Sand,%,sand.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.tot_iso.11277_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,Silt,%,silt.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.tot_iso.11277_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,Clay,%,clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",clay.tot_iso.11277_w.pct
