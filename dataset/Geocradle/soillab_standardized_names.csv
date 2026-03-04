@@ -1,0 +1,8 @@
+table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+SSL_GEOCRADLE_1.csv,Sand_Fraction,%,sand.tot,usda.c405,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.tot_usda.c405_w.pct
+SSL_GEOCRADLE_1.csv,Clay_Fraction,%,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",clay.tot_usda.a334_w.pct
+SSL_GEOCRADLE_1.csv,Silt_Fraction,%,silt.tot,usda.c407,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.tot_usda.c407_w.pct
+SSL_GEOCRADLE_1.csv,OC,%,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct
+SSL_GEOCRADLE_1.csv,CaCO3,%,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",caco3_iso.10693_w.pct
+SSL_GEOCRADLE_1.csv,pH_H2O,NA,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.h2o_usda.a268_index
+SSL_GEOCRADLE_1.csv,EC_muS,mS/cm,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ec_iso.11265_ds.m
