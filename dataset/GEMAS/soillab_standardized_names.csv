@@ -1,0 +1,5 @@
+table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+GEMAS_MIRcompiled.csv,C_tot,wt%,c.tot,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",c.tot_iso.10694_w.pct
+GEMAS_MIRcompiled.csv,TOC,wt%,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct
+GEMAS_MIRcompiled.csv,CEC,meq,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cec_usda.a723_cmolc.kg
+GEMAS_MIRcompiled.csv,pH_CaCl2,NA,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
