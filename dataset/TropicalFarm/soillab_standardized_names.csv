@@ -1,0 +1,9 @@
+table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+soil fertility data.xlsx,Clay,g.dm3,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",clay.tot_usda.a334_w.pct
+soil fertility data.xlsx,OM,g.dm3,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",oc_iso.10694_w.pct
+soil fertility data.xlsx,CEC,mmolc.dm3,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",cec_usda.a723_cmolc.kg
+soil fertility data.xlsx,pH,NA,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
+soil fertility data.xlsx,exP,mg.dm3,p.ext,brazil.ier,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",p.ext_brazil.ier_mg.kg
+soil fertility data.xlsx,exK,mmolc.dm3,k.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",k.ext_brazil.ier_cmolc.kg
+soil fertility data.xlsx,exCa,mmolc.dm3,ca.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",ca.ext_brazil.ier_cmolc.kg
+soil fertility data.xlsx,exMg,mmolc.dm3,mg.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",mg.ext_brazil.ier_cmolc.kg
