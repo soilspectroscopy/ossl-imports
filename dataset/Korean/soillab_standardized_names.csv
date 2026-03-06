@@ -1,0 +1,2 @@
+table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+Gyeonggi Soil Spectral Library (G-SSL).xlsx,mSOC(%),%,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct

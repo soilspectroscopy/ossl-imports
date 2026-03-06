@@ -1,0 +1,412 @@
+---
+title: "Korean dataset preparation for the OSSL"
+author: 
+  - name: Ran Zhi
+    email: rzhi@woodwellclimate.org
+  - name: Jose L. Safanelli
+    email: jsafanelli@woodwellclimate.org
+  - name: Jonathan Sanderman
+    email: jsanderman@woodwellclimate.org
+date: last-modified
+date-format: "--- DD MMMM, YYYY."
+format: 
+  gfm:
+    toc: true
+    toc-depth: 2
+bibliography: reference.bib
+csl: ../../tex/apa.csl
+cite-method: citeproc
+link-citations: true
+twitter-card:
+  site: "@soilspec"
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+Code repository for preparing and importing the Korean NIR Soil Spectral Dataset into the Open Soil Spectral Library.
+
+Project: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)\
+Development: <https://github.com/soilspectroscopy>\
+Last update: `r Sys.Date()`\
+Additional documentation:
+
+## The Korean original data
+
+Site data, Soil lab data, and Near-Infrared (NIR) data from Gyeonggi Province, South  Korea. Further information of the dataset can be found in detail at @bae_spatially_2026.
+
+Original files:\
+- `Gyeonggi Soil Spectral Library (G-SSL).xlsx`: xlsx file with site information, soil information, and NIR spectral data.
+
+```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
+packages <- c("tidyverse", "prospectr", "units", "readxl", "stringr",
+              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
+              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc",
+              "qs", "dplyr", "tidyr", "fs")
+
+invisible(lapply(packages, library, character.only = TRUE))
+
+source("../../R/functions/SSL_functions.R")
+```
+
+Directory/folder path with original files (not uploaded to GitHub).
+
+```{r}
+dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Korean"
+tic()
+```
+
+## Data standardization to the OSSL format
+
+### Site information
+
+```{r}
+korean.metadata <- read_excel(path(dir, "Gyeonggi Soil Spectral Library (G-SSL).xlsx"),
+                            sheet = "SOC")
+
+# Function to convert GPS
+dms_to_dd <- function(x) {
+  parts <- str_match(x, "(\\d+)°(\\d+)'(\\d+)\"([NSEW])")
+  deg <- as.numeric(parts[,2])
+  min <- as.numeric(parts[,3])
+  sec <- as.numeric(parts[,4])
+  dir <- parts[,5]
+  
+  dd <- deg + (min / 60) + (sec / 3600)
+  dd <- ifelse(dir %in% c("W", "S"), -dd, dd)
+  return(dd)
+}
+
+
+korean.sitedata <- korean.metadata %>%
+  select(No., Region, Location, `Land cover type`) %>%
+  rename(id.layer_local_c = No.) %>%
+  # Separate "37°...N 127°...E" into two columns at the space
+  separate(Location, into = c("lat_raw", "lon_raw"), sep = " (?=\\d)", remove = FALSE) %>%
+  mutate(
+    latitude.point_wgs84_dd = dms_to_dd(lat_raw),
+    longitude.point_wgs84_dd = dms_to_dd(lon_raw)
+  ) %>%
+  mutate(layer.upper.depth_usda_cm = 0,
+         layer.lower.depth_usda_cm = 15) %>%
+  mutate(id.project_ascii_txt = "Gyeonggi Soil Spectral Library",
+         dataset.code_ascii_txt = "Korean.NIR",
+         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+         dataset.title_utf8_txt = "Gyeonggi Soil Spectral Library",
+         dataset.owner_utf8_txt = "Jeehwan Bae",
+         dataset.doi_idf_url = "https://zenodo.org/records/17941270",
+         dataset.license.title_ascii_txt = "CC-BY",
+         dataset.license.address_idn_url = "https://doi.org/10.6084/m9.figshare.29380574",
+         dataset.contact.name_utf8_txt = "Gayoung Yoo",
+         dataset.contact_ietf_email = "gayoo@khu.ac.kr") %>%
+  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .after = id.project_ascii_txt) %>%
+  mutate(across(starts_with("id."), as.character))
+
+# Saving version to dataset root dir
+site.qs = path(dir, "ossl_soilsite_v2.0.qs")
+qs::qsave(korean.sitedata, site.qs, preset = "high")
+```
+
+Plotting sites map:
+```{r map, include=TRUE, echo=TRUE, eval=TRUE}
+data("World")
+
+points <- korean.sitedata %>%
+  filter(!is.na(longitude.point_wgs84_dd),
+         !is.na(latitude.point_wgs84_dd)) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+
+tmap_mode("plot")
+
+tm_shape(World) +
+  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+  tm_shape(points) +
+  tm_dots()
+```
+### Soil lab information (reference analytical data)
+
+NOTE: The code chunk below must be run just once for getting a template
+for scripted column standardization. Just run once for getting the
+original names of soil properties, descriptions, data types, and units.
+Then upload to Google Sheet for editing and manually defining the rules
+for integrating with the OSSL. Requires Google authentication. A copy of
+the output file is saved to this folder for archiving purposes.
+
+```{r soil_template, echo=TRUE, eval=FALSE}
+# Getting soillab original variables
+
+soillab.names <- korean.metadata %>%
+  select(No., 'mSOC(%)') %>%
+  rename(id.layer_local_c = No.) %>%
+  names() %>%
+  tibble(original_name = .) %>%
+  dplyr::mutate(table = 'Gyeonggi Soil Spectral Library (G-SSL).xlsx', .before = 1) %>%
+  dplyr::mutate(import = '', original_unit = '', original_method = '', comment = '', ossl_abbrev = '', 
+                ossl_method = '', ossl_unit = '', ossl_convert = '', ossl_name = '', .after = original_name)
+
+readr::write_csv(soillab.names, path(getwd(), "soillab_original_names.csv"))
+
+# Uploading to google sheet
+
+# Drive 'Open Soil Spectral Library'
+# Folder 'Database v2'
+googledrive::drive_ls(as_id("1l9VM4fFks2xBloDE69EFTfPgQeFx5aGw"))
+
+# Use the ID of the file 'OSSL_v2_tab2_soildata_importing'
+OSSL.soildata.importing <- "1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es"
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+
+# Checking readme
+googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
+
+# Preparing soillab.names for this dataset
+upload <- dplyr::as_tibble(soillab.names)
+
+# Uploading with TEMP name. Check online, move to sequence, and update name
+googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP")
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+```
+
+NOTE: The code chunk below must be run just once. Run for getting the
+column standardization rules after editing online on Google Sheets. A
+copy of the output file is saved to this folder for archiving purposes.
+
+```{r soilab_download, echo=TRUE, eval=FALSE}
+# Downloading from google sheet
+
+# Checking metadata
+googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
+
+# Preparing soillab.names
+transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
+                                         sheet = "Korean") %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+
+# Saving to folder
+write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
+```
+
+Reading standardization rules:
+
+```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
+                        show_col_types = F)
+knitr::kable(transvalues)
+```
+
+Standardizing soil data to the OSSL format:
+
+```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+korean.reference <- korean.metadata
+
+# Harmonization of names and units
+
+valid_mappings <- transvalues %>%
+  filter(table == "Gyeonggi Soil Spectral Library (G-SSL).xlsx") %>%
+  filter(!is.na(ossl_name) & ossl_name != "") 
+
+analytes.old.names <- valid_mappings %>% pull(original_name)
+analytes.new.names <- valid_mappings %>% pull(ossl_name)
+
+korean.soildata <- korean.reference %>%
+  rename(id.layer_local_c = No.) %>%
+  select(id.layer_local_c, all_of(analytes.old.names)) %>%
+  rename_with(~analytes.new.names, all_of(analytes.old.names)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  as.data.frame()
+
+# Getting the formulas
+functions.list <- transvalues %>%
+  filter(table == "Gyeonggi Soil Spectral Library (G-SSL).xlsx") %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(korean.soildata))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+korean.soildata.trans <- transform_values(df = korean.soildata,
+                                       out.name = names(korean.soildata),
+                                       in.name = names(korean.soildata),
+                                       fun.lst = functions.list)
+
+# Final soillab data
+korean.soildata <- korean.soildata.trans %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Checking total number of observations
+korean.soildata %>%
+  distinct(id.layer_local_c) %>%
+  summarise(count = n())
+  
+# Saving version to dataset root dir
+soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
+qs::qsave(korean.soildata, soillab.qs, preset = "high")
+```
+
+Soil lab data summary.
+```{r summary, include=TRUE, echo=TRUE, eval=TRUE}
+korean.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+### NIR spectra
+```{r nir, include=TRUE, echo=TRUE, eval=TRUE}
+korean.nir <- read_excel(path(dir, "Gyeonggi Soil Spectral Library (G-SSL).xlsx"),
+                            sheet = "NIR_raw")
+# Renaming
+
+korean.nir.proc <- korean.nir %>%
+  rename(id.layer_local_c = No.) 
+
+# Need to resample spectra
+spec.cols <- names(korean.nir.proc)[-1] # Remove the ID column
+old.wavelengths <- as.numeric(spec.cols)
+new.wavelengths <- seq(1400, max(old.wavelengths), by = 2)
+
+# Resampling spectra
+
+korean.nir.resampled <- korean.nir.proc %>%
+  column_to_rownames("id.layer_local_c") %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = old.wavelengths, new.wav = new.wavelengths, interpol = "spline") %>%
+  as_tibble(rownames = "id.layer_local_c")
+
+# Check for NAs
+scans.na.gaps <- korean.nir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(id.layer_local_c = korean.nir.resampled$id.layer_local_c, proportion_NA = .)
+
+# Check for extreme negative values 
+scans.extreme.neg <- korean.nir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(1, function(x) round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)) %>%
+  tibble(id.layer_local_c = korean.nir.resampled$id.layer_local_c, proportion_lower0 = .)
+
+# Check for extreme positive values 
+scans.extreme.pos <- korean.nir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(1, function(x) round(100*(sum(x > 1.5, na.rm=TRUE))/(length(x)), 2)) %>%
+  tibble(id.layer_local_c = korean.nir.resampled$id.layer_local_c, proportion_higherAbs5 = .)
+
+# Summary of problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.layer_local_c")
+
+# 4. Renaming and Metadata
+final.visnir.names <- paste0("scan_nir.", new.wavelengths, "_ref")
+korean.nir.final <- korean.nir.resampled %>%
+  rename_with(~final.visnir.names, as.character(new.wavelengths))
+
+# Customizing metadata for the Korean dataset
+korean.nir.metadata <- korean.nir.final %>%
+  select(id.layer_local_c) %>%
+  mutate(
+    id.scan_local_c = id.layer_local_c,
+    scan.nir.date.begin_iso.8601_yyyy = ymd("2024-01-01"), 
+    scan.visnir.date.end_iso.8601_yyyy = ymd("2024-12-31"), 
+    scan.nir.model.name_utf8_txt = "benchtop NIR spectrometer (Unity  Scientific, Spectra Star XT, Westborough, MA, USA)", 
+    scan.nir.license.title_ascii_txt = "CC-BY 4.0",
+    scan.nir.contact.name_utf8_txt = "Jeehwan Bae, and Gayoung Yoo",
+    scan.nir.doi_idf_url = "https://doi.org/10.6084/m9.figshare.29380574",
+    scan.nir.contact.name_utf8_txt = "Gayoung Yoo",
+    scan.nir.contact.email_ietf_txt = "gayoo@khu.ac.kr"
+  )
+
+# 5. Export
+korean.nir.export <- korean.nir.metadata %>%
+  left_join(korean.nir.final, by = "id.layer_local_c")
+
+# Save as .qs file
+qs::qsave(korean.nir.export, "ossl_nir_v2.0.qs", preset = "high")
+
+```
+
+### Quality control for NIR
+
+The final table must be joined as follows:
+
+- NIR is used as first reference for left join.
+- Then it is left joined with the site and soil lab data. This drop data without any available scan.
+
+The availability of data is summarized below:
+```{r bind_test_nir, include=TRUE, echo=TRUE, eval=TRUE}
+# Taking a few representative columns for checking the consistency of joins
+korean.availability <- korean.nir.export %>%
+  select(id.layer_local_c, scan_nir.1400_ref) %>%
+  left_join({korean.metadata %>%
+      rename(id.layer_local_c = No.) %>%
+      mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+      select(id.layer_local_c, `Land cover type`, `mSOC(%)`)}, by = "id.layer_local_c") %>%
+  filter(!is.na(id.layer_local_c))
+
+# Availability of information summary
+# This tells us how many samples have spectra vs. lab/site data
+korean.availability %>%
+  mutate(across(everything(), as.character)) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
+
+# Repeats check 
+korean.availability %>%
+  mutate(across(everything(), as.character)) %>%
+  select(id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  group_by(column, value) %>%
+  summarise(repeats = n(), .groups = 'drop') %>%
+  group_by(column, repeats) %>%
+  summarise(count = n(), .groups = 'drop')
+
+```
+
+Soil analytical data summary for NIR. Note: many scans could not be linked with the wetchem.
+```{r summary_nir, include=TRUE, echo=TRUE, eval=TRUE}
+korean.soildata %>%
+  filter(id.layer_local_c %in% korean.nir.export$id.layer_local_c) %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+NIR spectral visualization (100 random spectra):
+```{r nir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+set.seed(42)
+korean.nir.export %>%
+  sample_n(100) %>%
+  select(all_of(c("id.layer_local_c")), starts_with("scan_nir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+                      names_to = "wavelength", values_to = "reflectance") %>%
+  dplyr::mutate(wavelength = gsub("scan_nir.|_ref", "", wavelength)) %>%
+  dplyr::mutate(wavelength = as.numeric(wavelength)) %>%
+  ggplot(aes(x = wavelength, y = reflectance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1, color = "darkblue") +
+  scale_x_continuous(breaks = seq(680, 2500, by = 200))+
+  labs(title = "NIR Spectra (100 random scans)",
+       x = "Wavelength (nm)",
+       y = "Reflectance")+
+  theme_light()
+```
+
+
+```{r}
+toc()
+rm(list = ls())
+gc()
+```
+
+## References
+
+
