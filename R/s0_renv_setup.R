@@ -1,8 +1,10 @@
 
 library("renv")
 
-renv::restore()
+renv::status()
+# renv::clean()
+
+# renv::restore()
 
 # renv::init()
-# renv::status()
 # renv::snapshot()

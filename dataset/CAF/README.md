@@ -1,6 +1,6 @@
-# CASSL dataset preparation for the OSSL
+# CAF dataset preparation for the OSSL
 Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
-— 17 February, 2026.
+— 21 April, 2026.
 
 - [The CASSL original data](#the-cassl-original-data)
 - [Data standardization to the OSSL
@@ -8,13 +8,13 @@ Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
 - [Quality control](#quality-control)
 - [References](#references)
 
-Code repository for preparing and importing the Central African Soil
-Spectral Library (CASSL) dataset into the Open Soil Spectral Library.
+Code repository for standardizing and importing the Central African Soil
+Spectral Library (CAF) into the Open Soil Spectral Library.
 
 Project: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-02-17  
+Last update: 2026-04-21  
 Additional documentation:
 [CAF.SSL](https://docs.soilspectroscopy.org/soilspec.html#caf.ssl)
 
@@ -37,7 +37,7 @@ Directory/folder path with original files (not uploaded to GitHub).
 
 ``` r
 # dir = "./"
-dir = "~/projects/mnt-ossl/import/dataset/CASSL"
+dir = "~/mnt-ossl-private/database/datasets/CAF/"
 tic()
 ```
 
@@ -184,23 +184,23 @@ transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
 knitr::kable(transvalues)
 ```
 
-| table            | original_name   | ossl_abbrev | ossl_method | ossl_unit | ossl_convert                                     | ossl_name                |
-|:-----------------|:----------------|:------------|:------------|:----------|:-------------------------------------------------|:-------------------------|
-| cssl_refdata_all | tc              | c.tot       | usda.a622   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | c.tot_usda.a622_w.pct    |
-| cssl_refdata_all | tn              | n.tot       | usda.a623   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | n.tot_usda.a623_w.pct    |
-| cssl_refdata_all | ph_h2o          | ph.h2o      | usda.a268   | index     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.h2o_usda.a268_index   |
-| cssl_refdata_all | ph_cacl2        | ph.cacl2    | usda.a481   | index     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.cacl2_usda.a481_index |
-| cssl_refdata_all | clay_0-0.002    | clay.tot    | usda.a334   | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | clay.tot_usda.a334_w.pct |
-| cssl_refdata_all | silt_0.002-0.05 | silt.tot    | usda.c62    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | silt.tot_usda.c62_w.pct  |
-| cssl_refdata_all | sand_0.05-2     | sand.tot    | usda.c60    | w.pct     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | sand.tot_usda.c60_w.pct  |
-| cssl_refdata_all | al_icp          | al.ext      | aquaregia   | g.kg      | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | al.ext_aquaregia_g.kg    |
-| cssl_refdata_all | fe_icp          | fe.ext      | aquaregia   | g.kg      | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | fe.ext_aquaregia_g.kg    |
-| cssl_refdata_all | ca_icp          | ca.ext      | aquaregia   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ca.ext_aquaregia_mg.kg   |
-| cssl_refdata_all | mg_icp          | mg.ext      | aquaregia   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mg.ext_aquaregia_mg.kg   |
-| cssl_refdata_all | k_icp           | k.ext       | aquaregia   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | k.ext_aquaregia_mg.kg    |
-| cssl_refdata_all | mn_icp          | mn.ext      | aquaregia   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mn.ext_aquaregia_mg.kg   |
-| cssl_refdata_all | na_icp          | na.ext      | aquaregia   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | na.ext_aquaregia_mg.kg   |
-| cssl_refdata_all | p_icp           | p.ext       | aquaregia   | mg.kg     | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_aquaregia_mg.kg    |
+| table | original_name | ossl_abbrev | ossl_method | ossl_unit | ossl_convert | ossl_name |
+|:---|:---|:---|:---|:---|:---|:---|
+| cssl_refdata_all | tc | c.tot | usda.a622 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | c.tot_usda.a622_w.pct |
+| cssl_refdata_all | tn | n.tot | usda.a623 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | n.tot_usda.a623_w.pct |
+| cssl_refdata_all | ph_h2o | ph.h2o | usda.a268 | index | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.h2o_usda.a268_index |
+| cssl_refdata_all | ph_cacl2 | ph.cacl2 | usda.a481 | index | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.cacl2_usda.a481_index |
+| cssl_refdata_all | clay_0-0.002 | clay.tot | usda.a334 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | clay.tot_usda.a334_w.pct |
+| cssl_refdata_all | silt_0.002-0.05 | silt.tot | usda.c62 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | silt.tot_usda.c62_w.pct |
+| cssl_refdata_all | sand_0.05-2 | sand.tot | usda.c60 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | sand.tot_usda.c60_w.pct |
+| cssl_refdata_all | al_icp | al.ext | aquaregia | g.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | al.ext_aquaregia_g.kg |
+| cssl_refdata_all | fe_icp | fe.ext | aquaregia | g.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | fe.ext_aquaregia_g.kg |
+| cssl_refdata_all | ca_icp | ca.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ca.ext_aquaregia_mg.kg |
+| cssl_refdata_all | mg_icp | mg.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mg.ext_aquaregia_mg.kg |
+| cssl_refdata_all | k_icp | k.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | k.ext_aquaregia_mg.kg |
+| cssl_refdata_all | mn_icp | mn.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mn.ext_aquaregia_mg.kg |
+| cssl_refdata_all | na_icp | na.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | na.ext_aquaregia_mg.kg |
+| cssl_refdata_all | p_icp | p.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_aquaregia_mg.kg |
 
 Standardizing soil data to the OSSL format:
 
@@ -483,9 +483,9 @@ Data summary
 
 **Variable type: factor**
 
-| skim_variable    | n_missing | ordered | n_unique | top_counts                         |
-|:-----------------|----------:|:--------|---------:|:-----------------------------------|
-| id.layer_local_c |         0 | FALSE   |     1852 | 08\_: 1, 08\_: 1, 08\_: 1, 08\_: 1 |
+| skim_variable | n_missing | ordered | n_unique | top_counts |
+|:---|---:|:---|---:|:---|
+| id.layer_local_c | 0 | FALSE | 1852 | 08\_: 1, 08\_: 1, 08\_: 1, 08\_: 1 |
 
 **Variable type: logical**
 
@@ -495,22 +495,22 @@ Data summary
 
 **Variable type: numeric**
 
-| skim_variable            | n_missing |   mean |      sd |    p0 |    p25 |    p50 |    p75 |     p100 |
-|:-------------------------|----------:|-------:|--------:|------:|-------:|-------:|-------:|---------:|
-| c.tot_usda.a622_w.pct    |       184 |   1.98 |    2.51 |  0.08 |   0.89 |   1.38 |   2.31 |    45.54 |
-| n.tot_usda.a623_w.pct    |       168 |   0.16 |    0.18 |  0.01 |   0.07 |   0.11 |   0.18 |     2.92 |
-| ph.h2o_usda.a268_index   |      1317 |   5.10 |    0.94 |  3.32 |   4.51 |   4.84 |   5.36 |     8.56 |
-| clay.tot_usda.a334_w.pct |      1262 |  34.63 |   21.73 |  1.04 |  12.41 |  34.88 |  51.59 |    86.88 |
-| silt.tot_usda.c62_w.pct  |      1309 |  23.85 |   14.97 |  4.00 |  13.48 |  19.28 |  29.87 |    74.75 |
-| sand.tot_usda.c60_w.pct  |      1309 |  42.30 |   23.77 |  1.30 |  21.12 |  40.50 |  61.12 |    89.90 |
-| al.ext_aquaregia_g.kg    |      1128 |  25.20 |   24.69 |  0.16 |   7.94 |  12.37 |  36.24 |   121.32 |
-| fe.ext_aquaregia_g.kg    |      1128 |  38.84 |   39.55 |  0.34 |  10.15 |  20.13 |  59.62 |   352.66 |
-| ca.ext_aquaregia_mg.kg   |      1128 | 634.26 | 1352.25 |  0.00 |  52.50 | 186.94 | 589.29 | 19922.26 |
-| mg.ext_aquaregia_mg.kg   |      1128 | 800.40 | 1425.40 |  9.27 |  79.37 | 141.16 | 836.50 |  9500.41 |
-| k.ext_aquaregia_mg.kg    |      1128 | 616.41 | 1020.57 |  7.96 |  77.21 | 163.31 | 795.00 |  8073.54 |
-| mn.ext_aquaregia_mg.kg   |      1128 | 480.73 |  934.36 |  2.23 |  30.09 |  64.16 | 455.98 |  6468.45 |
-| na.ext_aquaregia_mg.kg   |      1128 |  69.57 |  128.62 |  0.00 |   4.99 |  13.99 |  71.72 |  1213.29 |
-| p.ext_aquaregia_mg.kg    |      1128 | 534.89 |  773.33 | 13.90 | 130.72 | 214.20 | 580.34 |  6679.17 |
+| skim_variable | n_missing | mean | sd | p0 | p25 | p50 | p75 | p100 |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| c.tot_usda.a622_w.pct | 184 | 1.98 | 2.51 | 0.08 | 0.89 | 1.38 | 2.31 | 45.54 |
+| n.tot_usda.a623_w.pct | 168 | 0.16 | 0.18 | 0.01 | 0.07 | 0.11 | 0.18 | 2.92 |
+| ph.h2o_usda.a268_index | 1317 | 5.10 | 0.94 | 3.32 | 4.51 | 4.84 | 5.36 | 8.56 |
+| clay.tot_usda.a334_w.pct | 1262 | 34.63 | 21.73 | 1.04 | 12.41 | 34.88 | 51.59 | 86.88 |
+| silt.tot_usda.c62_w.pct | 1309 | 23.85 | 14.97 | 4.00 | 13.48 | 19.28 | 29.87 | 74.75 |
+| sand.tot_usda.c60_w.pct | 1309 | 42.30 | 23.77 | 1.30 | 21.12 | 40.50 | 61.12 | 89.90 |
+| al.ext_aquaregia_g.kg | 1128 | 25.20 | 24.69 | 0.16 | 7.94 | 12.37 | 36.24 | 121.32 |
+| fe.ext_aquaregia_g.kg | 1128 | 38.84 | 39.55 | 0.34 | 10.15 | 20.13 | 59.62 | 352.66 |
+| ca.ext_aquaregia_mg.kg | 1128 | 634.26 | 1352.25 | 0.00 | 52.50 | 186.94 | 589.29 | 19922.26 |
+| mg.ext_aquaregia_mg.kg | 1128 | 800.40 | 1425.40 | 9.27 | 79.37 | 141.16 | 836.50 | 9500.41 |
+| k.ext_aquaregia_mg.kg | 1128 | 616.41 | 1020.57 | 7.96 | 77.21 | 163.31 | 795.00 | 8073.54 |
+| mn.ext_aquaregia_mg.kg | 1128 | 480.73 | 934.36 | 2.23 | 30.09 | 64.16 | 455.98 | 6468.45 |
+| na.ext_aquaregia_mg.kg | 1128 | 69.57 | 128.62 | 0.00 | 4.99 | 13.99 | 71.72 | 1213.29 |
+| p.ext_aquaregia_mg.kg | 1128 | 534.89 | 773.33 | 13.90 | 130.72 | 214.20 | 580.34 | 6679.17 |
 
 MIR spectral visualization (100 random spectra):
 
@@ -537,16 +537,16 @@ caf.mir %>%
 toc()
 ```
 
-    4.088 sec elapsed
+    17.464 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-              used  (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
-    Ncells 4316898 230.6    6673241 356.4         NA  6527648 348.7
-    Vcells 7909129  60.4   29923218 228.3      32768 37404014 285.4
+               used  (Mb) gc trigger  (Mb) max used  (Mb)
+    Ncells  6326284 337.9   12358894 660.1  8279405 442.2
+    Vcells 11087842  84.6   41305815 315.2 41305750 315.2
 
 ## References
 

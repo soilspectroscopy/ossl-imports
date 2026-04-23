@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.5.2",
+    "Version": "4.5.3",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -4016,7 +4016,7 @@
       "Title": "Miscellaneous Functions for Processing and Sample Selection of Spectroscopic Data",
       "Date": "2025-03-05",
       "Authors@R": "c( person(given = \"Antoine\", family = \"Stevens\", role = c(\"aut\"), comment = c(ORCID = \"0000-0002-1588-7519\")), person(given = \"Leonardo\", family = \"Ramirez-Lopez\", role = c(\"aut\", \"cre\"), email = \"ramirez.lopez.leo@gmail.com\", comment = c(ORCID = \"0000-0002-5369-5120\")) )",
-      "Author": "Antoine Stevens [aut] (<https://orcid.org/0000-0002-1588-7519>), Leonardo Ramirez-Lopez [aut, cre] (<https://orcid.org/0000-0002-5369-5120>)",
+      "Author": "Antoine Stevens [aut] (ORCID: <https://orcid.org/0000-0002-1588-7519>), Leonardo Ramirez-Lopez [aut, cre] (ORCID: <https://orcid.org/0000-0002-5369-5120>)",
       "Maintainer": "Leonardo Ramirez-Lopez <ramirez.lopez.leo@gmail.com>",
       "BugReports": "https://github.com/l-ramirez-lopez/prospectr/issues",
       "Description": "Functions to preprocess spectroscopic data  and conduct (representative) sample selection/calibration sampling.",
