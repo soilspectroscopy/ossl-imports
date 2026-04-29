@@ -67,34 +67,56 @@ tic()
 geocradle.metadata <- fread(path(dir, "SSL_GEOCRADLE_1.csv"), header = T)
 
 geocradle.sitedata <- geocradle.metadata %>%
-  select(ID, origin, Latitude, Longitude, Sampling_date, Elevation, Depth, Soil_type_WRB, Climate_Koeppen) %>%
+  select(ID, Latitude, Longitude,
+         Sampling_date, Depth,
+         origin,
+         Climate_Koeppen, Elevation,
+         Soil_type_WRB, Soil_type_extended_WRB,
+         Soil_type_USDA, USDA_texture) %>%
   rename(id.layer_local_c = ID,
          longitude.point_wgs84_dd = Longitude,
-         latitude.point_wgs84_dd = Latitude) %>%
-  mutate(id.project_ascii_txt = "Geocradle Regional Soil Spectral Library",
-         dataset.code_ascii_txt = "GEOCRADLE.SSL",
-         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
-         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
-         dataset.title_utf8_txt = "GEOCRADLE: Geocradle Regional Soil Spectral Library for Balkans, Middle East, and North Africa",
-         dataset.owner_utf8_txt = "PILOT 2: Improved Food Security – Water Extremes Management (IFS)",
-         dataset.doi_idf_url = "http://datahub.geocradle.eu/dataset/regional-soil-spectral-library",
-         dataset.license.title_ascii_txt = "Open Data Commons Open Database License (ODbL)",
-         dataset.license.address_idn_url = "https://opendefinition.org/licenses/odc-odbl/",
-         dataset.contact.name_utf8_txt = "Nikos Tsakiridis",
-         dataset.contact_ietf_email = "tsakirin@auth.gr") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         .after = id.project_ascii_txt) %>%
+         latitude.point_wgs84_dd = Latitude,
+         layer.lower.depth_usda_cm = Depth,
+         loc.country_src_txt = origin,
+         site.clim.koeppen_src_code = Climate_Koeppen,
+         site.alt_src_m = Elevation,
+         pedon.taxa_wrb_code = Soil_type_WRB,
+         pedon.taxa_wrb_txt = Soil_type_extended_WRB,
+         pedon.taxa_usda_txt = Soil_type_USDA,
+         layer.texture_usda_txt = USDA_texture) %>%
+  mutate(Sampling_date = str_remove(Sampling_date, "\\.+$")) %>%
+  mutate(Sampling_date = str_replace_all(Sampling_date, "\\.", "-")) %>%
+  mutate(Sampling_date2 = case_when(grepl("-", Sampling_date) ~ dmy(Sampling_date),
+                                    !grepl("-", Sampling_date) ~ as_date(as.numeric(Sampling_date), origin = ymd("1899-12-30")),
+                                    TRUE ~ NA)) %>%
+  rename(observation.date_src_yyyy.mm.dd = Sampling_date) %>%
+  # mutate(id.project_ascii_txt = "Geocradle Regional Soil Spectral Library",
+  #        dataset.code_ascii_txt = "GEOCRADLE.SSL",
+  #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+  #        observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+  #        dataset.title_utf8_txt = "GEOCRADLE: Geocradle Regional Soil Spectral Library for Balkans, Middle East, and North Africa",
+  #        dataset.owner_utf8_txt = "PILOT 2: Improved Food Security – Water Extremes Management (IFS)",
+  #        dataset.doi_idf_url = "http://datahub.geocradle.eu/dataset/regional-soil-spectral-library",
+  #        dataset.license.title_ascii_txt = "Open Data Commons Open Database License (ODbL)",
+  #        dataset.license.address_idn_url = "https://opendefinition.org/licenses/odc-odbl/",
+  #        dataset.contact.name_utf8_txt = "Nikos Tsakiridis",
+  #        dataset.contact_ietf_email = "tsakirin@auth.gr") %>%
+  mutate(dataset.code_ascii_txt = "Geocradle",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
-site.qs = path(dir, "ossl_soilsite_v2.0.qs")
-qs::qsave(geocradle.sitedata, site.qs, preset = "high")
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(geocradle.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(geocradle.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
 Plotting sites map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
+
+ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
 
 points <- geocradle.sitedata %>%
   filter(!is.na(longitude.point_wgs84_dd),
@@ -102,14 +124,14 @@ points <- geocradle.sitedata %>%
   st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
 
 tmap_mode("plot")
-
-tm_shape(World) +
-  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+tm_shape(ocean) +
+  tm_polygons(fill = "lightblue", col = NA) +
+  tm_shape(World) +
+  tm_polygons(fill = "#f0f0f0", fill_alpha = 0.5, col_alpha = 0.5) +
   tm_shape(points) +
-  tm_dots(col = "origin", 
-          palette = "Set1") +
-  tm_layout(legend.outside = TRUE)
-
+  tm_dots(size = 0.10, fill = "firebrick") +
+  tm_crs("ESRI:54030") +
+  tm_layout(frame = FALSE)
 ```
 
 ### Soil lab information (reference analytical data)
@@ -117,7 +139,7 @@ tm_shape(World) +
 NOTE: The code chunk below must be run just once for getting a template
 for scripted column standardization. Just run once for getting the
 original names of soil properties, descriptions, data types, and units.
-Then upload to Google Sheet for editing and manually defining the rules
+Then upload to Google Sheet for editing and defining the rules
 for integrating with the OSSL. Requires Google authentication. A copy of
 the output file is saved to this folder for archiving purposes.
 
@@ -175,9 +197,7 @@ googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
 
 # Preparing soillab.names
 transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
-                                         sheet = "Geocradle") %>%
-  filter(import == TRUE) %>%
-  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+                                         sheet = "Geocradle")
 
 # Saving to folder
 write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
@@ -187,7 +207,10 @@ Reading standardization rules:
 
 ```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
-                        show_col_types = F)
+                        show_col_types = F) %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+
 knitr::kable(transvalues)
 ```
 
@@ -196,8 +219,7 @@ Standardizing soil data to the OSSL format:
 ```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
 geocradle.reference <- geocradle.metadata
 
-# Harmonization of names and units
-
+# Standardization of names and units
 valid_mappings <- transvalues %>%
   filter(table == "SSL_GEOCRADLE_1.csv") %>%
   filter(!is.na(ossl_name) & ossl_name != "") 
@@ -239,10 +261,10 @@ geocradle.soildata %>%
   distinct(id.layer_local_c) %>%
   summarise(count = n())
 
-
 # Saving version to dataset root dir
-soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
-qs::qsave(geocradle.soildata, soillab.qs, preset = "high")
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(geocradle.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(geocradle.soildata, str_c(soillab.exp.file, ".parquet"))
 ```
 
 Soil lab data summary.
@@ -253,9 +275,10 @@ geocradle.soildata %>%
   dplyr::select(-numeric.hist, -complete_rate)
 ```
 
-### Vis-NIR spectra
+### VisNIR spectra
 
-```{r vis-nir, include=TRUE, echo=TRUE, eval=TRUE}
+Spectra is given in reflectance units. Splice correction can be applied at 1000 and 1800 nm.
+```{r visnir, include=TRUE, echo=TRUE, eval=TRUE}
 # Renaming and ID Preparation
 geocradle.visnir.proc <- geocradle.metadata %>%
   as_tibble() %>%
@@ -264,51 +287,52 @@ geocradle.visnir.proc <- geocradle.metadata %>%
 
 # Extracting wavelengths from column names
 spec.cols <- grep("^X[0-9].", names(geocradle.visnir.proc), value = TRUE)
-old.wavelengths <- as.numeric(gsub("X", "", spec.cols))
-new.wavelengths <- seq(350, 2500, by = 2)
+old.wavelengths <- gsub("X", "", spec.cols)
+head(spec.cols)
+tail(spec.cols)
 
 # Resampling spectra
 geocradle.visnir.proc <- geocradle.visnir.proc %>%
-  select(id.layer_local_c, all_of(spec.cols)) %>%
-  { . } -> temp_data 
+  select(id.layer_local_c, all_of(spec.cols))
 
-geocradle.visnir.resampled <- temp_data %>%
-  mutate(id.layer_local_c = make.unique(as.character(id.layer_local_c))) %>%
-  {
-    spec_matrix <- . %>% 
-      select(all_of(spec.cols)) %>% 
-      as.matrix()
-    ids <- . %>% select(id.layer_local_c)
-    resampled_mat <- prospectr::resample(
-      X = spec_matrix(.), 
-      wav = old.wavelengths, 
-      new.wav = new.wavelengths, 
-      interpol = "spline"
-    )
-    bind_cols(ids(.), as_tibble(resampled_mat))
-  } %>%
-  select(id.layer_local_c, all_of(as.character(new.wavelengths)))
+geocradle.visnir.proc <- geocradle.visnir.proc %>%
+  rename_with(~old.wavelengths, all_of(spec.cols))
 
+new.wavelengths <- as.character(seq(350, 2500, by = 2))
+
+geocradle.visnir.proc <- geocradle.visnir.proc %>%
+  select(id.layer_local_c, all_of(new.wavelengths))
+
+# Splice correction
+geocradle.visnir.proc <- geocradle.visnir.proc %>%
+  select(-id.layer_local_c) %>%
+  as.matrix() %>%
+  spliceCorrection(wav = as.numeric(new.wavelengths),
+                   splice = c(1000, 1764), interpol.bands = 10) %>%
+  as_tibble() %>%
+  bind_cols({geocradle.visnir.proc %>%
+      select(id.layer_local_c)}, .)
+  
 # Gaps Analysis
-scans.na.gaps <- geocradle.visnir.resampled %>%
+scans.na.gaps <- geocradle.visnir.proc %>%
   select(-id.layer_local_c) %>%
   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
-  bind_cols(geocradle.visnir.resampled %>% select(id.layer_local_c), .)
+  bind_cols(geocradle.visnir.proc %>% select(id.layer_local_c), .)
 
 # Extreme negative checks
-scans.extreme.neg <- geocradle.visnir.resampled %>%
+scans.extreme.neg <- geocradle.visnir.proc %>%
   select(-id.layer_local_c) %>%
   apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
-  bind_cols(geocradle.visnir.resampled %>% select(id.layer_local_c), .)
+  bind_cols(geocradle.visnir.proc %>% select(id.layer_local_c), .)
 
 # Extreme positive checks
-scans.extreme.pos <- geocradle.visnir.resampled %>%
+scans.extreme.pos <- geocradle.visnir.proc %>%
   select(-id.layer_local_c) %>%
-  apply(., 1, function(x) {round(100*(sum(x > 1.5, na.rm=TRUE))/(length(x)), 2)}) %>%
-  tibble(proportion_higherAbs5 = .) %>%
-  bind_cols(geocradle.visnir.resampled %>% select(id.layer_local_c), .)
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherRef1 = .) %>%
+  bind_cols(geocradle.visnir.proc %>% select(id.layer_local_c), .)
 
 # Consistency summary
 scans.summary <- scans.na.gaps %>%
@@ -325,93 +349,71 @@ scans.summary %>%
 
 # Final column renaming for OSSL standard
 final.visnir.names <- paste0("scan_visnir.", new.wavelengths, "_ref")
-geocradle.visnir.proc <- geocradle.visnir.resampled %>%
+
+geocradle.visnir.proc <- geocradle.visnir.proc %>%
   rename_with(~final.visnir.names, as.character(new.wavelengths))
 
-# Preparing metadata
-geocradle.visnir.metadata <- geocradle.visnir.proc %>%
-  select(id.layer_local_c) %>%
-  mutate(id.scan_local_c = id.layer_local_c,
-         scan.visnir.date.begin_iso.8601_yyyy = ymd("2017-01-01"), 
-         scan.visnir.date.end_iso.8601_yyyy = ymd("2017-12-31"), 
-         scan.visnir.model.name_utf8_txt = "ASD Fieldspec Pro (PANanalytical B·V, Boulder, CO, USA formerly Analytical Spectral Devices, at IS, CY and TR) and a PSR + spectrometer (Spectral Evolution Inc., Lawrence, Massachusetts, USA, at GR, AL, FY, BG, EG, and RS)", 
-         scan.visnir.license.title_ascii_txt = "Open Data Commons Open Database License (ODbL)",
-         scan.visnir.method.optics_any_txt = "",
-         scan.visnir.method.preparation_any_txt = "Standard preparation",
-         scan.visnir.license.address_idn_url = "https://opendefinition.org/licenses/odc-odbl/",
-         scan.visnir.doi_idf_url = "http://datahub.geocradle.eu/dataset/regional-soil-spectral-library",
-         scan.visnir.contact.name_utf8_txt = "Nikos Tsakiridis",
-         scan.visnir.contact.email_ietf_txt = "tsakirin@auth.gr")
+# # Preparing metadata
+# geocradle.visnir.metadata <- geocradle.visnir.proc %>%
+#   select(id.layer_local_c) %>%
+#   mutate(id.scan_local_c = id.layer_local_c,
+#          scan.visnir.date.begin_iso.8601_yyyy = ymd("2017-01-01"), 
+#          scan.visnir.date.end_iso.8601_yyyy = ymd("2017-12-31"), 
+#          scan.visnir.model.name_utf8_txt = "ASD Fieldspec Pro (PANanalytical B·V, Boulder, CO, USA formerly Analytical Spectral Devices, at IS, CY and TR) and a PSR + spectrometer (Spectral Evolution Inc., Lawrence, Massachusetts, USA, at GR, AL, FY, BG, EG, and RS)", 
+#          scan.visnir.license.title_ascii_txt = "Open Data Commons Open Database License (ODbL)",
+#          scan.visnir.method.optics_any_txt = "",
+#          scan.visnir.method.preparation_any_txt = "Standard preparation",
+#          scan.visnir.license.address_idn_url = "https://opendefinition.org/licenses/odc-odbl/",
+#          scan.visnir.doi_idf_url = "http://datahub.geocradle.eu/dataset/regional-soil-spectral-library",
+#          scan.visnir.contact.name_utf8_txt = "Nikos Tsakiridis",
+#          scan.visnir.contact.email_ietf_txt = "tsakirin@auth.gr")
 
-# Final preparation
- geocradle.visnir.export <- geocradle.visnir.metadata %>%
-  left_join(geocradle.visnir.proc, by = "id.layer_local_c") %>%
-  mutate(across(starts_with("id."), as.character))
+# # Final preparation
+#  geocradle.visnir.export <- geocradle.visnir.metadata %>%
+#   left_join(geocradle.visnir.proc, by = "id.layer_local_c") %>%
+#   mutate(across(starts_with("id."), as.character))
 
-# Saving
-soilvisnir.qs = path(dir, "ossl_visnir_v2.0.qs")
-qs::qsave(geocradle.visnir.export, soilvisnir.qs, preset = "high")
-
+# Saving version to dataset root dir
+visnir.exp.file = path(dir, "ossl_visnir_v1.3")
+readr::write_csv(geocradle.visnir.proc, str_c(visnir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(geocradle.visnir.proc, str_c(visnir.exp.file, ".parquet"))
 ```
-
 
 ### Quality control for Vis-NIR
 
 The final table must be joined as follows:
 
-- Vis-NIR is used as first reference for left join.
-- Then it is left joined with the site and soil lab data. This drop data without any available scan.
+- VisNIR is used as first reference for pairing with soil data.
+- Site and soil lab data are left joined to VisNIR. This drop data without any available scan.
 
 The availability of data is summarized below:
 ```{r bind_test_visnir, include=TRUE, echo=TRUE, eval=TRUE}
-# Taking a few representative columns for checking the consistency of joins
-
-metadata_clean <- geocradle.metadata %>%
-  rename(id.layer_local_c = ID) %>%
-  mutate(id.layer_local_c = make.unique(as.character(id.layer_local_c))) %>%
-  select(id.layer_local_c, Latitude, Sand_Fraction, pH_H2O)
-
-geocradle.availability <- geocradle.visnir.export %>%
+# Checking the consistency of joins
+geocradle.availability <- geocradle.visnir.proc %>%
   select(id.layer_local_c, scan_visnir.600_ref) %>%
-  left_join(metadata_clean, by = "id.layer_local_c") %>%
-  filter(!is.na(id.layer_local_c))
+  left_join(geocradle.soildata, by = "id.layer_local_c")
 
-
-# Availability of information summary
-# This tells us how many samples have spectra vs. lab/site data
+# Availability of information from besb
 geocradle.availability %>%
-  mutate(across(everything(), as.character)) %>%
+  mutate_all(as.character) %>%
   pivot_longer(everything(), names_to = "column", values_to = "value") %>%
   filter(!is.na(value)) %>%
   group_by(column) %>%
   summarise(count = n())
-
-# Repeats check - Checking for duplicate IDs
-geocradle.availability %>%
-  mutate(across(everything(), as.character)) %>%
-  select(id.layer_local_c) %>%
-  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
-  group_by(column, value) %>%
-  summarise(repeats = n(), .groups = 'drop') %>%
-  group_by(column, repeats) %>%
-  summarise(count = n(), .groups = 'drop')
-
 ```
 
-Soil analytical data summary for Vis-NIR. Note: many scans could not be linked with the wetchem.
+Soil analytical data summary for VisNIR. Note: some scans may not be linked with the wetchem.
 ```{r summary_visnir, include=TRUE, echo=TRUE, eval=TRUE}
-
-all(geocradle.soildata$id.layer_local_c %in% geocradle.visnir.export$id.layer_local_c)
-geocradle.soildata %>%
-  filter(id.layer_local_c %in% geocradle.visnir.export$id.layer_local_c) %>%
+geocradle.availability %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
 ```
+
 Vis-NIR spectral visualization (100 random spectra):
 ```{r visnir_plot, include=TRUE, echo=TRUE, eval=TRUE}
 set.seed(42)
-geocradle.visnir.export %>%
+geocradle.visnir.proc %>%
   sample_n(100) %>%
   select(all_of(c("id.layer_local_c")), starts_with("scan_visnir.")) %>%
   tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
