@@ -43,17 +43,18 @@ Original files:\
 
 ```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
 packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
-              "googledrive", "googlesheets4", "tmap", "sf", "skimr",
-              "prospectr", "tictoc", "qs", "fs")
+              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
+              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
 
 invisible(lapply(packages, library, character.only = TRUE))
 
 source("../../R/functions/SSL_functions.R")
+gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
 ```
 
 Directory/folder path with original files (not uploaded to GitHub).
 
-```{r}
+```{r dir_ref}
 # dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/BESB"
 dir = "~/mnt-ossl-private/database/datasets/BESB"
 tic()
@@ -68,44 +69,57 @@ besb.metadata <- read_excel(path(dir, "BSSL_DB_V002.xlsx"),
                             sheet = "BSSL_Soil_Attributes_Dataset")
 
 besb.sitedata <- besb.metadata %>%
-  select(ID_Unique, Owner_code, Vis_NIR_SWIR_availability, MIR_availability, Depth_cm,
-         Lat, Long, Region, Vegetation, Bioma, Geology) %>%
+  select(ID_Unique, Owner_code, Depth_cm, Sampling,
+         Lat, Long, Region, State, Municipality, , 
+         Bioma, Vegetation, Geology) %>%
   rename(id.layer_local_c = ID_Unique,
          longitude.point_wgs84_dd = Long,
-         latitude.point_wgs84_dd = Lat) %>%
+         latitude.point_wgs84_dd = Lat,
+         observation.type_src_txt = Sampling,
+         dataset.contributor_src_code = Owner_code,
+         loc.region_src_txt = Region,
+         loc.state_src_txt = State,
+         loc.municipality_src_txt = Municipality,
+         site.biome_src_txt = Bioma,
+         site.vegetation_src_txt = Vegetation,
+         site.geology_src_txt = Geology) %>%
   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
-  separate(Depth_cm, into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), sep = "-") %>%
+  separate(Depth_cm, into = c("layer.upper.depth_usda_cm",
+                              "layer.lower.depth_usda_cm"), sep = "-") %>%
   mutate(across(starts_with("layer."), as.numeric)) %>%
   mutate(layer.sequence_usda_uint16 = ifelse(layer.upper.depth_usda_cm == 0, 1, 2)) %>%
-  mutate(id.project_ascii_txt = "Brazilian Soil Spectral Library",
-         dataset.code_ascii_txt = "Brazilian.SSL",
-         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
-         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
-         surveyor.title_utf8_txt = "Luiz de Queiroz College of Agriculture, University of São Paulo, Piracicaba, São Paulo, Brazil",
-         surveyor.contact_ietf_email = "jamdemat@usp.br",
-         surveyor.address_utf8_txt = "Department of Soil Science, Luiz de Queiroz College of Agriculture (ESALQ), University of São Paulo (USP), Ave. Pádua Dias 11, Cx. Postal 9, 13418-900, Piracicaba, São Paulo, Brazil",
-         dataset.title_utf8_txt = "Brazilian Soil Spectral Library",
-         dataset.owner_utf8_txt = "Luiz de Queiroz College of Agriculture, University of São Paulo",
-         
-         dataset.address_idn_url = "https://bibliotecaespectral.wixsite.com/english",
-         dataset.doi_idf_url = "https://doi.org/10.5281/zenodo.8361419",
-         dataset.license.title_ascii_txt = "CC-BY",
-         dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
-         dataset.contact.name_utf8_txt = "José A.M. Demattê",
-         dataset.contact_ietf_email = "jamdemat@usp.br") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         .after = id.project_ascii_txt) %>%
-  mutate_at(vars(starts_with("id.")), as.character)
+  # mutate(id.project_ascii_txt = "Brazilian Soil Spectral Library",
+  #        dataset.code_ascii_txt = "Brazilian.SSL",
+  #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+  #        observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+  #        surveyor.title_utf8_txt = "Luiz de Queiroz College of Agriculture, University of São Paulo, Piracicaba, São Paulo, Brazil",
+  #        surveyor.contact_ietf_email = "jamdemat@usp.br",
+  #        surveyor.address_utf8_txt = "Department of Soil Science, Luiz de Queiroz College of Agriculture (ESALQ), University of São Paulo (USP), Ave. Pádua Dias 11, Cx. Postal 9, 13418-900, Piracicaba, São Paulo, Brazil",
+  #        dataset.title_utf8_txt = "Brazilian Soil Spectral Library",
+  #        dataset.owner_utf8_txt = "Luiz de Queiroz College of Agriculture, University of São Paulo",
+  #        
+  #        dataset.address_idn_url = "https://bibliotecaespectral.wixsite.com/english",
+  #        dataset.doi_idf_url = "https://doi.org/10.5281/zenodo.8361419",
+  #        dataset.license.title_ascii_txt = "CC-BY",
+  #        dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+  #        dataset.contact.name_utf8_txt = "José A.M. Demattê",
+  #        dataset.contact_ietf_email = "jamdemat@usp.br") %>%
+  mutate(dataset.code_ascii_txt = "BESB",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
+  mutate(across(starts_with("id."), as.character))
 
 # Saving version to dataset root dir
-site.qs = path(dir, "ossl_soilsite_v2.0.qs")
-qs::qsave(besb.sitedata, site.qs, preset = "high")
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(besb.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(besb.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
 Plotting sites map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
+
+ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
 
 points <- besb.sitedata %>%
   filter(!is.na(longitude.point_wgs84_dd),
@@ -114,10 +128,14 @@ points <- besb.sitedata %>%
 
 tmap_mode("plot")
 
-tm_shape(World) +
-  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+tm_shape(ocean) +
+  tm_polygons(fill = "lightblue", col = NA) +
+  tm_shape(World) +
+  tm_polygons('#f0f0f0f0', col_alpha = 0.2) +
   tm_shape(points) +
-  tm_dots()
+  tm_dots(size = 0.10, fill = "firebrick") +
+  tm_crs("ESRI:54030") +
+  tm_layout(frame = FALSE)
 ```
 
 ### Soil lab information (reference analytical data)
@@ -133,7 +151,6 @@ the output file is saved to this folder for archiving purposes.
 
 ```{r soil_template, echo=TRUE, eval=FALSE}
 # Getting soillab original variables
-
 soillab.names <- besb.metadata %>%
   select(ID_Unique, Sand_gkg, Clay_gkg, SOM_gkg, pH_H2O, 
          Ca_mmolkg, Mg_mmolkg, Na_mmolkg, CEC_Ph7_mmolkg) %>%
@@ -182,9 +199,7 @@ googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
 
 # Preparing soillab.names
 transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
-                                         sheet = "BESB") %>%
-  filter(import == TRUE) %>%
-  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+                                         sheet = "BESB")
 
 # Saving to folder
 write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
@@ -194,7 +209,10 @@ Reading standardization rules:
 
 ```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
-                        show_col_types = F)
+                        show_col_types = F) %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+
 knitr::kable(transvalues)
 ```
 
@@ -213,9 +231,9 @@ analytes.new.names <- transvalues %>%
   pull(ossl_name)
 
 # Selecting and renaming
-if("SOM_gkg" %in% names(besb.reference)) {
-  besb.reference <- besb.reference %>% rename(SOC_gkg = SOM_gkg)
-}
+# if("SOM_gkg" %in% names(besb.reference)) {
+#   besb.reference <- besb.reference %>% rename(SOC_gkg = SOM_gkg)
+# }
 
 analytes.old.names.clean <- analytes.old.names[analytes.old.names != "ID_Unique"]
 analytes.new.names.clean <- analytes.new.names[analytes.old.names != "ID_Unique"]
@@ -251,8 +269,9 @@ besb.soildata %>%
   summarise(count = n())
   
 # Saving version to dataset root dir
-soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
-qs::qsave(besb.soildata, soillab.qs, preset = "high")
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(besb.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(besb.soildata, str_c(soillab.exp.file, ".parquet"))
 ```
 
 Soil lab data summary.
@@ -263,34 +282,27 @@ besb.soildata %>%
   dplyr::select(-numeric.hist, -complete_rate)
 ```
 
-### Vis-NIR spectra
+### VisNIR spectra
 
-```{r vis-nir, include=TRUE, echo=TRUE, eval=TRUE}
-# Floating wavenumbers
+VNIR spectra is stored in reflectance units.
 
+```{r visnir, include=TRUE, echo=TRUE, eval=TRUE}
 besb.visnir <- read_excel(path(dir, "BSSL_DB_V002.xlsx"),
                             sheet = "Vis_NIR_SWIR_Dataset")
 
 # Renaming
 besb.visnir.proc <- besb.visnir %>%
+  select(-Owner_code) %>%
   rename(id.layer_local_c = ID_Unique) %>%
   mutate(id.layer_local_c = as.character(id.layer_local_c))
 
-# Need to resample spectra
-old.wavelengths <- na.omit(as.numeric(names(besb.visnir.proc)))
+# Need to use resolution of 2 nm
 new.wavelengths <- seq(350, 2500, by = 2)
 
 besb.visnir.proc <- besb.visnir.proc %>%
-  select(-id.layer_local_c, -Owner_code) %>%
-  as.matrix() %>%
-  prospectr::resample(X = ., wav = old.wavelengths, new.wav = new.wavelengths, interpol = "spline") %>%
-  as_tibble() %>%
-  bind_cols({besb.visnir.proc %>%
-      select(id.layer_local_c)}, .) %>%
-  select(id.layer_local_c, as.character(new.wavelengths))
+  select(id.layer_local_c, all_of(as.character(new.wavelengths)))
 
 # Gaps
-
 scans.na.gaps <- besb.visnir.proc %>%
   select(-id.layer_local_c) %>%
   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
@@ -307,8 +319,8 @@ scans.extreme.neg <- besb.visnir.proc %>%
 # Extreme positive, irreversible erratic patterns
 scans.extreme.pos <- besb.visnir.proc %>%
   select(-id.layer_local_c) %>%
-  apply(., 1, function(x) {round(100*(sum(x > 1.5, na.rm=TRUE))/(length(x)), 2)}) %>%
-  tibble(proportion_higherAbs5 = .) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherRef1 = .) %>%
   bind_cols({besb.visnir.proc %>% select(id.layer_local_c)}, .)
 
 # Consistency summary - problematic scans
@@ -325,52 +337,51 @@ scans.summary %>%
 
 # Renaming
 final.visnir.names <- paste0("scan_visnir.", new.wavelengths, "_ref")
+
 besb.visnir.proc <- besb.visnir.proc %>%
   rename_with(~final.visnir.names, as.character(new.wavelengths))
 
-# Preparing metadata
-besb.visnir.metadata <- besb.visnir.proc %>%
-  select(id.layer_local_c) %>%
-  mutate(id.scan_local_c = id.layer_local_c,
-         scan.visnir.date.begin_iso.8601_yyyy = ymd("1995-01-01"), 
-         scan.visnir.date.begin_iso.8601_yyyy = ymd("2019-12-30"), 
-         scan.visnir.model.name_utf8_txt = "ASD FieldSpec 3 spectroradiometer", 
-         scan.visnir.license.title_ascii_txt = "CC-BY",
-         scan.visnir.method.optics_any_txt = "",
-         scan.visnir.method.preparation_any_txt = "Drying soil samples in an oven at 45°C for 48 hours, grinding them, and sieving them through a 2mm mesh.",
-         scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
-         scan.visnir.doi_idf_url = "https://doi.org/10.5281/zenodo.8361419",
-         scan.visnir.contact.name_utf8_txt = "José A.M. Demattê",
-         scan.visnir.contact.email_ietf_txt = "jamdemat@usp.br")
-
+# # Preparing metadata
+# besb.visnir.metadata <- besb.visnir.proc %>%
+#   select(id.layer_local_c) %>%
+#   mutate(id.scan_local_c = id.layer_local_c,
+#          scan.visnir.date.begin_iso.8601_yyyy = ymd("1995-01-01"), 
+#          scan.visnir.date.begin_iso.8601_yyyy = ymd("2019-12-30"), 
+#          scan.visnir.model.name_utf8_txt = "ASD FieldSpec 3 spectroradiometer", 
+#          scan.visnir.license.title_ascii_txt = "CC-BY",
+#          scan.visnir.method.optics_any_txt = "",
+#          scan.visnir.method.preparation_any_txt = "Drying soil samples in an oven at 45°C for 48 hours, grinding them, and sieving them through a 2mm mesh.",
+#          scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+#          scan.visnir.doi_idf_url = "https://doi.org/10.5281/zenodo.8361419",
+#          scan.visnir.contact.name_utf8_txt = "José A.M. Demattê",
+#          scan.visnir.contact.email_ietf_txt = "jamdemat@usp.br")
 
 # Final preparation
-besb.visnir.export <- besb.visnir.metadata %>%
-  left_join(besb.visnir.proc, by = "id.layer_local_c") %>%
-  mutate_at(vars(starts_with("id.")), as.character)
+# besb.visnir.export <- besb.visnir.metadata %>%
+#   left_join(besb.visnir.proc, by = "id.layer_local_c") %>%
+#   mutate_at(vars(starts_with("id.")), as.character)
+
+besb.visnir.export <- besb.visnir.proc
 
 # Saving version to dataset root dir
-soilvisnir.qs = path(dir, "ossl_visnir_v2.0.qs")
-qs::qsave(besb.visnir.export, soilvisnir.qs, preset = "high")
+visnir.exp.file = path(dir, "ossl_visnir_v1.3")
+readr::write_csv(besb.visnir.export, str_c(visnir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(besb.visnir.export, str_c(visnir.exp.file, ".parquet"))
 ```
 
 ### Quality control for Vis-NIR
 
 The final table must be joined as follows:
 
-- Vis-NIR is used as first reference for left join.
-- Then it is left joined with the site and soil lab data. This drop data without any available scan.
+- VisNIR is used as first reference for pairing with soil data.
+- Site and soil lab data are left joined to VisNIR. This drop data without any available scan.
 
 The availability of data is summarized below:
 ```{r bind_test_visnir, include=TRUE, echo=TRUE, eval=TRUE}
 # Taking a few representative columns for checking the consistency of joins
 besb.availability <- besb.visnir.export %>%
   select(id.layer_local_c, scan_visnir.600_ref) %>%
-  left_join({besb.sitedata %>%
-      select(id.layer_local_c, layer.lower.depth_usda_cm)}, by = "id.layer_local_c") %>%
-  left_join({besb.soildata %>%
-      select(id.layer_local_c, sand.tot_usda.c405_w.pct)}, by = "id.layer_local_c") %>%
-  filter(!is.na(id.layer_local_c))
+  left_join(besb.soildata, by = "id.layer_local_c")
 
 # Availability of information from besb
 besb.availability %>%
@@ -379,22 +390,11 @@ besb.availability %>%
   filter(!is.na(value)) %>%
   group_by(column) %>%
   summarise(count = n())
-
-# Repeats check - Duplicates are dropped
-besb.availability %>%
-  mutate_all(as.character) %>%
-  select(id.layer_local_c) %>%
-  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
-  group_by(column, value) %>%
-  summarise(repeats = n()) %>%
-  group_by(column, repeats) %>%
-  summarise(count = n())
 ```
 
 Soil analytical data summary for Vis-NIR. Note: many scans could not be linked with the wetchem.
 ```{r summary_visnir, include=TRUE, echo=TRUE, eval=TRUE}
-besb.soildata %>%
-  filter(id.layer_local_c %in% besb.visnir.export$id.layer_local_c) %>%
+besb.availability %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
@@ -405,28 +405,30 @@ Vis-NIR spectral visualization (100 random spectra):
 set.seed(42)
 besb.visnir.export %>%
   sample_n(100) %>%
-  select(all_of(c("id.layer_local_c")), starts_with("scan_visnir.")) %>%
-  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
-                      names_to = "wavelength", values_to = "reflectance") %>%
-  dplyr::mutate(wavelength = gsub("scan_visnir.|_ref", "", wavelength)) %>%
-  dplyr::mutate(wavelength = as.numeric(wavelength)) %>%
-  ggplot(aes(x = wavelength, y = reflectance, group = id.layer_local_c)) +
+  pivot_longer(starts_with("scan_visnir."),
+               names_to = "wavelength", values_to = "intensity") %>%
+  mutate(wavelength = gsub("scan_visnir.|_ref", "", wavelength)) %>%
+  mutate(wavelength = as.numeric(wavelength),
+         intensity = as.numeric(intensity)) %>%
+  ggplot(aes(x = wavelength, y = intensity, group = id.layer_local_c)) +
   geom_line(alpha = 0.1, color = "darkblue") +
-  scale_x_continuous(breaks = seq(350, 2500, by = 250))+
-  labs(title = "Vis-NIR Spectra (100 random scans)",
+  # scale_x_continuous(breaks = seq(350, 2500, by = 250))+
+  labs(title = "VisNIR Spectra (100 random scans)",
        x = "Wavelength (nm)",
-       y = "Reflectance")+
+       y = "Reflectance") +
   theme_light()
 ```
 
-
 ### Mid-infrared spectra (MIR)
+
+MIR is stored in reflectance units, so we transform to absorbance.
 ```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
 besb.mir <- read_excel(path(dir, "BSSL_DB_V002.xlsx"),
                             sheet = "BSSL_MIR_Dataset")
 
 # Renaming
 besb.mir.proc <- besb.mir %>%
+  select(-Owner_code) %>%
   rename(id.layer_local_c = ID_Unique) %>%
   mutate(id.layer_local_c = as.character(id.layer_local_c))
 
@@ -435,16 +437,22 @@ old.wavenumber <- na.omit(as.numeric(names(besb.mir.proc)))
 new.wavenumber <- seq(600, 4000, by = 2)
 
 besb.mir.proc <- besb.mir.proc %>%
-  select(-id.layer_local_c, -Owner_code) %>%
+  select(-id.layer_local_c) %>%
   as.matrix() %>%
-  prospectr::resample(X = ., wav = old.wavenumber, new.wav = new.wavenumber, interpol = "spline") %>%
+  prospectr::resample(X = ., wav = old.wavenumber,
+                      new.wav = new.wavenumber, interpol = "spline") %>%
   as_tibble() %>%
   bind_cols({besb.mir.proc %>%
       select(id.layer_local_c)}, .) %>%
   select(id.layer_local_c, as.character(new.wavenumber))
 
-# Gaps
+# Need to transform to absorbance
+besb.mir.proc <- besb.mir.proc %>%
+  mutate(across(all_of(as.character(new.wavenumber)), ~log10(1/.x)))
 
+# Checking for erratic spectra
+
+# Gaps
 mir.na.gaps <- besb.mir.proc %>%
   select(-id.layer_local_c) %>%
   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
@@ -478,52 +486,52 @@ mir.summary %>%
   summarise(count = n())
 
 # Renaming
-final.mir.names <- paste0("scan_mir.", new.wavenumber, "_ref")
+final.mir.names <- paste0("scan_mir.", new.wavenumber, "_abs")
+
 besb.mir.proc <- besb.mir.proc %>%
   rename_with(~final.mir.names, as.character(new.wavenumber))
 
 # Preparing metadata
-besb.mir.metadata <- besb.mir.proc %>%
-  select(id.layer_local_c) %>%
-  mutate(id.scan_local_c = id.layer_local_c,
-         scan.mir.date.begin_iso.8601_yyyy = ymd("1995-01-01"), 
-         scan.mir.date.begin_iso.8601_yyyy = ymd("2019-12-30"), 
-         scan.mir.model.name_utf8_txt = "Fourier Transform Infrared (FT-IR) alpha spectroradiometer", 
-         scan.mir.license.title_ascii_txt = "CC-BY",
-         scan.mir.method.optics_any_txt = "",
-         scan.mir.method.preparation_any_txt = "Milled the soil fraction smaller than 2 mm, sieved it to 0.149 mm.",
-         scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
-         scan.mir.doi_idf_url = "https://doi.org/10.5281/zenodo.8361419",
-         scan.mir.contact.name_utf8_txt = "José A.M. Demattê",
-         scan.mir.contact.email_ietf_txt = "jamdemat@usp.br")
-
+# besb.mir.metadata <- besb.mir.proc %>%
+#   select(id.layer_local_c) %>%
+#   mutate(id.scan_local_c = id.layer_local_c,
+#          scan.mir.date.begin_iso.8601_yyyy = ymd("1995-01-01"), 
+#          scan.mir.date.begin_iso.8601_yyyy = ymd("2019-12-30"), 
+#          scan.mir.model.name_utf8_txt = "Fourier Transform Infrared (FT-IR) alpha spectroradiometer", 
+#          scan.mir.license.title_ascii_txt = "CC-BY",
+#          scan.mir.method.optics_any_txt = "",
+#          scan.mir.method.preparation_any_txt = "Milled the soil fraction smaller than 2 mm, sieved it to 0.149 mm.",
+#          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+#          scan.mir.doi_idf_url = "https://doi.org/10.5281/zenodo.8361419",
+#          scan.mir.contact.name_utf8_txt = "José A.M. Demattê",
+#          scan.mir.contact.email_ietf_txt = "jamdemat@usp.br")
 
 # Final preparation
-besb.mir.export <- besb.mir.metadata %>%
-  left_join(besb.mir.proc, by = "id.layer_local_c") %>%
-  mutate_at(vars(starts_with("id.")), as.character)
+# besb.mir.export <- besb.mir.metadata %>%
+#   left_join(besb.mir.proc, by = "id.layer_local_c") %>%
+#   mutate_at(vars(starts_with("id.")), as.character)
+
+besb.mir.export <- besb.mir.proc
 
 # Saving version to dataset root dir
-soilmir.qs = path(dir, "ossl_mir_v2.0.qs")
-qs::qsave(besb.mir.export, soilmir.qs, preset = "high")
+mir.exp.file = path(dir, "ossl_mir_v1.3")
+readr::write_csv(besb.mir.export, str_c(mir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(besb.mir.export, str_c(mir.exp.file, ".parquet"))
 ```
 
 ### Quality control for MIR
 
 The final table must be joined as follows:
 
-- MIR is used as first reference for left join.
-- Then it is left joined with the site and soil lab data. This drop data without any available scan.
+- MIR is used as first reference for pairing with soil data.
+- Soil lab data are left joined to MIR. This drop data without any available scan.
 
 The availability of data is summarized below:
 ```{r bind_test_mir, include=TRUE, echo=TRUE, eval=TRUE}
 # Taking a few representative columns for checking the consistency of joins
 besb.availability2 <- besb.mir.export %>%
-  select(id.layer_local_c, scan_mir.600_ref) %>%
-  left_join({besb.sitedata %>%
-      select(id.layer_local_c, layer.lower.depth_usda_cm)}, by = "id.layer_local_c") %>%
-  left_join({besb.soildata %>%
-      select(id.layer_local_c, sand.tot_usda.c405_w.pct)}, by = "id.layer_local_c") %>%
+  select(id.layer_local_c, scan_mir.1000_abs) %>%
+  left_join(besb.soildata, by = "id.layer_local_c") %>%
   filter(!is.na(id.layer_local_c))
 
 # Availability of information from besb
@@ -547,8 +555,7 @@ besb.availability2 %>%
 
 Soil analytical data summary for MIR. Note: many scans could not be linked with the wetchem.
 ```{r summary_mir, include=TRUE, echo=TRUE, eval=TRUE}
-besb.soildata %>%
-  filter(id.layer_local_c %in% besb.mir.export$id.layer_local_c) %>%
+besb.availability2 %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
@@ -562,7 +569,7 @@ besb.mir.export %>%
   select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
   tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
                       names_to = "wavenumber", values_to = "reflectance") %>%
-  dplyr::mutate(wavenumber = gsub("scan_mir.|_ref", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
   ggplot(aes(x = wavenumber, y = reflectance, group = id.layer_local_c)) +
   geom_line(alpha = 0.1, color = "darkblue") +
@@ -570,7 +577,7 @@ besb.mir.export %>%
                      transform = "reverse") +
   labs(title = "MIR Spectra (100 random scans)",
        x = bquote("Wavenumber"~(cm^-1)),
-       y = "Reflectance")+
+       y = "Absorbance")+
   theme_light()
 ```
 

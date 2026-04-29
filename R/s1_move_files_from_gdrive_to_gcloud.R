@@ -450,3 +450,26 @@ print(drive_ls(as_id("1Qil9ZQwxboxFiounUsZkhCEFJ64XO-s6")), n=Inf)
 # drive_download(file = as_id("1ZIj5OsFd0vVA_qmY_LxFCbFBfaAJ8xWE"),
 #                path = "~/mnt-ossl-private/database/datasets/WS_SWIND/20211111_MS_SOC_Stock_India_data_raw.csv",
 #                overwrite = T, verbose = T)
+
+# NEON
+
+dir_ls("~/")
+cat(dir_ls("~/mnt-ossl-private/database/datasets/"), sep = "\n")
+dir_create("~/mnt-ossl-private/database/datasets/NEON")
+cat(dir_ls("~/mnt-ossl-private/database/datasets/"), sep = "\n")
+
+print(drive_get(as_id("1l9VM4fFks2xBloDE69EFTfPgQeFx5aGw")), n=Inf)
+print(drive_ls(as_id("1l9VM4fFks2xBloDE69EFTfPgQeFx5aGw")), n=Inf)
+print(drive_ls(as_id("1KSh1NkVRyG3t5bpH_VrCe_TmQSyC03Xd")), n=Inf)
+
+# drive_download(file = as_id("1i_VUzYxAuzIMKl-ijerhoCWb-Ph72RKV"),
+#                path = "~/mnt-ossl-private/database/datasets/NEON/NEON_soilp.csv",
+#                overwrite = T, verbose = T)
+#
+# drive_download(file = as_id("1owgwPwBTDArgFeYKjAYH3RNRg5_dZXhb"),
+#                path = "~/mnt-ossl-private/database/datasets/NEON/NEON_kssl.csv",
+#                overwrite = T, verbose = T)
+#
+# drive_download(file = as_id("1ROQ21XbQNb8fMCSRlz2qkZEwK0ZQ1WS5"),
+#                path = "~/mnt-ossl-private/database/datasets/NEON/NEON_whrc.csv",
+#                overwrite = T, verbose = T)

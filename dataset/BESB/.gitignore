@@ -1,11 +1,12 @@
-
 .DS_Store
+*.qs
+*.parquet
 BSSL_DB_V002.xlsx
 ~$BSSL_DB_V002.xlsx
-ossl_soilsite_v2.0.qs
-ossl_soillab_v2.0.qs
-ossl_mir_v2.0.qs
-ossl_visnir_v2.0.qs
+ossl_soilsite_v1.3.csv
+ossl_soillab_v1.3.csv
+ossl_mir_v1.3.csv
+ossl_visnir_v1.3.csv
 
 # History files
 .Rhistory

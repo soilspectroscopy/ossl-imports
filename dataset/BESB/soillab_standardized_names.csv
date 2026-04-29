@@ -1,10 +1,10 @@
-table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
-BSSL_DB_V002.xlsx,ID_Unique,NA,NA,NA,NA,NA,NA
-BSSL_DB_V002.xlsx,Sand_gkg,g/kg,sand.tot,usda.c405,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",sand.tot_usda.c405_w.pct
-BSSL_DB_V002.xlsx,Clay_gkg,g/kg,clay_tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",clay.tot_usda.a334_w.pct
-BSSL_DB_V002.xlsx,SOC_gkg,g/kg,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1.33 / 10)",oc_iso.10694_w.pct
-BSSL_DB_V002.xlsx,pH_H2O,NA,ph.h2o,usda.a268,index,NA,ph.h2o_usda.a268_index
-BSSL_DB_V002.xlsx,Ca_mmolkg,mmol/kg,ca.ext,usda.a722,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",ca.ext_usda.a722_cmolc.kg
-BSSL_DB_V002.xlsx,Mg_mmolkg,mmol/kg,mg.ext,usda.a724,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",mg.ext_usda.a724_cmolc.kg
-BSSL_DB_V002.xlsx,Na_mmolkg,mmol/kg,na.ext,usda.a726,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",na.ext_usda.a726_cmolc.kg
-BSSL_DB_V002.xlsx,CEC_Ph7_mmolkg,mmol/kg,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",cec_usda.a723_cmolc.kg
+table,original_name,import,original_unit,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+BSSL_DB_V002.xlsx,ID_Unique,TRUE,NA,NA,NA,NA,NA,NA,NA
+BSSL_DB_V002.xlsx,Sand_gkg,TRUE,g/kg,Pipette,sand.tot,usda.c405,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",sand.tot_usda.c405_w.pct
+BSSL_DB_V002.xlsx,Clay_gkg,TRUE,g/kg,Pipette,clay_tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",clay.tot_usda.a334_w.pct
+BSSL_DB_V002.xlsx,SOM_gkg,TRUE,g/kg,Walkley–Black method; oc(iso) = oc(om(WB)*0.58) *1.07,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*(0.58*1.07) / 10)",oc_iso.10694_w.pct
+BSSL_DB_V002.xlsx,pH_H2O,TRUE,NA,soil:water = 1:2.5,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+BSSL_DB_V002.xlsx,Ca_mmolkg,TRUE,mmol/kg,Multiple extraction methods,ca.ext,usda.a722,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",ca.ext_usda.a722_cmolc.kg
+BSSL_DB_V002.xlsx,Mg_mmolkg,TRUE,mmol/kg,Multiple extraction methods,mg.ext,usda.a724,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",mg.ext_usda.a724_cmolc.kg
+BSSL_DB_V002.xlsx,Na_mmolkg,TRUE,mmol/kg,Multiple extraction methods,na.ext,usda.a726,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",na.ext_usda.a726_cmolc.kg
+BSSL_DB_V002.xlsx,CEC_Ph7_mmolkg,TRUE,mmol/kg,Multiple extraction methods,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10)",cec_usda.a723_cmolc.kg

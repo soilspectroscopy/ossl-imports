@@ -1,27 +1,33 @@
-# Austrian dataset preparation for the OSSL
+# Austrian NIR soil spectral library (AUT) for soil health assessments
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
-— 03 March, 2026.
 
-- [The Austrian original data](#the-austrian-original-data)
+- [The AUT original data](#the-aut-original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
+  - [Site information](#site-information)
+  - [Soil lab information (reference analytical
+    data)](#soil-lab-information-reference-analytical-data)
+  - [NIR spectra](#nir-spectra)
+  - [Quality control for NIR](#quality-control-for-nir)
 - [References](#references)
 
-Code repository for preparing and importing the Austrian NIR Soil
-Spectral Dataset into the Open Soil Spectral Library.
+Code repository for preparing and importing the Austrian NIR soil
+spectral library for soil health assessments (AUT) into the Open Soil
+Spectral Library.
 
-Project: [Soil Spectroscopy for Global
+Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-03-03  
+Last update: 2026-04-29  
 Additional documentation:
 
-## The Austrian original data
+## The AUT original data
 
 Site data, Soil lab data, and Near-Infrared (NIR) data from all
-environmental zones of Austria. Further information of the dataset can
-be found in detail at Fohrafellner et al.
-([2026](#ref-fohrafellner_austrian_2026)).
+environmental zones of Austria.
+
+Further information of the dataset can be found in detail at
+Fohrafellner et al. ([2026](#ref-fohrafellner_austrian_2026)).
 
 Original files:  
 - `Austrian NIR Soil Spectral Library_V4.xlsx`: xlsx file with site
@@ -30,7 +36,8 @@ information, soil information, and NIR spectral data.
 Directory/folder path with original files (not uploaded to GitHub).
 
 ``` r
-dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Austrian"
+# dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Austrian"
+dir = "~/mnt-ossl-private/database/datasets/AUT"
 tic()
 ```
 
@@ -43,57 +50,102 @@ austrian.metadata <- read_excel(path(dir, "Austrian NIR Soil Spectral Library_V4
                             sheet = "Dataset")
 
 austrian.sitedata <- austrian.metadata %>%
-  select(Sample_number, Sampling_year,Experiment_number, Sample_source,
-         Sampling_depth_from, Sampling_depth_to, Land_use_type, Environmental_zone) %>%
+  select(Sample_number, Sampling_year, Experiment_number, Sample_source,
+         Municipality_code, Environmental_zone, Land_use_type, 
+         Sampling_depth_from, Sampling_depth_to) %>%
   rename(id.layer_local_c = Sample_number,
+         observation.date_src_yyyy = Sampling_year,
+         observation.source_src_txt = Sample_source,
+         site.experiment_src_txt = Experiment_number,
+         site.municipality_src_code = Municipality_code,
+         site.env.zone_src_txt = Environmental_zone,
+         site.land.use_src_txt = Land_use_type,
          layer.upper.depth_usda_cm = Sampling_depth_from,
-         layer.lower.depth_usda_cm = Sampling_depth_to) %>%
+         layer.bottom.depth_usda_cm = Sampling_depth_to) %>%
   mutate(layer.sequence_usda_uint16 = ifelse(layer.upper.depth_usda_cm == 0, 1, 2)) %>%
-  
-  mutate(id.project_ascii_txt = "Austrian NIR Soil Spectral Library for Soil Health Assessments",
-         dataset.code_ascii_txt = "Austrian.NIR",
-         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
-         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
-         dataset.title_utf8_txt = "Austrian NIR Soil Spectral Library for Soil Health Assessments",
-         dataset.owner_utf8_txt = "European Joint Program for SOIL 'Towards climate-smart sustainable management of agricultural soils' (EJP SOIL) funded by the European Union Horizon 2020 research and innovation programme (Grant Agreement N° 862695)",
-         dataset.doi_idf_url = "https://zenodo.org/records/17941270",
-         dataset.license.title_ascii_txt = "CC-BY",
-         dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
-         dataset.contact.name_utf8_txt = "Julia, Fohrafellner",
-         dataset.contact_ietf_email = "julia.fohrafellner@ages.at") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
-         .after = id.project_ascii_txt) %>%
+  # mutate(id.project_ascii_txt = "Austrian NIR Soil Spectral Library for Soil Health Assessments",
+  #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+  #        observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+  #        dataset.title_utf8_txt = "Austrian NIR Soil Spectral Library for Soil Health Assessments",
+  #        dataset.owner_utf8_txt = "European Joint Program for SOIL 'Towards climate-smart sustainable management of agricultural soils' (EJP SOIL) funded by the European Union Horizon 2020 research and innovation programme (Grant Agreement N° 862695)",
+  #        dataset.doi_idf_url = "https://zenodo.org/records/17941270",
+  #        dataset.license.title_ascii_txt = "CC-BY",
+  #        dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+  #        dataset.contact.name_utf8_txt = "Julia, Fohrafellner",
+  #        dataset.contact_ietf_email = "julia.fohrafellner@ages.at") %>%
+  mutate(dataset.code_ascii_txt = "AUT",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
   mutate(across(starts_with("id."), as.character))
 
 # Saving version to dataset root dir
-site.qs = path(dir, "ossl_soilsite_v2.0.qs")
-qs::qsave(austrian.sitedata, site.qs, preset = "high")
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(austrian.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(austrian.sitedata, str_c(site.exp.file, ".parquet"))
 ```
+
+Plotting Austrian map:
+
+``` r
+data("World")
+
+ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+```
+
+    Reading 'ne_110m_ocean.zip' from naturalearth...
+
+``` r
+austria <- World[World$name == "Austria", ]
+
+tmap_mode("plot")
+```
+
+    ℹ tmap modes "plot" - "view"
+    ℹ toggle with `tmap::ttm()`
+
+``` r
+tm_shape(ocean) +
+  tm_polygons(fill = "lightblue", col = NA) +
+  tm_shape(World) +
+  tm_polygons(fill = "#f0f0f0", fill_alpha = 0.5, col_alpha = 0.5) +
+  tm_shape(austria) +
+  tm_polygons(fill = "firebrick") +
+  tm_crs("ESRI:54030") +
+  tm_layout(frame = FALSE)
+```
+
+    [tip] Consider a suitable map projection, e.g. by adding `+ tm_crs("auto")`.
+    This message is displayed once per session.
+
+![](README_files/figure-commonmark/map-1.png)
 
 ### Soil lab information (reference analytical data)
 
 NOTE: The code chunk below must be run just once for getting a template
 for scripted column standardization. Just run once for getting the
 original names of soil properties, descriptions, data types, and units.
-Then upload to Google Sheet for editing and manually defining the rules
-for integrating with the OSSL. Requires Google authentication. A copy of
-the output file is saved to this folder for archiving purposes.
+Then upload to Google Sheet for editing and defining the rules for
+integrating with the OSSL. Requires Google authentication. A copy of the
+output file is saved to this folder for archiving purposes.
 
 **Always leave the sheet name as TEMP to avoid overwritting, then rename
-online to download locally.**
+online to dataset code and download a copy for this repository.**
 
 ``` r
 # Getting soillab original variables
 
 soillab.names <- austrian.metadata %>%
-  select(Sample_number, SOC,SOC_to_clay_ratio, TC, Labile_carbon, CaCO3, TN, Phosphorus, pH_CaCl2, pH_Acetate, 
+  select(Sample_number, SOC, SOC_to_clay_ratio,
+         TC, Labile_carbon, CaCO3, TN, Phosphorus, pH_CaCl2, pH_Acetate, 
          CEC, Sand, Silt, Clay) %>%
   rename(id.layer_local_c = Sample_number) %>%
   names() %>%
   tibble(original_name = .) %>%
   dplyr::mutate(table = 'Austrian NIR Soil Spectral Library_V4.xlsx', .before = 1) %>%
-  dplyr::mutate(import = '', original_unit = '', original_method = '', comment = '', ossl_abbrev = '', 
-                ossl_method = '', ossl_unit = '', ossl_convert = '', ossl_name = '', .after = original_name)
+  dplyr::mutate(import = '', original_unit = '', original_method = '',
+                comment = '', ossl_abbrev = '', ossl_method = '',
+                ossl_unit = '', ossl_convert = '', ossl_name = '',
+                .after = original_name)
 
 readr::write_csv(soillab.names, path(getwd(), "soillab_original_names.csv"))
 
@@ -124,7 +176,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -134,12 +187,10 @@ googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
 
 # Preparing soillab.names
 transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
-                                         sheet = "Austrian") %>%
-  filter(import == TRUE) %>%
-  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+                                         sheet = "AUT")
 
 # Saving to folder
-write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
+readr::write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
 ```
 
 Reading standardization rules:
@@ -147,6 +198,11 @@ Reading standardization rules:
 ``` r
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
                         show_col_types = F)
+
+ transvalues <- transvalues%>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+ 
 knitr::kable(transvalues)
 ```
 
@@ -169,7 +225,6 @@ Standardizing soil data to the OSSL format:
 austrian.reference <- austrian.metadata
 
 # Harmonization of names and units
-
 valid_mappings <- transvalues %>%
   filter(table == "Austrian NIR Soil Spectral Library_V4.xlsx") %>%
   filter(!is.na(ossl_name) & ossl_name != "") 
@@ -216,8 +271,9 @@ austrian.soildata %>%
 
 ``` r
 # Saving version to dataset root dir
-soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
-qs::qsave(austrian.soildata, soillab.qs, preset = "high")
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(austrian.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(austrian.soildata, str_c(soillab.exp.file, ".parquet"))
 ```
 
 Soil lab data summary.
@@ -266,9 +322,12 @@ Data summary
 
 ### NIR spectra
 
+Authors describe in the paper that the spectra in reflectance units, was
+transformed to pseudo absorbance. We will convert back to reflectance as
+all VNIR spectra is being stored as ref.
+
 ``` r
 # Renaming
-
 austrian.nir.proc <- austrian.metadata %>%
   rename(id.layer_local_c = Sample_number) %>%
   select(id.layer_local_c, `680`:last_col())
@@ -279,12 +338,16 @@ old.wavelengths <- as.numeric(spec.cols)
 new.wavelengths <- seq(680, max(old.wavelengths), by = 2)
 
 # Resampling spectra
-
 austrian.nir.resampled <- austrian.nir.proc %>%
   column_to_rownames("id.layer_local_c") %>%
   as.matrix() %>%
-  prospectr::resample(X = ., wav = old.wavelengths, new.wav = new.wavelengths, interpol = "spline") %>%
+  prospectr::resample(X = ., wav = old.wavelengths,
+                      new.wav = new.wavelengths, interpol = "spline") %>%
   as_tibble(rownames = "id.layer_local_c")
+
+# Backtransforming to reflectance
+austrian.nir.resampled <- austrian.nir.resampled %>%
+  mutate(across(all_of(as.character(new.wavelengths)), ~1/10^.x))
 
 # Check for NAs
 scans.na.gaps <- austrian.nir.resampled %>%
@@ -301,60 +364,73 @@ scans.extreme.neg <- austrian.nir.resampled %>%
 # Check for extreme positive values 
 scans.extreme.pos <- austrian.nir.resampled %>%
   select(-id.layer_local_c) %>%
-  apply(1, function(x) round(100*(sum(x > 1.5, na.rm=TRUE))/(length(x)), 2)) %>%
-  tibble(id.layer_local_c = austrian.nir.resampled$id.layer_local_c, proportion_higherAbs5 = .)
+  apply(1, function(x) round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)) %>%
+  tibble(id.layer_local_c = austrian.nir.resampled$id.layer_local_c, proportion_higherRef1 = .)
 
 # Summary of problematic scans
 scans.summary <- scans.na.gaps %>%
   left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
   left_join(scans.extreme.pos, by = "id.layer_local_c")
 
-# 4. Renaming and Metadata
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+```
+
+    # A tibble: 0 × 2
+    # ℹ 2 variables: check <chr>, count <int>
+
+``` r
+# Renaming and Metadata
 final.visnir.names <- paste0("scan_nir.", new.wavelengths, "_ref")
+
 austrian.nir.final <- austrian.nir.resampled %>%
   rename_with(~final.visnir.names, as.character(new.wavelengths))
 
-# Customizing metadata for the Austrian dataset
-austrian.nir.metadata <- austrian.nir.final %>%
-  select(id.layer_local_c) %>%
-  mutate(
-    id.scan_local_c = id.layer_local_c,
-    scan.nir.date.begin_iso.8601_yyyy = ymd("1998-01-01"), 
-    scan.visnir.date.end_iso.8601_yyyy = ymd("2023-12-31"), 
-    scan.nir.model.name_utf8_txt = "SpectraStarTM XL near-infrared spectrometer from Unity Scientific (Brookfield, CT, USA)", 
-    scan.nir.license.title_ascii_txt = "CC-BY",
-    scan.nir.contact.name_utf8_txt = "Austrian Dataset Lead",
-    scan.nir.doi_idf_url = "https://zenodo.org/records/17941270",
-    scan.nir.contact.name_utf8_txt = "Julia, Fohrafellner",
-    scan.nir.contact.email_ietf_txt = "julia.fohrafellner@ages.at"
-  )
+# # Customizing metadata for the Austrian dataset
+# austrian.nir.metadata <- austrian.nir.final %>%
+#   select(id.layer_local_c) %>%
+#   mutate(
+#     id.scan_local_c = id.layer_local_c,
+#     scan.nir.date.begin_iso.8601_yyyy = ymd("1998-01-01"), 
+#     scan.visnir.date.end_iso.8601_yyyy = ymd("2023-12-31"), 
+#     scan.nir.model.name_utf8_txt = "SpectraStarTM XL near-infrared spectrometer from Unity Scientific (Brookfield, CT, USA)", 
+#     scan.nir.license.title_ascii_txt = "CC-BY",
+#     scan.nir.contact.name_utf8_txt = "Austrian Dataset Lead",
+#     scan.nir.doi_idf_url = "https://zenodo.org/records/17941270",
+#     scan.nir.contact.name_utf8_txt = "Julia, Fohrafellner",
+#     scan.nir.contact.email_ietf_txt = "julia.fohrafellner@ages.at"
+#   )
 
-# 5. Export
-austrian.nir.export <- austrian.nir.metadata %>%
-  left_join(austrian.nir.final, by = "id.layer_local_c")
+# Export
+
+# austrian.nir.export <- austrian.nir.metadata %>%
+#   left_join(austrian.nir.final, by = "id.layer_local_c")
 
 # Save as .qs file
-qs::qsave(austrian.nir.export, "ossl_nir_v2.0.qs", preset = "high")
+nir.exp.file = path(dir, "ossl_nir_v1.3")
+readr::write_csv(austrian.nir.final, str_c(nir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(austrian.nir.final, str_c(nir.exp.file, ".parquet"))
 ```
 
 ### Quality control for NIR
 
 The final table must be joined as follows:
 
-- NIR is used as first reference for left join.
-- Then it is left joined with the site and soil lab data. This drop data
-  without any available scan.
+- NIR is used as first reference for pairing with site and soil data.
+- Site and soil lab data are left joined to nir. This drop data without
+  any available scan.
 
 The availability of data is summarized below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-austrian.availability <- austrian.nir.export %>%
+austrian.availability <- austrian.nir.final %>%
   select(id.layer_local_c, scan_nir.680_ref) %>%
-  left_join({austrian.metadata %>%
-      rename(id.layer_local_c = Sample_number) %>%
-      mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
-      select(id.layer_local_c, Sampling_year, SOC, pH_CaCl2, Phosphorus)}, by = "id.layer_local_c") %>%
+  left_join(austrian.soildata, by = "id.layer_local_c") %>%
   filter(!is.na(id.layer_local_c))
 
 # Availability of information summary
@@ -367,15 +443,21 @@ austrian.availability %>%
   summarise(count = n())
 ```
 
-    # A tibble: 6 × 2
-      column           count
-      <chr>            <int>
-    1 Phosphorus        1643
-    2 SOC               2112
-    3 Sampling_year     2129
-    4 id.layer_local_c  2131
-    5 pH_CaCl2          1917
-    6 scan_nir.680_ref  2131
+    # A tibble: 12 × 2
+       column                   count
+       <chr>                    <int>
+     1 c.tot_usda.a622_w.pct       92
+     2 caco3_usda.a54_w.pct       327
+     3 cec_iso.11260_cmolc.kg     641
+     4 clay.tot_iso.11277_w.pct   534
+     5 id.layer_local_c          2131
+     6 n.tot_usda.a623_w.pct     1036
+     7 oc_usda.c729_w.pct        2112
+     8 p.ext_austria.cal_mg.kg   1643
+     9 ph.cacl2_iso.10390_index  1917
+    10 sand.tot_iso.11277_w.pct   562
+    11 scan_nir.680_ref          2131
+    12 silt.tot_iso.11277_w.pct   562
 
 ``` r
 # Repeats check 
@@ -394,12 +476,11 @@ austrian.availability %>%
       <chr>              <int> <int>
     1 id.layer_local_c       1  2131
 
-Soil analytical data summary for NIR. Note: many scans could not be
-linked with the wetchem.
+Soil analytical data summary with NIR. Note: many scans could not be
+linked with some of the wetchem.
 
 ``` r
-austrian.soildata %>%
-  filter(id.layer_local_c %in% austrian.nir.export$id.layer_local_c) %>%
+austrian.availability %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
@@ -409,11 +490,11 @@ austrian.soildata %>%
 |:-------------------------------------------------|:-----------|
 | Name                                             | Piped data |
 | Number of rows                                   | 2131       |
-| Number of columns                                | 11         |
+| Number of columns                                | 12         |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
 | Column type frequency:                           |            |
 | factor                                           | 1          |
-| numeric                                          | 10         |
+| numeric                                          | 11         |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
 | Group variables                                  | None       |
 
@@ -429,6 +510,7 @@ Data summary
 
 | skim_variable            | n_missing |   mean |     sd |   p0 |   p25 |   p50 |    p75 |    p100 |
 |:-------------------------|----------:|-------:|-------:|-----:|------:|------:|-------:|--------:|
+| scan_nir.680_ref         |         0 |   0.23 |   0.06 | 0.09 |  0.19 |  0.22 |   0.27 |    0.68 |
 | oc_usda.c729_w.pct       |        19 |   2.76 |   3.20 | 0.02 |  1.53 |  1.96 |   2.71 |   44.82 |
 | c.tot_usda.a622_w.pct    |      2039 |   6.54 |   6.23 | 1.00 |  2.63 |  4.90 |   6.66 |   39.08 |
 | caco3_usda.a54_w.pct     |      1804 |  13.26 |  12.57 | 0.01 |  4.30 |  9.70 |  20.40 |   81.90 |
@@ -440,11 +522,13 @@ Data summary
 | silt.tot_iso.11277_w.pct |      1569 |  45.71 |  14.26 | 5.00 | 35.80 | 47.10 |  56.70 |   75.70 |
 | clay.tot_iso.11277_w.pct |      1597 |  18.01 |   9.05 | 1.50 | 10.93 | 17.30 |  23.80 |   47.10 |
 
-NIR spectral visualization (100 random spectra):
+NIR spectral visualization (100 random spectra). **PLEASE NOTE the a bad
+interpolation between the detectors switch around 1350 nm. Somple splice
+correction does not work in this case.**
 
 ``` r
 set.seed(42)
-austrian.nir.export %>%
+austrian.nir.final %>%
   sample_n(100) %>%
   select(all_of(c("id.layer_local_c")), starts_with("scan_nir.")) %>%
   tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
@@ -454,7 +538,7 @@ austrian.nir.export %>%
   ggplot(aes(x = wavelength, y = reflectance, group = id.layer_local_c)) +
   geom_line(alpha = 0.1, color = "darkblue") +
   scale_x_continuous(breaks = seq(680, 2500, by = 200))+
-  labs(title = "NIR Spectra (100 random scans)",
+  labs(title = "NIR spectra (100 random scans)",
        x = "Wavelength (nm)",
        y = "Reflectance")+
   theme_light()
@@ -466,16 +550,16 @@ austrian.nir.export %>%
 toc()
 ```
 
-    2.394 sec elapsed
+    18.604 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-              used  (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
-    Ncells 4243861 226.7    6837795 365.2         NA  6837795 365.2
-    Vcells 7259019  55.4   30466747 232.5      24576 38083433 290.6
+               used  (Mb) gc trigger  (Mb) max used  (Mb)
+    Ncells  6379699 340.8   11336178 605.5  9904675 529.0
+    Vcells 10922312  83.4   33640616 256.7 42050770 320.9
 
 ## References
 
