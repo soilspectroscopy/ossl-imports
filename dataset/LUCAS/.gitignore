@@ -4,9 +4,6 @@
 *.parquet
 *.csv.gz
 
-BSSL_DB_V002.xlsx
-~$BSSL_DB_V002.xlsx
-
 # History files
 .Rhistory
 .Rapp.history

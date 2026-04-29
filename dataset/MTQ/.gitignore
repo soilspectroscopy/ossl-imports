@@ -1,9 +1,9 @@
 .DS_Store
+~$*
+*.qs
+*.parquet
+*.csv.gz
 SoilCarbonMartinique_v2.tab
-~SoilCarbonMartinique_v2.tab
-ossl_soilsite_v2.0.qs
-ossl_soillab_v2.0.qs
-ossl_nir_v2.0.qs
 
 # History files
 .Rhistory

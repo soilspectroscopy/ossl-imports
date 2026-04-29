@@ -1,12 +1,11 @@
-
 .DS_Store
-# Origial and outputs files
+~$*
+*.qs
+*.parquet
+*.csv.gz
 cssl_metadata_all.csv
 ssl_refdata_all.csv
 cssl_spectra.csv
-ossl_soilsite_v2.0.qs
-ossl_soillab_v2.0.qs
-ossl_mir_v2.0.qs
 
 # History files
 .Rhistory

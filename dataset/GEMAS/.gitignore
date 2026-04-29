@@ -1,10 +1,10 @@
 .DS_Store
+~$*
+*.qs
+*.parquet
+*.csv.gz
+
 GEMAS_MIRcompiled.csv
-~GEMAS_MIRcompiled.csv
-ossl_soilsite_v2.0.qs
-ossl_soillab_v2.0.qs
-ossl_mir_v2.0.qs
-reference.bib
 
 # History files
 .Rhistory

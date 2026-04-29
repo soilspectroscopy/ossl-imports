@@ -1,13 +1,10 @@
 .DS_Store
+~$*
+*.qs
+*.parquet
+*.csv.gz
 soil fertility data.xlsx
-~$soil fertility data.xlsx
 VNIR data.xlsx
-~$VNIR data.xlsx
-ossl_soilsite_v2.0.qs
-ossl_soillab_v2.0.qs
-ossl_visnir_v2.0.qs
-reference.bib
-
 
 # History files
 .Rhistory

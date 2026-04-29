@@ -1,12 +1,10 @@
 .DS_Store
+~$*
+*.qs
+*.parquet
+*.csv.gz
+*.pdf
 SSL_GEOCRADLE_1.csv
-~SSL_GEOCRADLE_1.csv
-ossl_soilsite_v2.0.qs
-ossl_soillab_v2.0.qs
-ossl_visnir_v2.0.qs
-j.geoderma.2017.04.020.pdf
-j.geoderma.2018.12.044.pdf
-1-s2.0-S0034425720301632-main.pdf
 
 # History files
 .Rhistory

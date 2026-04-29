@@ -1,11 +1,10 @@
 .DS_Store
 ~$*
-Austrian NIR Soil Spectral Library_V4.xlsx
 *.qs
 *.parquet
-ossl_soilsite_v1.3.csv
-ossl_soillab_v1.3.csv
-ossl_nir__v1.3.csv
+*.csv.gz
+
+Austrian NIR Soil Spectral Library_V4.xlsx
 
 # History files
 .Rhistory

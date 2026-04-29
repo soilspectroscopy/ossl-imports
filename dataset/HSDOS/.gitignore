@@ -1,9 +1,10 @@
 .DS_Store
+~$*
+*.qs
+*.parquet
+*.csv.gz
+
 HSDOS_SSL_ver1.1.csv
-~HSDOS_SSL_ver1.1.csv
-ossl_soilsite_v2.0.qs
-ossl_soillab_v2.0.qs
-ossl_visnir_v2.0.qs
 
 # History files
 .Rhistory

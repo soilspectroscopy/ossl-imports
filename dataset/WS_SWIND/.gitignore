@@ -1,17 +1,16 @@
 .DS_Store
+~$*
+*.qs
+*.parquet
+*.csv.gz
 
 20211111_MS_SOC_Stock_India_data_raw.csv
 20211111_MS_SOC_Stock_India_data_var_names.csv
 20211111_MS_SOC_Stock_India_data_composites.csv
 20211111_MS_SOC_Stock_India_data_composites_var_names.csv
-20211111_DRIFT_data/
-ossl_soilsite_v2.0.qs
-ossl_soillab_v2.0.qs
-ossl_mir_v2.0.qs
-reference.bib
+20211111_DRIFT_data/*
 india_fulldata.csv
 india_metadata.csv
-
 
 # History files
 .Rhistory
