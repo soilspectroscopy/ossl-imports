@@ -10,7 +10,7 @@ author:
 format: 
   gfm:
     toc: true
-    toc-depth: 2
+    toc-depth: 3
 bibliography: reference.bib
 csl: ../../tex/apa.csl
 cite-method: citeproc
@@ -32,27 +32,30 @@ Additional documentation:
 
 ## The Geocradle original data
 
-Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from the Geocradle regional soil spectral library. Further information of the dataset can be
+Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from the Geocradle regional soil spectral library.
+
+Further information of the dataset can be
 found in detail at @tziolas_integrated_2020 and @tziolas_memory-based_2019.
 
 Original files:\
 - `SSL_GEOCRADLE_1.csv`: csv file with site information, soil information, and Vis-NIR spectral data.
 
 ```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
-packages <- c("tidyverse", "prospectr", "units", "readxl", "stringr",
-              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
-              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc",
-              "qs", "dplyr", "tidyr", "fs")
+packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
+              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
+              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
 
 invisible(lapply(packages, library, character.only = TRUE))
 
 source("../../R/functions/SSL_functions.R")
+gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
 ```
 
 Directory/folder path with original files (not uploaded to GitHub).
 
 ```{r}
-dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Geocradle"
+# dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Geocradle"
+dir = dir = "~/mnt-ossl-private/database/datasets/Geocradle"
 tic()
 ```
 

@@ -1,5 +1,15 @@
-table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
-GEMAS_MIRcompiled.csv,C_tot,wt%,c.tot,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",c.tot_iso.10694_w.pct
-GEMAS_MIRcompiled.csv,TOC,wt%,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct
-GEMAS_MIRcompiled.csv,CEC,meq,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cec_usda.a723_cmolc.kg
-GEMAS_MIRcompiled.csv,pH_CaCl2,NA,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+GEMAS_MIRcompiled.csv,aowx_file,NA,NA,NA,NA,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,sample_id,NA,NA,NA,NA,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,silt,NA,NA,NA,predicted from MIR with European soil model,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,clay,NA,NA,NA,predicted from MIR with European soil model,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,As,NA,mg/kg,NA,NA,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,Cd,NA,mg/kg,NA,NA,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,Cu,NA,mg/kg,NA,NA,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,Pb,NA,mg/kg,NA,NA,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,Zn,NA,mg/kg,NA,NA,NA,NA,NA,NA,NA
+GEMAS_MIRcompiled.csv,C_tot,TRUE,wt%,NA,NA,c.tot,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",c.tot_iso.10694_w.pct
+GEMAS_MIRcompiled.csv,TOC,TRUE,wt%,IR,dry combustion (according to ISO standard 10694) after inorganic carbon removal,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct
+GEMAS_MIRcompiled.csv,CEC,TRUE,meq,silver thiourea method,NA,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cec_usda.a723_cmolc.kg
+GEMAS_MIRcompiled.csv,pH_CaCl2,TRUE,NA,pH meter in 0.01 m CaCl2,NA,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
+GEMAS_MIRcompiled.csv,LOI,NA,NA,NA,Loss on ignition,NA,NA,NA,NA,NA

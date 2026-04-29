@@ -267,7 +267,7 @@ austrian.soildata %>%
 
 ### NIR spectra
 
-Authors describe in the paper that the spectra in reflectance units, was transformed to pseudo absorbance. We will convert back to reflectance as all VNIR spectra is being stored as ref.
+Authors describe in the paper that the spectra was measured in reflectance units, then transformed to pseudo absorbance. We will convert back to reflectance following OSSL specifications for VisNIR and NIR.
 
 ```{r nir, include=TRUE, echo=TRUE, eval=TRUE}
 # Renaming
@@ -397,7 +397,10 @@ austrian.availability %>%
   dplyr::select(-numeric.hist, -complete_rate)
 ```
 
-NIR spectral visualization (100 random spectra). **PLEASE NOTE the a bad interpolation between the detectors switch around 1350 nm. Somple splice correction does not work in this case.**
+NIR spectral visualization (100 random spectra).\
+
+**PLEASE NOTE the bad interpolation between the detectors switch around 1350 nm. Unfortunately, simple splice correction does not work in this case.**
+
 ```{r nir_plot, include=TRUE, echo=TRUE, eval=TRUE}
 set.seed(42)
 austrian.nir.final %>%

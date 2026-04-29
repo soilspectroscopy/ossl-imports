@@ -56,9 +56,9 @@ austrian.sitedata <- austrian.metadata %>%
   rename(id.layer_local_c = Sample_number,
          observation.date_src_yyyy = Sampling_year,
          observation.source_src_txt = Sample_source,
-         site.experiment_src_txt = Experiment_number,
-         site.municipality_src_code = Municipality_code,
-         site.env.zone_src_txt = Environmental_zone,
+         loc.municipality_src_code = Municipality_code,
+         loc.env.zone_src_txt = Environmental_zone,
+         loc.experiment_src_txt = Experiment_number,
          site.land.use_src_txt = Land_use_type,
          layer.upper.depth_usda_cm = Sampling_depth_from,
          layer.bottom.depth_usda_cm = Sampling_depth_to) %>%
@@ -322,9 +322,10 @@ Data summary
 
 ### NIR spectra
 
-Authors describe in the paper that the spectra in reflectance units, was
-transformed to pseudo absorbance. We will convert back to reflectance as
-all VNIR spectra is being stored as ref.
+Authors describe in the paper that the spectra was measured in
+reflectance units, then transformed to pseudo absorbance. We will
+convert back to reflectance following OSSL specifications for VisNIR and
+NIR.
 
 ``` r
 # Renaming
@@ -522,9 +523,11 @@ Data summary
 | silt.tot_iso.11277_w.pct |      1569 |  45.71 |  14.26 | 5.00 | 35.80 | 47.10 |  56.70 |   75.70 |
 | clay.tot_iso.11277_w.pct |      1597 |  18.01 |   9.05 | 1.50 | 10.93 | 17.30 |  23.80 |   47.10 |
 
-NIR spectral visualization (100 random spectra). **PLEASE NOTE the a bad
-interpolation between the detectors switch around 1350 nm. Somple splice
-correction does not work in this case.**
+NIR spectral visualization (100 random spectra).  
+
+**PLEASE NOTE the bad interpolation between the detectors switch around
+1350 nm. Unfortunately, simple splice correction does not work in this
+case.**
 
 ``` r
 set.seed(42)
@@ -550,7 +553,7 @@ austrian.nir.final %>%
 toc()
 ```
 
-    18.604 sec elapsed
+    17.461 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -558,8 +561,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6379699 340.8   11336178 605.5  9904675 529.0
-    Vcells 10922312  83.4   33640616 256.7 42050770 320.9
+    Ncells  6379700 340.8   11335541 605.4  9904677 529.0
+    Vcells 10922337  83.4   33618927 256.5 42023658 320.7
 
 ## References
 
