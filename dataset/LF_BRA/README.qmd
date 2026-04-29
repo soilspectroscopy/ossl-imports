@@ -10,7 +10,7 @@ author:
 format: 
   gfm:
     toc: true
-    toc-depth: 2
+    toc-depth: 3
 bibliography: reference.bib
 csl: ../../tex/apa.csl
 cite-method: citeproc
@@ -32,7 +32,7 @@ Additional documentation:
 
 ## The Tropical farm original data
 
-Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from Brazilian agricultural areas. Further information of the dataset can be found in detail at @tavares_spectral_2022.
+Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from Brazilian agricultural areas. Further information of the dataset can be found in detail at @Tavares2022.
 
 Original files:\
 - `soil fertility data.xlsx`: xlsx file with site information and soil lab information. 

@@ -53,7 +53,7 @@ gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
 
 Directory/folder path with original files (not uploaded to GitHub).
 
-```{r}
+```{r dir}
 # dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Geocradle"
 dir = dir = "~/mnt-ossl-private/database/datasets/Geocradle"
 tic()
@@ -63,7 +63,7 @@ tic()
 
 ### Site information
 
-```{r}
+```{r soilsite}
 geocradle.metadata <- fread(path(dir, "SSL_GEOCRADLE_1.csv"), header = T)
 
 geocradle.sitedata <- geocradle.metadata %>%

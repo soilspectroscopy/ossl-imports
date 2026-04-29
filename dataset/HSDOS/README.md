@@ -1,27 +1,31 @@
 # Hungarian dataset preparation for the OSSL
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
-— 26 February, 2026.
 
 - [The HSDOS original data](#the-hsdos-original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
+  - [Site information](#site-information)
+  - [Soil lab information (reference analytical
+    data)](#soil-lab-information-reference-analytical-data)
+  - [Vis-NIR spectra](#vis-nir-spectra)
+  - [Quality control for Vis-NIR](#quality-control-for-vis-nir)
 - [References](#references)
 
 Code repository for preparing and importing the Hungarian Soil
 Degradation Observation System (HSDOS) dataset into the Open Soil
 Spectral Library.
 
-Project: [Soil Spectroscopy for Global
+Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-02-26  
+Last update: 2026-04-29  
 Additional documentation:
 
 ## The HSDOS original data
 
 Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from
 the Hungarian Soil Degradation Observation System (HSDOS). Further
-information of the dataset can be found in detail at Mészáros et al.
+information of the dataset can be at Mészáros et al.
 ([2025](#ref-meszaros_vis-nir_2025)).
 
 Original files:  
@@ -31,8 +35,8 @@ information, and Vis-NIR spectral data.
 Directory/folder path with original files (not uploaded to GitHub).
 
 ``` r
-dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Hungarian"
-# dir = "~/projects/mnt-ossl/import/dataset/BESB"
+# dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Hungarian"
+dir = "~/mnt-ossl-private/database/datasets/HSDOS"
 tic()
 ```
 
@@ -47,41 +51,37 @@ hsdos.sitedata <- hsdos.metadata %>%
   select(SAMPLE_TDR_ID, SAMPLING_DATE, LON_WGS84, LAT_WGS84, PROFILE_LEVEL) %>%
   rename(id.layer_local_c = SAMPLE_TDR_ID,
          longitude.point_wgs84_dd = LON_WGS84,
-         latitude.point_wgs84_dd = LAT_WGS84) %>%
-  mutate(
-    layer.upper.depth_usda_cm = case_when(
-      PROFILE_LEVEL == 1 ~ 0,
-      PROFILE_LEVEL == 2 ~ 30,
-      PROFILE_LEVEL == 3 ~ 60,
-      TRUE ~ NA_real_
-    ),
-    layer.lower.depth_usda_cm = case_when(
-      PROFILE_LEVEL == 1 ~ 30,
-      PROFILE_LEVEL == 2 ~ 60,
-      PROFILE_LEVEL == 3 ~ 90,
-      TRUE ~ NA_real_
-    ),
-    layer.sequence_usda_uint16 = as.integer(PROFILE_LEVEL)
-  ) %>%
-  mutate(id.project_ascii_txt = "Hungarian Soil Degradation Observation System",
-         dataset.code_ascii_txt = "HSDOS.SSL",
-         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
-         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
-         dataset.title_utf8_txt = "HSDOS: Hungarian Soil Degradation Observation System Dataset",
-         dataset.owner_utf8_txt = "Open access funding provided by HUN-REN Centre for Agricultural Research",
-         dataset.doi_idf_url = "https://zenodo.org/records/13955229",
-         dataset.license.title_ascii_txt = "CC-BY",
-         dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
-         dataset.contact.name_utf8_txt = "János Mészáros",
-         dataset.contact_ietf_email = "koos.sandor@atk.hun-ren.hu") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
-         id.location_olc_txt = olctools::encode_olc(latitude.point_wgs84_dd, longitude.point_wgs84_dd, 10),
-         .after = id.project_ascii_txt) %>%
+         latitude.point_wgs84_dd = LAT_WGS84,
+         observation.date_src_yyy.mm.dd = SAMPLING_DATE) %>%
+  mutate(layer.upper.depth_usda_cm = case_when(PROFILE_LEVEL == 1 ~ 0,
+                                               PROFILE_LEVEL == 2 ~ 30,
+                                               PROFILE_LEVEL == 3 ~ 60,
+                                               TRUE ~ NA_real_),
+         layer.lower.depth_usda_cm = case_when(PROFILE_LEVEL == 1 ~ 30,
+                                               PROFILE_LEVEL == 2 ~ 60,
+                                               PROFILE_LEVEL == 3 ~ 90,
+                                               TRUE ~ NA_real_),
+         layer.sequence_usda_uint16 = as.integer(PROFILE_LEVEL)) %>%
+  # mutate(id.project_ascii_txt = "Hungarian Soil Degradation Observation System",
+  #        dataset.code_ascii_txt = "HSDOS.SSL",
+  #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+  #        observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+  #        dataset.title_utf8_txt = "HSDOS: Hungarian Soil Degradation Observation System Dataset",
+  #        dataset.owner_utf8_txt = "Open access funding provided by HUN-REN Centre for Agricultural Research",
+  #        dataset.doi_idf_url = "https://zenodo.org/records/13955229",
+  #        dataset.license.title_ascii_txt = "CC-BY",
+  #        dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+  #        dataset.contact.name_utf8_txt = "János Mészáros",
+  #        dataset.contact_ietf_email = "koos.sandor@atk.hun-ren.hu") %>%
+  mutate(dataset.code_ascii_txt = "HSDOS",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
-site.qs = path(dir, "ossl_soilsite_v2.0.qs")
-qs::qsave(hsdos.sitedata, site.qs, preset = "high")
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(hsdos.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(hsdos.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
 Plotting sites map:
@@ -89,6 +89,12 @@ Plotting sites map:
 ``` r
 data("World")
 
+ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+```
+
+    Reading 'ne_110m_ocean.zip' from naturalearth...
+
+``` r
 points <- hsdos.sitedata %>%
   filter(!is.na(longitude.point_wgs84_dd),
          !is.na(latitude.point_wgs84_dd)) %>%
@@ -101,15 +107,18 @@ tmap_mode("plot")
     ℹ toggle with `tmap::ttm()`
 
 ``` r
-tm_shape(World) +
-  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+tm_shape(ocean) +
+  tm_polygons(fill = "lightblue", col = NA) +
+  tm_shape(World) +
+  tm_polygons(fill = "#f0f0f0", fill_alpha = 0.5, col_alpha = 0.5) +
   tm_shape(points) +
-  tm_dots()
+  tm_dots(size = 0.10, fill = "firebrick") +
+  tm_crs("ESRI:54030") +
+  tm_layout(frame = FALSE)
 ```
 
-
-    ── tmap v3 code detected ───────────────────────────────────────────────────────
-    [v3->v4] `tm_polygons()`: use `col_alpha` instead of `border.alpha`.[tip] Consider a suitable map projection, e.g. by adding `+ tm_crs("auto")`.
+    [tip] Consider a suitable map projection, e.g. by adding `+ tm_crs("auto")`.
+    This message is displayed once per session.
 
 ![](README_files/figure-commonmark/map-1.png)
 
@@ -118,11 +127,11 @@ tm_shape(World) +
 NOTE: The code chunk below must be run just once for getting a template
 for scripted column standardization. Just run once for getting the
 original names of soil properties, descriptions, data types, and units.
-Then upload to Google Sheet for editing and manually defining the rules
-for integrating with the OSSL. Requires Google authentication. A copy of
-the output file is saved to this folder for archiving purposes.
+Then upload to Google Sheet for editing and defining the rules for
+integrating with the OSSL. Requires Google authentication. A copy of the
+output file is saved to this folder for archiving purposes.
 
-**Always leave the sheet name as TEMP to avoid overwritting, then rename
+**Always leave the sheet name as TEMP to avoid overwriting, then rename
 online to download locally.**
 
 ``` r
@@ -176,9 +185,7 @@ googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
 
 # Preparing soillab.names
 transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
-                                         sheet = "Hungarian") %>%
-  filter(import == TRUE) %>%
-  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+                                         sheet = "HSDOS")
 
 # Saving to folder
 write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
@@ -188,7 +195,10 @@ Reading standardization rules:
 
 ``` r
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
-                        show_col_types = F)
+                        show_col_types = F) %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+
 knitr::kable(transvalues)
 ```
 
@@ -207,8 +217,7 @@ Standardizing soil data to the OSSL format:
 ``` r
 hsdos.reference <- hsdos.metadata
 
-# Harmonization of names and units
-
+# Standardization of names and units
 valid_mappings <- transvalues %>%
   filter(table == "HSDOS_SSL_ver1.1.csv") %>%
   filter(!is.na(ossl_name) & ossl_name != "") 
@@ -236,9 +245,9 @@ functions.list <- transvalues %>%
 
 # Applying transformation rules
 hsdos.soildata.trans <- transform_values(df = hsdos.soildata,
-                                       out.name = names(hsdos.soildata),
-                                       in.name = names(hsdos.soildata),
-                                       fun.lst = functions.list)
+                                         out.name = names(hsdos.soildata),
+                                         in.name = names(hsdos.soildata),
+                                         fun.lst = functions.list)
 
 # Final soillab data
 hsdos.soildata <- hsdos.soildata.trans %>%
@@ -255,8 +264,9 @@ hsdos.soildata %>%
 
 ``` r
 # Saving version to dataset root dir
-soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
-qs::qsave(hsdos.soildata, soillab.qs, preset = "high")
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(hsdos.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(hsdos.soildata, str_c(soillab.exp.file, ".parquet"))
 ```
 
 Soil lab data summary.
@@ -302,6 +312,10 @@ Data summary
 
 ### Vis-NIR spectra
 
+Spectra is in reflectance, 1 nm interval, but we retain spectra at 2 nm
+interval. Need splice correction at 1800 nm, but it does not work
+(probably because the spectra was smoothed).
+
 ``` r
 # Renaming and ID Preparation
 hsdos.visnir.proc <- hsdos.metadata %>%
@@ -311,42 +325,49 @@ hsdos.visnir.proc <- hsdos.metadata %>%
 
 # Extracting wavelengths from column names (e.g., "SPC.350" -> 350)
 spec.cols <- grep("^SPC\\.", names(hsdos.visnir.proc), value = TRUE)
-old.wavelengths <- as.numeric(gsub("SPC\\.", "", spec.cols))
+old.wavelengths <- gsub("SPC\\.", "", spec.cols)
 new.wavelengths <- seq(350, 2500, by = 2)
 
 # Resampling spectra
 hsdos.visnir.proc <- hsdos.visnir.proc %>%
-  select(id.layer_local_c, all_of(spec.cols)) %>%
-  { . } -> temp_data 
+  select(id.layer_local_c, all_of(spec.cols))
 
-hsdos.visnir.resampled <- temp_data %>%
-  select(all_of(spec.cols)) %>%
-  as.matrix() %>%
-  prospectr::resample(X = ., wav = old.wavelengths, new.wav = new.wavelengths, interpol = "spline") %>%
-  as_tibble() %>%
-  bind_cols(temp_data %>% select(id.layer_local_c), .) %>%
-  select(id.layer_local_c, as.character(new.wavelengths))
+hsdos.visnir.proc <- hsdos.visnir.proc %>%
+  rename_with(~old.wavelengths, all_of(spec.cols))
+  
+hsdos.visnir.proc <- hsdos.visnir.proc %>%
+  select(id.layer_local_c, all_of(as.character(new.wavelengths)))
+
+# Splice correction
+# hsdos.visnir.proc <- hsdos.visnir.proc %>%
+#   select(-id.layer_local_c) %>%
+#   as.matrix() %>%
+#   spliceCorrection(wav = as.numeric(new.wavelengths),
+#                    splice = c(1800), interpol.bands = 10) %>%
+#   as_tibble() %>%
+#   bind_cols({hsdos.visnir.proc %>%
+#       select(id.layer_local_c)}, .)
 
 # Gaps Analysis
-scans.na.gaps <- hsdos.visnir.resampled %>%
+scans.na.gaps <- hsdos.visnir.proc %>%
   select(-id.layer_local_c) %>%
   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
   tibble(proportion_NA = .) %>%
-  bind_cols(hsdos.visnir.resampled %>% select(id.layer_local_c), .)
+  bind_cols(hsdos.visnir.proc %>% select(id.layer_local_c), .)
 
 # Extreme negative checks
-scans.extreme.neg <- hsdos.visnir.resampled %>%
+scans.extreme.neg <- hsdos.visnir.proc %>%
   select(-id.layer_local_c) %>%
   apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
   tibble(proportion_lower0 = .) %>%
-  bind_cols(hsdos.visnir.resampled %>% select(id.layer_local_c), .)
+  bind_cols(hsdos.visnir.proc %>% select(id.layer_local_c), .)
 
 # Extreme positive checks
-scans.extreme.pos <- hsdos.visnir.resampled %>%
+scans.extreme.pos <- hsdos.visnir.proc %>%
   select(-id.layer_local_c) %>%
-  apply(., 1, function(x) {round(100*(sum(x > 1.5, na.rm=TRUE))/(length(x)), 2)}) %>%
-  tibble(proportion_higherAbs5 = .) %>%
-  bind_cols(hsdos.visnir.resampled %>% select(id.layer_local_c), .)
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherRef1 = .) %>%
+  bind_cols(hsdos.visnir.proc %>% select(id.layer_local_c), .)
 
 # Consistency summary
 scans.summary <- scans.na.gaps %>%
@@ -362,57 +383,59 @@ scans.summary %>%
   summarise(count = n())
 ```
 
-    # A tibble: 0 × 2
-    # ℹ 2 variables: check <chr>, count <int>
+    # A tibble: 1 × 2
+      check                 count
+      <chr>                 <int>
+    1 proportion_higherRef1     2
 
 ``` r
 # Final column renaming for OSSL standard
 final.visnir.names <- paste0("scan_visnir.", new.wavelengths, "_ref")
-hsdos.visnir.proc <- hsdos.visnir.resampled %>%
+
+hsdos.visnir.proc <- hsdos.visnir.proc %>%
   rename_with(~final.visnir.names, as.character(new.wavelengths))
 
-# Preparing metadata
-hsdos.visnir.metadata <- hsdos.visnir.proc %>%
-  select(id.layer_local_c) %>%
-  mutate(id.scan_local_c = id.layer_local_c,
-         scan.visnir.date.begin_iso.8601_yyyy = ymd("2011-01-01"), 
-         scan.visnir.date.end_iso.8601_yyyy = ymd("2011-12-31"), 
-         scan.visnir.model.name_utf8_txt = "FieldSpec 4 spectroradiometer", 
-         scan.visnir.license.title_ascii_txt = "CC-BY",
-         scan.visnir.method.optics_any_txt = "",
-         scan.visnir.method.preparation_any_txt = "Standard preparation",
-         scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
-         scan.visnir.doi_idf_url = "https://zenodo.org/records/13955229",
-         scan.visnir.contact.name_utf8_txt = "János Mészáros",
-         scan.visnir.contact.email_ietf_txt = "koos.sandor@atk.hun-ren.hu")
+# # Preparing metadata
+# hsdos.visnir.metadata <- hsdos.visnir.proc %>%
+#   select(id.layer_local_c) %>%
+#   mutate(id.scan_local_c = id.layer_local_c,
+#          scan.visnir.date.begin_iso.8601_yyyy = ymd("2011-01-01"), 
+#          scan.visnir.date.end_iso.8601_yyyy = ymd("2011-12-31"), 
+#          scan.visnir.model.name_utf8_txt = "FieldSpec 4 spectroradiometer", 
+#          scan.visnir.license.title_ascii_txt = "CC-BY",
+#          scan.visnir.method.optics_any_txt = "",
+#          scan.visnir.method.preparation_any_txt = "Standard preparation",
+#          scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+#          scan.visnir.doi_idf_url = "https://zenodo.org/records/13955229",
+#          scan.visnir.contact.name_utf8_txt = "János Mészáros",
+#          scan.visnir.contact.email_ietf_txt = "koos.sandor@atk.hun-ren.hu")
+# 
+# # Final preparation
+# hsdos.visnir.export <- hsdos.visnir.metadata %>%
+#   left_join(hsdos.visnir.proc, by = "id.layer_local_c") %>%
+#   mutate(across(starts_with("id."), as.character))
 
-# Final preparation
-hsdos.visnir.export <- hsdos.visnir.metadata %>%
-  left_join(hsdos.visnir.proc, by = "id.layer_local_c") %>%
-  mutate(across(starts_with("id."), as.character))
-
-# Saving
-soilvisnir.qs = path(dir, "ossl_visnir_v2.0.qs")
-qs::qsave(hsdos.visnir.export, soilvisnir.qs, preset = "high")
+# Saving version to dataset root dir
+visnir.exp.file = path(dir, "ossl_visnir_v1.3")
+readr::write_csv(hsdos.visnir.proc, str_c(visnir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(hsdos.visnir.proc, str_c(visnir.exp.file, ".parquet"))
 ```
 
 ### Quality control for Vis-NIR
 
 The final table must be joined as follows:
 
-- Vis-NIR is used as first reference for left join.
-- Then it is left joined with the site and soil lab data. This drop data
+- VisNIR is used as first reference for pairing with soil data.
+- Site and soil lab data are left joined to VisNIR. This drop data
   without any available scan.
 
 The availability of data is summarized below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
-hsdos.availability <- hsdos.visnir.export %>%
-  select(id.layer_local_c, scan_visnir.600_ref) %>%
-  left_join({hsdos.metadata %>%
-      rename(id.layer_local_c = SAMPLE_TDR_ID) %>%
-      select(id.layer_local_c, LAT_WGS84, SOM, pH_KCl)}, by = "id.layer_local_c") %>%
+hsdos.availability <- hsdos.visnir.proc %>%
+  select(id.layer_local_c, scan_visnir.800_ref) %>%
+  left_join(hsdos.soildata, by = "id.layer_local_c") %>%
   filter(!is.na(id.layer_local_c))
 
 # Availability of information summary
@@ -425,14 +448,18 @@ hsdos.availability %>%
   summarise(count = n())
 ```
 
-    # A tibble: 5 × 2
-      column              count
-      <chr>               <int>
-    1 LAT_WGS84            5490
-    2 SOM                  5490
-    3 id.layer_local_c     5490
-    4 pH_KCl               5490
-    5 scan_visnir.600_ref  5490
+    # A tibble: 9 × 2
+      column                 count
+      <chr>                  <int>
+    1 caco3_iso.10693_w.pct   5490
+    2 ec_iso.11265_ds.m       5490
+    3 id.layer_local_c        5490
+    4 k.ext_msz.20135_mg.kg   5490
+    5 n.tot_iso.11261_w.pct   5490
+    6 oc_wb1934_w.pct         5490
+    7 p.ext_msz.20135_mg.kg   5490
+    8 ph_kcl_iso.10390_index  5490
+    9 scan_visnir.800_ref     5490
 
 ``` r
 # Repeats check - Checking for duplicate SAMPLE_TDR_IDs
@@ -451,12 +478,11 @@ hsdos.availability %>%
       <chr>              <int> <int>
     1 id.layer_local_c       1  5490
 
-Soil analytical data summary for Vis-NIR. Note: many scans could not be
+Soil analytical data summary for Vis-NIR. Note: some scans may not be
 linked with the wetchem.
 
 ``` r
-hsdos.soildata %>%
-  filter(id.layer_local_c %in% hsdos.visnir.export$id.layer_local_c) %>%
+hsdos.availability %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
@@ -466,11 +492,11 @@ hsdos.soildata %>%
 |:-------------------------------------------------|:-----------|
 | Name                                             | Piped data |
 | Number of rows                                   | 5490       |
-| Number of columns                                | 8          |
+| Number of columns                                | 9          |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
 | Column type frequency:                           |            |
 | factor                                           | 1          |
-| numeric                                          | 7          |
+| numeric                                          | 8          |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
 | Group variables                                  | None       |
 
@@ -486,6 +512,7 @@ Data summary
 
 | skim_variable          | n_missing |   mean |     sd |   p0 |    p25 |    p50 |    p75 |    p100 |
 |:-----------------------|----------:|-------:|-------:|-----:|-------:|-------:|-------:|--------:|
+| scan_visnir.800_ref    |         0 |   0.35 |   0.11 | 0.12 |   0.26 |   0.34 |   0.44 |    0.96 |
 | ph_kcl_iso.10390_index |         0 |   7.36 |   0.85 | 4.18 |   6.84 |   7.62 |   7.94 |    9.93 |
 | oc_wb1934_w.pct        |         0 |   1.63 |   0.99 | 0.10 |   0.84 |   1.46 |   2.21 |    8.00 |
 | caco3_iso.10693_w.pct  |         0 |   7.81 |  10.16 | 0.00 |   0.00 |   3.60 |  13.00 |   90.00 |
@@ -498,7 +525,7 @@ Vis-NIR spectral visualization (100 random spectra):
 
 ``` r
 set.seed(42)
-hsdos.visnir.export %>%
+hsdos.visnir.proc %>%
   sample_n(100) %>%
   select(all_of(c("id.layer_local_c")), starts_with("scan_visnir.")) %>%
   tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
@@ -520,16 +547,16 @@ hsdos.visnir.export %>%
 toc()
 ```
 
-    2.907 sec elapsed
+    21.52 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-              used  (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
-    Ncells 4421248 236.2    6838175 365.2         NA  6838175 365.2
-    Vcells 7846474  59.9   66468344 507.2      24576 83085285 633.9
+               used  (Mb) gc trigger (Mb) max used  (Mb)
+    Ncells  6407889 342.3   11459205  612 10048994 536.7
+    Vcells 11079259  84.6   50324058  384 62904875 480.0
 
 ## References
 

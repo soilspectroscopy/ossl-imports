@@ -1,8 +1,10 @@
-table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
-HSDOS_SSL_ver1.1.csv,pH_KCl,NA,ph_kcl,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph_kcl_iso.10390_index
-HSDOS_SSL_ver1.1.csv,SOM,%,oc,wb1934,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_wb1934_w.pct
-HSDOS_SSL_ver1.1.csv,CaCO3,%,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",caco3_iso.10693_w.pct
-HSDOS_SSL_ver1.1.csv,TSC,w/w %,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 25)",ec_iso.11265_ds.m
-HSDOS_SSL_ver1.1.csv,TN,mg/kg,n.tot,iso.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10000)",n.tot_iso.11261_w.pct
-HSDOS_SSL_ver1.1.csv,P2O5_AL,mg/kg,p.ext,msz.20135,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_msz.20135_mg.kg
-HSDOS_SSL_ver1.1.csv,K2O_AL,mg/kg,k.ext,msz.20135,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_msz.20135_mg.kg
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+HSDOS_SSL_ver1.1.csv,id.layer_local_c,NA,NA,NA,NA,NA,NA,NA,NA,NA
+HSDOS_SSL_ver1.1.csv,pH_KCl,TRUE,NA,Potentiometer (MSZ–08 0206-2: 1978),soil: kcl = 1:2.5,ph_kcl,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph_kcl_iso.10390_index
+HSDOS_SSL_ver1.1.csv,SOM,TRUE,%,E4/E6 ratio (MSZ–08-0452:1980),Modified Walkley–Black method,oc,wb1934,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_wb1934_w.pct
+HSDOS_SSL_ver1.1.csv,CaCO3,TRUE,%,Scheibler type calcimeter (MSZ–08 02062:1978),MSZ-08-0206-2:1978 has been verified to be technically identical to the international standard (ISO 10693).,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",caco3_iso.10693_w.pct
+HSDOS_SSL_ver1.1.csv,TSC,TRUE,w/w %,EC-TDS electrode (MSZ–08-0206-2:1978),TDS ≈ EC x 0.64,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 25)",ec_iso.11265_ds.m
+HSDOS_SSL_ver1.1.csv,TN,TRUE,mg/kg,Kjeldahl method (ISO 11261:1995),NA,n.tot,iso.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) / 10000)",n.tot_iso.11261_w.pct
+HSDOS_SSL_ver1.1.csv,P2O5_AL,TRUE,mg/kg,AL extract atomic adsorption  spectrophotometry (MSZ 20135:1999),NA,p.ext,msz.20135,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_msz.20135_mg.kg
+HSDOS_SSL_ver1.1.csv,K2O_AL,TRUE,mg/kg,"AL extract, flame photometer (MSZ  20135:1999)",NA,k.ext,msz.20135,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_msz.20135_mg.kg
+HSDOS_SSL_ver1.1.csv,PLI,NA,NA,Yarn test of Arany (MSZ–08 0205-2:1978),Plasticity index according to Hungarian standard,NA,NA,NA,NA,NA
