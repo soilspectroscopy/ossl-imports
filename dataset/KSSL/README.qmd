@@ -9,8 +9,6 @@ author:
     email: tom.hengl@opengeohub.org
   - name: Jonathan Sanderman
     email: jsanderman@woodwellclimate.org
-date: last-modified
-date-format: "--- DD MMMM, YYYY."
 format: 
   gfm:
     toc: true

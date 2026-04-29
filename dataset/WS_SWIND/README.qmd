@@ -1,5 +1,5 @@
 ---
-title: "Southwestern India dataset preparation for the OSSL"
+title: "Dataset from Watersheds of Southwestern India for the OSSL"
 author: 
   - name: Ran Zhi
     email: rzhi@woodwellclimate.org
@@ -7,9 +7,6 @@ author:
     email: jsafanelli@woodwellclimate.org
   - name: Jonathan Sanderman
     email: jsanderman@woodwellclimate.org
-
-date: last-modified
-date-format: "--- DD MMMM, YYYY."
 format: 
   gfm:
     toc: true
@@ -25,9 +22,9 @@ editor:
     wrap: 72
 ---
 
-Code repository for preparing and importing the Southwestern India dataset into the Open Soil Spectral Library.
+Code repository for preparing and importing the Southwestern India (WS_SWIND) dataset into the Open Soil Spectral Library.
 
-Project: [Soil Spectroscopy for Global
+Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)\
 Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\

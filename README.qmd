@@ -22,7 +22,6 @@ editor:
 
 This is a repository for the **INTERNAL** data import development of the [Soil Spectroscopy for Global Good](https://soilspectroscopy.org) project to compile the **Open Soil Spectral Library**.
 
-
 Full documentation is available in the [OSSL Manual](https://docs.soilspectroscopy.org/).
 
 For internal development only:  

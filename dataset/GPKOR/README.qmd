@@ -7,8 +7,6 @@ author:
     email: jsafanelli@woodwellclimate.org
   - name: Jonathan Sanderman
     email: jsanderman@woodwellclimate.org
-date: last-modified
-date-format: "--- DD MMMM, YYYY."
 format: 
   gfm:
     toc: true
@@ -24,15 +22,15 @@ editor:
     wrap: 72
 ---
 
-Code repository for preparing and importing the Korean NIR Soil Spectral Dataset into the Open Soil Spectral Library.
+Code repository for preparing and importing the Gyeonggi Province, South  Korea, NIR Soil Spectral Dataset (GPKOR) into the Open Soil Spectral Library.
 
-Project: [Soil Spectroscopy for Global
+Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)\
 Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The Korean original data
+## The GPKOR original data
 
 Site data, Soil lab data, and Near-Infrared (NIR) data from Gyeonggi Province, South  Korea. Further information of the dataset can be found in detail at @bae_spatially_2026.
 

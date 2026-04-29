@@ -19,9 +19,6 @@ author:
     email: anna.ladenberger@sgu.se
   - name: Philippe Negrel, French Geological Survey (BRGM)
     email: p.negrel@brgm.fr
-
-date: last-modified
-date-format: "--- DD MMMM, YYYY."
 format: 
   gfm:
     toc: true
@@ -39,7 +36,7 @@ editor:
 
 Code repository for preparing and importing the Geochemical Mapping of Agricultural and Grazing Land Soil (GEMAS) dataset into the Open Soil Spectral Library.
 
-Project: [Soil Spectroscopy for Global
+Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)\
 Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\

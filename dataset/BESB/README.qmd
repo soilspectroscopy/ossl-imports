@@ -1,5 +1,5 @@
 ---
-title: "BESB dataset preparation for the OSSL"
+title: "Brazilian Soil Spectral Library (BESB) preparation for the OSSL"
 author: 
   - name: Ran Zhi
     email: rzhi@woodwellclimate.org
@@ -7,8 +7,6 @@ author:
     email: jsafanelli@woodwellclimate.org
   - name: Jonathan Sanderman
     email: jsanderman@woodwellclimate.org
-date: last-modified
-date-format: "--- DD MMMM, YYYY."
 format: 
   gfm:
     toc: true
@@ -25,29 +23,28 @@ editor:
 ---
 
 Code repository for preparing and importing the Brazilian Soil Spectral
-Library (BSSL) dataset into the Open Soil Spectral Library.
+Library (BESB) into the Open Soil Spectral Library.
 
-Project: [Soil Spectroscopy for Global
+Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)\
 Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The BSSL original data
+## The BESB data
 
 Site data, Soil lab data, Mid-Infrared Spectra (MIR), and Visible,
 Near-Infrared and Shortwave-Infrared (Vis-NIR-SWIR) from the Brazilian
-Soil Spectral Library (BSSL). Further information of the dataset can be
+Soil Spectral Library (BESB). Further information of the dataset can be
 found in detail at @dematte_brazilian_2019 and @dematte_brazilian_2022.
 
 Original files:\
 - `BSSL_DB_V002.xlsx`: xlsx file with site information, soil information, and spectral data.
 
 ```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
-packages <- c("tidyverse", "prospectr", "units", "readxl", "stringr",
-              "olctools", "openssl", "tmap", "sf", "skimr", "lubridate",
-              "googledrive", "googlesheets4", "data.table", "doMC", "tictoc",
-              "qs", "dplyr", "tidyr", "fs")
+packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
+              "googledrive", "googlesheets4", "tmap", "sf", "skimr",
+              "prospectr", "tictoc", "qs", "fs")
 
 invisible(lapply(packages, library, character.only = TRUE))
 
@@ -57,8 +54,8 @@ source("../../R/functions/SSL_functions.R")
 Directory/folder path with original files (not uploaded to GitHub).
 
 ```{r}
-dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/BESB"
-# dir = "~/projects/mnt-ossl/import/dataset/BESB"
+# dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/BESB"
+dir = "~/mnt-ossl-private/database/datasets/BESB"
 tic()
 ```
 
