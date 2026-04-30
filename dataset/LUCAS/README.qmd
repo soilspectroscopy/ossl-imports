@@ -1,5 +1,5 @@
 ---
-title: "LUCAS dataset preparation and import"
+title: "LUCAS dataset preparation for the OSSL"
 author: 
   - name: Jose L. Safanelli
     email: jsafanelli@woodwellclimate.org
@@ -9,13 +9,11 @@ author:
     email: tom.hengl@opengeohub.org
   - name: Jonathan Sanderman
     email: jsanderman@woodwellclimate.org
-date: last-modified
-date-format: "--- DD MMMM, YYYY."
 format: 
   gfm:
     toc: true
-    toc-depth: 2
-bibliography: ../../tex/refs.bib
+    toc-depth: 3
+bibliography: reference.bib
 csl: ../../tex/apa.csl
 cite-method: citeproc
 link-citations: true
@@ -26,4 +24,818 @@ editor:
     wrap: 72
 ---
 
-Code repository for preparing and importing the LUCAS database into the Open Soil Spectral Library.
+Code repository for preparing and importing the Brazilian Soil Spectral
+Library (lucas) into the Open Soil Spectral Library.
+
+Website: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)\
+Development: <https://github.com/soilspectroscopy>\
+Last update: `r Sys.Date()`\
+Additional documentation:
+
+## The LUCAS data
+
+Soil samples from the LUCAS (Land Use/Cover Area frame statistical Survey) of 23-28 European Union member states collected between 2009 and 2015 were scanned for VisNIR (@Stevens2013, @Nocita2014).
+
+The LUCAS topsoil data (@Orgiazzi2017) used in this work was made available by the European Commission through the European Soil Data Centre managed by the [Joint Research Centre (JRC)](http://esdac.jrc.ec.europa.eu/).
+
+JRC has a restrictive license for redistribution, but permission was granted to share it through the OSSL under the condition that “Graphical representation of individual units on a map is permitted as far as the geographical location of the soil samples is not detectable”.
+
+Additional 600 samples from the LUCAS soil samples archive were scanned at Woodwell Climate Research Center using a MIR instrument @Dangal2020.
+
+Input datasets:
+
+- `LUCAS.SOIL_corr.Rdata`: VNIR spectra.
+- `LUCAS_Topsoil_2009_ESPG4326.csv`: Site and soil from 2009.
+- `LUCAS_spectra_2015.rds`: VNIR from 2015.
+- `LUCAS_Topsoil_complete_2015_ESPG4326.csv`: Site and soil from 2015.
+
+```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
+packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
+              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
+              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
+
+invisible(lapply(packages, library, character.only = TRUE))
+
+source("../../R/functions/SSL_functions.R")
+gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
+```
+
+Directory/folder path with original files (not uploaded to GitHub).
+
+```{r dir_ref}
+dir = "~/mnt-ossl-private/database/datasets/LUCAS"
+tic()
+```
+
+## Data standardization to the OSSL format
+
+### Site information
+
+```{r soilsite}
+# Data from 2009-2012 survey
+gpkg.lst <- list.files(dir, glob2rx("SoilAttr_*.gpkg$"), full.names = TRUE)
+
+lucas.2009 <- lapply(gpkg.lst, function(i){
+  sf::st_read(i) %>%
+    dplyr::mutate(lon = sf::st_coordinates(.)[,1],
+                  lat = sf::st_coordinates(.)[,2]) %>%
+    dplyr::as_tibble(.) %>%
+    dplyr::select(-geom)})
+
+lucas.2009 <- Reduce(dplyr::bind_rows, lucas.2009) %>%
+  select(POINT_ID, lon, lat, Country) %>%
+  mutate(POINT_ID = paste0("2009.", POINT_ID)) %>%
+  rename(id.layer_local_c = POINT_ID,
+         longitude.point_wgs84_dd = lon,
+         latitude.point_wgs84_dd = lat,
+         loc.country_src_txt = Country) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  mutate(layer.upper.depth_usda_cm = 0,
+         layer.lower.depth_usda_cm = 20,
+         observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2009-05-01"),
+         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2012-08-01"))
+
+# Data from 2015 survey
+lucas.2015.x1 <- fread(path(dir, "/LUCAS_Topsoil_complete_2015_ESPG4326.csv"))
+
+# lucas.2015 <- sf::st_read(path(dir, "/LUCAS_2015.gpkg")) %>%
+#   dplyr::mutate(lon = sf::st_coordinates(.)[,1],
+#                 lat = sf::st_coordinates(.)[,2]) %>%
+#   dplyr::as_tibble(.) %>%
+#   dplyr::select(-geom)
+
+lucas.2015 <- lucas.2015.x1 %>%
+  select(Point_ID, xcoord, ycoord, ADMIN, LC0_Desc) %>%
+  mutate(Point_ID = paste0("2015.", Point_ID)) %>%
+  rename(id.layer_local_c = Point_ID,
+         longitude.point_wgs84_dd = xcoord,
+         latitude.point_wgs84_dd = ycoord,
+         loc.country_src_txt = ADMIN,
+         site.landuse_src_txt = LC0_Desc) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  mutate(layer.upper.depth_usda_cm = 0,
+         layer.lower.depth_usda_cm = 20,
+         observation.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2015-03-01"),
+         observation.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2015-10-01"))
+
+# Binding datasets
+# Degrade location accuracy +/-1000m so we can share the points
+lucas.sitedata <- bind_rows(lucas.2009, lucas.2015) %>% 
+  mutate(longitude.point_wgs84_dd = longitude.point_wgs84_dd + rnorm(n(), 0, 0.005),
+         latitude.point_wgs84_dd = latitude.point_wgs84_dd + rnorm(n(), 0, 0.005)) %>% 
+  # mutate(id.project_ascii_txt = "Land Use and Coverage Area frame Survey (LUCAS) topsoil data",
+  #        id.dataset.site_ascii_txt = str_sub(id.layer_local_c, 6, -1),
+  #        layer.texture_usda_txt = "",
+  #        pedon.taxa_usda_txt = "",
+  #        horizon.designation_usda_txt = "",
+  #        longitude.county_wgs84_dd = NA,
+  #        latitude.county_wgs84_dd = NA,
+  #        location.point.error_any_m = 1000,
+  #        location.country_iso.3166_txt = "",
+  #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+  #        observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+  #        surveyor.title_utf8_txt = "Institute for Environment and Sustainability (Joint Research Centre)",
+  #        surveyor.contact_ietf_email = "ec-esdac@jrc.ec.europa.eu",
+  #        surveyor.address_utf8_txt = "",
+  #        dataset.title_utf8_txt = "LUCAS 2009, 2015 topsoil data",
+  #        dataset.owner_utf8_txt = "European Soil Data Centre (ESDAC), European Commission, Joint Research Centre",
+  #        dataset.code_ascii_txt = "LUCAS.SSL",
+  #        dataset.address_idn_url = "https://esdac.jrc.ec.europa.eu/resource-type/soil-point-data",
+  #        dataset.license.title_ascii_txt = "JRC License Agreement",
+  #        dataset.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/resource-type/soil-point-data",
+  #        dataset.contact.name_utf8_txt = "ESDAC - European Commissiony",
+  #        dataset.contact_ietf_email = "ec-esdac@jrc.ec.europa.eu") %>%
+  mutate(dataset.code_ascii_txt = "LUCAS",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1)
+
+# Removing duplicates
+lucas.sitedata %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  group_by(repeats) %>%
+  summarise(count = n())
+
+dupli.ids <- lucas.sitedata %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(id.layer_local_c)
+
+lucas.sitedata <- lucas.sitedata %>%
+  filter(!(id.layer_local_c %in% dupli.ids)) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Saving version to dataset root dir
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(lucas.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(lucas.sitedata, str_c(site.exp.file, ".parquet"))
+```
+
+Plotting sites map:
+```{r map, include=TRUE, echo=TRUE, eval=TRUE}
+data("World")
+
+ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+
+points <- lucas.sitedata %>%
+  filter(!is.na(longitude.point_wgs84_dd),
+         !is.na(latitude.point_wgs84_dd)) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+
+tmap_mode("plot")
+
+tm_shape(ocean) +
+  tm_polygons(fill = "lightblue", col = NA) +
+  tm_shape(World) +
+  tm_polygons('#f0f0f0f0', col_alpha = 0.2) +
+  tm_shape(points) +
+  tm_dots(size = 0.10, fill = "firebrick") +
+  tm_crs("ESRI:54030") +
+  tm_layout(frame = FALSE)
+```
+
+### Soil lab information (reference analytical data)
+
+NOTE: The code chunk below must be run just once for getting a template
+for scripted column standardization. Just run once for getting the
+original names of soil properties, descriptions, data types, and units.
+Then upload to Google Sheet for editing and manually defining the rules
+for integrating with the OSSL. Requires Google authentication. A copy of
+the output file is saved to this folder for archiving purposes.
+
+**Always leave the sheet name as TEMP to avoid overwriting, then rename online to download locally.**
+
+```{r soil_template, echo=TRUE, eval=FALSE}
+gpkg.lst = list.files(dir, glob2rx("SoilAttr_*.gpkg$"), full.names = TRUE)
+lucas.2009 = lapply(gpkg.lst, function(i){sf::st_read(i) %>% dplyr::as_tibble(.) %>% dplyr::select(-geom)})
+lucas.2009 = Reduce(dplyr::bind_rows, lucas.2009)
+
+lucas.2015 = fread(paste0(dir, "/LUCAS_Topsoil_2015_20200323.csv"))
+
+soillab.names <- lucas.2009 %>%
+  names(.) %>%
+  tibble::tibble(original_name = .) %>%
+  dplyr::mutate(table = 'LUCAS 2009/2012; SoilAttr_*.gpkg', .before = 1) %>%
+  dplyr::bind_rows({
+    lucas.2015 %>%
+      names(.) %>%
+      tibble::tibble(original_name = .) %>%
+      dplyr::mutate(table = 'LUCAS_Topsoil_2015.csv', .before = 1)
+  }) %>%
+  dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>%
+  dplyr::mutate(comment = '')
+
+readr::write_csv(soillab.names, paste0(getwd(), "/lucas_soillab_names.csv"))
+
+# Uploading to google sheet
+
+# Drive 'Open Soil Spectral Library'
+# Folder 'Database v2'
+googledrive::drive_ls(as_id("1l9VM4fFks2xBloDE69EFTfPgQeFx5aGw"))
+
+# Use the ID of the file 'OSSL_v2_tab2_soildata_importing'
+OSSL.soildata.importing <- "1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es"
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+
+# Checking readme
+googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
+
+# Preparing soillab.names for this dataset
+upload <- dplyr::as_tibble(soillab.names)
+
+# Uploading with TEMP name. Check online, move to sequence, and update name
+googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP")
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+```
+
+NOTE: The code chunk below must be run just once. Run for getting the
+column standardization rules after editing online on Google Sheets. A
+copy of the edited standardization template is saved to this dataset folder.
+
+```{r soilab_download, echo=TRUE, eval=FALSE}
+# Downloading from google sheet
+
+# Checking metadata
+googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
+
+# Preparing soillab.names
+transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
+                                         sheet = "LUCAS")
+
+# Saving to folder
+write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
+```
+
+Reading standardization rules:
+
+```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
+                        show_col_types = F) %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+
+knitr::kable(transvalues)
+```
+
+Standardizing soil data to the OSSL format:
+
+```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+# Data from 2009-2012 survey
+gpkg.lst <- list.files(dir, glob2rx("SoilAttr_*.gpkg$"), full.names = TRUE)
+
+lucas.2009 <- lapply(gpkg.lst, function(i){
+  sf::st_read(i) %>%
+    dplyr::as_tibble(.) %>%
+    dplyr::select(-geom)})
+
+lucas.2009 <- Reduce(dplyr::bind_rows, lucas.2009) %>%
+  mutate(POINT_ID = paste0("2009.", POINT_ID))
+
+# Harmonization of names and units
+# 2009 analyte selection and names
+analytes.2009.old.names <- transvalues %>%
+  filter(table == "LUCAS 2009/2012; SoilAttr_*.gpkg") %>%
+  filter(original_name != "POINT_ID") %>%
+  pull(original_name)
+
+analytes.2009.new.names <- transvalues %>%
+  filter(table == "LUCAS 2009/2012; SoilAttr_*.gpkg") %>%
+  filter(original_name != "POINT_ID") %>%
+  pull(ossl_name)
+
+# Selecting and renaming
+lucas.2009 <- lucas.2009 %>%
+  rename(id.layer_local_c = POINT_ID) %>%
+  select(id.layer_local_c, all_of(analytes.2009.old.names)) %>%
+  rename_with(~analytes.2009.new.names, all_of(analytes.2009.old.names))
+
+# Removing duplicates
+# lucas.2009 %>%
+#   group_by(id.layer_local_c) %>%
+#   summarise(repeats = n()) %>%
+#   group_by(repeats) %>%
+#   summarise(count = n())
+
+dupli.ids.2009 <- lucas.2009 %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(id.layer_local_c)
+
+lucas.2009 <- lucas.2009 %>%
+  filter(!(id.layer_local_c %in% dupli.ids.2009)) %>%
+  as.data.frame()
+
+# Getting the formulas
+functions.list <- transvalues %>%
+  filter(table == "LUCAS 2009/2012; SoilAttr_*.gpkg") %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(lucas.2009))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+lucas.2009.trans <- transform_values(df = lucas.2009,
+                                     out.name = names(lucas.2009),
+                                     in.name = names(lucas.2009),
+                                     fun.lst = functions.list)
+
+# Data from 2015 survey
+lucas.2015 = fread(path(dir, "/LUCAS_Topsoil_2015_20200323.csv")) %>%
+  mutate(Point_ID = paste0("2015.", Point_ID))
+
+# Harmonization of names and units
+# 2015 analyte selection and names
+analytes.2015.old.names <- transvalues %>%
+  filter(table == "LUCAS_Topsoil_2015.csv") %>%
+  filter(original_name != "POINT_ID") %>%
+  pull(original_name)
+
+analytes.2015.new.names <- transvalues %>%
+  filter(table == "LUCAS_Topsoil_2015.csv") %>%
+  filter(original_name != "POINT_ID") %>%
+  pull(ossl_name)
+
+# Selecting and renaming
+lucas.2015 <- lucas.2015 %>%
+  rename(id.layer_local_c = Point_ID) %>%
+  select(id.layer_local_c, all_of(analytes.2015.old.names)) %>%
+  rename_with(~analytes.2015.new.names, all_of(analytes.2015.old.names))
+
+# Removing duplicates
+# lucas.2015 %>%
+#   group_by(id.layer_local_c) %>%
+#   summarise(repeats = n()) %>%
+#   group_by(repeats) %>%
+#   summarise(count = n())
+
+dupli.ids.2015 <- lucas.2015 %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(id.layer_local_c)
+
+lucas.2015 <- lucas.2015 %>%
+  filter(!(id.layer_local_c %in% dupli.ids.2015)) %>%
+  as.data.frame()
+
+# Getting the formulas
+functions.list <- transvalues %>%
+  filter(table == "LUCAS_Topsoil_2015.csv") %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(lucas.2015))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+lucas.2015.trans <- transform_values(df = lucas.2015,
+                                     out.name = names(lucas.2015),
+                                     in.name = names(lucas.2015),
+                                     fun.lst = functions.list)
+
+# Final soillab data
+lucas.soildata <- bind_rows(lucas.2009.trans, lucas.2015.trans) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Checking total number of observations
+lucas.soildata %>%
+  distinct(id.layer_local_c) %>%
+  summarise(count = n())
+  
+# Saving version to dataset root dir
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(lucas.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(lucas.soildata, str_c(soillab.exp.file, ".parquet"))
+```
+
+Soil lab data summary.
+```{r summary, include=TRUE, echo=TRUE, eval=TRUE}
+lucas.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+### VisNIR spectra
+
+VNIR spectra is stored in absorbacen units, need to transform to reflectance. Also, splice correction at 
+
+```{r visnir, include=TRUE, echo=TRUE, eval=TRUE}
+# Spectra from 2009/2012
+load(path(dir, "LUCAS.SOIL_corr.Rdata"))
+
+visnir.scans.2009 <- LUCAS.SOIL$spc
+
+lucas.2009.keys <- LUCAS.SOIL %>%
+  select(ID, POINT_ID) %>%
+  rename(id.scan_local_c = ID, id.layer_local_c = POINT_ID)
+
+visnir.scans.2009 <- visnir.scans.2009 %>%
+  rownames_to_column(var = "id.scan_local_c") %>%
+  select(id.scan_local_c, any_of(as.character(seq(400, 2500, by = 0.5))))
+
+# Not interpolation to avoid smoothing the splice
+old.wavelength <- names(visnir.scans.2009)[-1]
+new.wavelength <- seq(400, 2500, by = 2)
+
+visnir.scans.2009 <- visnir.scans.2009 %>%
+  select(id.scan_local_c, any_of(as.character(new.wavelength)))
+# as.matrix() %>%
+# prospectr::resample(X = ., wav = old.wavelength, 
+#                     new.wav = new.wavelength, interpol = "spline") %>%
+# as_tibble() %>%
+# bind_cols({visnir.scans.2009 %>%
+#     select(id.scan_local_c)}, .)
+
+# # Metadata 2009/2012
+# visnir.metadata.2009 <- visnir.scans.2009 %>%
+#   select(id.scan_local_c) %>%
+#   mutate(scan.visnir.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2009-05-01"),
+#          scan.visnir.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2012-08-01")) %>%
+#   mutate(scan.visnir.license.title_ascii_txt = "JRC License Agreement",
+#          scan.visnir.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/content/lucas-2009-topsoil-data",
+#          scan.visnir.doi_idf_url = "https://data.europa.eu/doi/10.2788/97922")
+
+# lucas.visnir.2009 <- left_join(visnir.metadata.2009, visnir.scans.2009, by = "id.scan_local_c") %>%
+#   left_join(lucas.2009.keys, ., by = "id.scan_local_c")
+
+lucas.visnir.2009 <- left_join(visnir.scans.2009, lucas.2009.keys, by = "id.scan_local_c")
+
+lucas.visnir.2009 <- lucas.visnir.2009 %>%
+  mutate(id.layer_local_c = paste0("2009.", id.layer_local_c)) %>%
+  relocate(id.layer_local_c, .before = 1)
+
+# Spectra from 2015
+visnir.scans.2015 <- readRDS(path(dir, "LUCAS_spectra_2015.rds"))
+
+visnir.scans.2015 <- visnir.scans.2015 %>%
+  select(PointID, any_of(as.character(seq(400, 2500, by = 0.5)))) %>%
+  rename(id.layer_local_c = PointID)
+
+old.wavelength <- names(visnir.scans.2015)[-1]
+new.wavelength <- seq(400, 2500, by = 2)
+
+# No interpolation needed
+visnir.scans.2015 <- visnir.scans.2015 %>%
+  select(id.layer_local_c, any_of(as.character(new.wavelength)))
+  # select(-id.layer_local_c) %>%
+  # as.matrix() %>%
+  # prospectr::resample(X = ., wav = old.wavelength,
+  #                     new.wav = new.wavelength, interpol = "spline") %>%
+  # as_tibble() %>%
+  # bind_cols({visnir.scans.2015 %>%
+  #     select(id.layer_local_c)}, .)
+
+# visnir.scans.2015 <- visnir.scans.2015 %>%
+#   group_by(id.layer_local_c) %>%
+#   summarise_all(mean)
+
+visnir.scans.2015 <- visnir.scans.2015 %>%
+  mutate(across(-id.layer_local_c, ~as.numeric(.x)))
+
+visnir.scans.2015 <- visnir.scans.2015[, lapply(.SD, mean), by = id.layer_local_c]
+
+# visnir.metadata.2015 <- visnir.scans.2015 %>%
+#   select(id.layer_local_c) %>%
+#   mutate(scan.visnir.date.begin_iso.8601_yyyy.mm.dd = lubridate::ymd("2015-03-01"),
+#          scan.visnir.date.end_iso.8601_yyyy.mm.dd = lubridate::ymd("2015-12-01")) %>%
+#   mutate(scan.visnir.license.title_ascii_txt = "JRC License Agreement",
+#          scan.visnir.license.address_idn_url = "https://esdac.jrc.ec.europa.eu/content/lucas-2015-topsoil-data",
+#          scan.visnir.doi_idf_url = "https://data.europa.eu/doi/10.2760/616084")
+# 
+# lucas.visnir.2015 <- left_join(visnir.metadata.2015, visnir.scans.2015, by = "id.layer_local_c")
+
+lucas.visnir.2015 <- visnir.scans.2015 %>%
+  mutate(id.scan_local_c = as.character(id.layer_local_c), .after = id.layer_local_c) %>%
+  mutate(id.layer_local_c = paste0("2015.", id.layer_local_c))
+
+# Binding both spectra
+# lucas.visnir <- bind_rows(lucas.visnir.2009, lucas.visnir.2015) %>%
+#   mutate(id.scan_local_c = id.layer_local_c, .after = id.layer_local_c) %>%
+#   mutate(scan.visnir.model.name_utf8_txt = "Metrohm NIRS XDS RapidContent Analyzer",
+#          scan.visnir.model.code_any_txt = "Metrohm_NIRS_XDS_RapidContent_Analyzer",
+#          scan.visnir.method.optics_any_txt = "",
+#          scan.visnir.method.preparation_any_txt = "Sieved <2 mm",
+#          scan.visnir.contact.name_utf8_txt = "ESDAC - European Commission",
+#          scan.visnir.contact.email_ietf_txt = "ec-esdac@jrc.ec.europa.eu",
+#          .after = scan.visnir.doi_idf_url)
+
+# Padding and reflectance transform
+lucas.visnir <- bind_rows(lucas.visnir.2009, lucas.visnir.2015)
+
+lucas.visnir <- lucas.visnir %>%
+  mutate(`2500` = `2498`)
+
+lucas.visnir <- lucas.visnir %>%
+  mutate(across(all_of(as.character(new.wavelength)), ~1/10^(.x)))
+
+# Splice correction
+lucas.visnir <- lucas.visnir %>%
+  select(-starts_with("id")) %>%
+  as.matrix() %>%
+  spliceCorrection(wav = new.wavelength,
+                   splice = c(1098), interpol.bands = 10) %>%
+  as_tibble() %>%
+  bind_cols({lucas.visnir %>%
+      select(starts_with("id"))}, .)
+
+# Spectral consistency analysis
+
+# Gaps
+scans.na.gaps <- lucas.visnir %>%
+  dplyr::select(all_of(as.character(new.wavelength))) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({lucas.visnir %>% select(id.scan_local_c)}, .)
+
+# Extreme negative
+scans.extreme.neg <- lucas.visnir %>%
+  select(all_of(as.character(new.wavelength))) %>%
+  apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({lucas.visnir %>% select(id.scan_local_c)}, .)
+
+# Extreme positive
+scans.extreme.pos <- lucas.visnir %>%
+  select(all_of(as.character(new.wavelength))) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherRef1 = .) %>%
+  bind_cols({lucas.visnir %>% select(id.scan_local_c)}, .)
+
+# Consistency summary
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.scan_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.scan_local_c")
+
+scans.summary %>%
+  select(-id.scan_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+
+# Renaming and exporting
+old.wavelength <- as.character(seq(400, 2500, by = 2))
+new.wavelength <- paste0("scan_visnir.", old.wavelength, "_ref")
+
+lucas.visnir <- lucas.visnir %>%
+  rename_with(~new.wavelength, all_of(as.character(old.wavelength)))
+
+lucas.visnir.export <- lucas.visnir %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Saving version to dataset root dir
+visnir.exp.file = path(dir, "ossl_visnir_v1.3")
+readr::write_csv(lucas.visnir.export, str_c(visnir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(lucas.visnir.export, str_c(visnir.exp.file, ".parquet"))
+```
+
+### Quality control for Vis-NIR
+
+The final table must be joined as follows:
+
+- VisNIR is used as first reference for pairing with soil data.
+- Site and soil lab data are left joined to VisNIR. This drop data without any available scan.
+
+The availability of data is summarized below:
+```{r bind_test_visnir, include=TRUE, echo=TRUE, eval=TRUE}
+# Taking a few representative columns for checking the consistency of joins
+lucas.availability <- lucas.visnir.export %>%
+  select(id.layer_local_c, scan_visnir.600_ref) %>%
+  left_join(lucas.soildata, by = "id.layer_local_c")
+
+# Availability of information from lucas
+lucas.availability %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
+```
+
+Soil analytical data summary for Vis-NIR. Note: many scans could not be linked with the wetchem.
+```{r summary_visnir, include=TRUE, echo=TRUE, eval=TRUE}
+lucas.availability %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+Vis-NIR spectral visualization (100 random spectra):
+```{r visnir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+set.seed(42)
+lucas.visnir.export %>%
+  sample_n(100) %>%
+  pivot_longer(starts_with("scan_visnir."),
+               names_to = "wavelength", values_to = "intensity") %>%
+  mutate(wavelength = gsub("scan_visnir.|_ref", "", wavelength)) %>%
+  mutate(wavelength = as.numeric(wavelength),
+         intensity = as.numeric(intensity)) %>%
+  ggplot(aes(x = wavelength, y = intensity, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1, color = "darkblue") +
+  # scale_x_continuous(breaks = seq(350, 2500, by = 250))+
+  labs(title = "VisNIR Spectra (100 random scans)",
+       x = "Wavelength (nm)",
+       y = "Reflectance") +
+  theme_light()
+```
+
+### Mid-infrared spectra (MIR)
+
+MIR is stored in reflectance units, so we transform to absorbance.
+```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
+# Floating wavenumbers
+mir.scans <- fread(path(dir, "LUCAS_Woodwell.csv"), header = TRUE)
+
+# Need to resample spectra
+old.wavenumber <- na.omit(as.numeric(names(mir.scans)))
+new.wavenumbers <- rev(seq(628, 4000, by = 2))
+
+lucas.mir <- mir.scans %>%
+  select(POINT_ID, all_of(as.character(old.wavenumber))) %>%
+  rename(id.layer_local_c = POINT_ID) %>%
+  mutate(id.layer_local_c = paste0("2009.", id.layer_local_c))
+
+lucas.mir <- lucas.mir %>%
+  select(-id.layer_local_c) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = old.wavenumber,
+                      new.wav = new.wavenumbers, interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({lucas.mir %>%
+      select(id.layer_local_c)}, .) %>%
+  select(id.layer_local_c, as.character(rev(new.wavenumbers))) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
+
+# Checking duplicates
+dupli.ids <- lucas.mir %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  filter(repeats > 1) %>%
+  pull(id.layer_local_c)
+
+lucas.mir <- lucas.mir %>%
+  filter(!(id.layer_local_c %in% dupli.ids)) %>%
+  as_tibble()
+
+# Spectral consistency analysis
+
+# Gaps
+scans.na.gaps <- lucas.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({lucas.mir %>% select(id.layer_local_c)}, .)
+
+# Extreme negative - irreversible erratic patterns
+scans.extreme.neg <- lucas.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({lucas.mir %>% select(id.layer_local_c)}, .)
+
+# Extreme positive, irreversible erratic patterns
+scans.extreme.pos <- lucas.mir %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 3.5, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols({lucas.mir %>% select(id.layer_local_c)}, .)
+
+# Consistency summary - problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.layer_local_c")
+
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+
+# # These few scans with extreme values are filled with interpolation
+# target.wavenumbers <- seq(600, 4000, by = 2)
+# 
+# lucas.mir.clean <- lucas.mir %>%
+#   pivot_longer(-id.layer_local_c, names_to = "wavenumber", values_to = "absorbance") %>%
+#   mutate(absorbance = ifelse(absorbance > 3.5, NA, absorbance)) %>%
+#   group_by(id.layer_local_c) %>%
+#   mutate(absorbance = approx(wavenumber, absorbance, target.wavenumbers)$y) %>%
+#   pivot_wider(names_from = "wavenumber", values_from = "absorbance")
+
+# Renaming
+new.wavenumbers.names <- paste0("scan_mir.", new.wavenumbers, "_abs")
+
+lucas.mir <- lucas.mir %>%
+  rename_with(~new.wavenumbers.names, as.character(new.wavenumbers))
+
+# # Preparing metadata
+# lucas.mir.metadata <- mir.scans %>%
+#   select(POINT_ID, WHRC_ID, run_date) %>%
+#   rename(id.layer_local_c = POINT_ID, id.scan_local_c = WHRC_ID,
+#          scan.mir.date.begin_iso.8601_yyyy.mm.dd = run_date) %>%
+#   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+#   mutate(id.layer_local_c = paste0("2009.", id.layer_local_c),
+#          scan.mir.date.begin_iso.8601_yyyy.mm.dd = dmy(scan.mir.date.begin_iso.8601_yyyy.mm.dd)) %>%
+#   filter(!(id.layer_local_c %in% dupli.ids)) %>%
+#   mutate(dataset.code_ascii_txt = "LUCAS.WOODWELL.SSL",
+#          scan.mir.date.end_iso.8601_yyyy.mm.dd = scan.mir.date.begin_iso.8601_yyyy.mm.dd,
+#          scan.mir.model.name_utf8_txt = "Bruker Vertex 70 with with PikeAutoDiff accessory",
+#          scan.mir.model.code_any_txt = "Bruker_Vertex_70.PikeAutoDiff",
+#          scan.mir.method.optics_any_txt = "KBr beamsplitter; Gold mirror; Mirror background",
+#          scan.mir.method.preparation_any_txt = "",
+#          scan.mir.license.title_ascii_txt = "CC-BY",
+#          scan.mir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
+#          scan.mir.doi_idf_url = "https://doi.org/10.3390/s20236729",
+#          scan.mir.contact.name_utf8_txt = "Jonathan Sanderman",
+#          scan.mir.contact.email_ietf_txt = "jsanderman@woodwellclimate.org")
+
+# Final preparation
+# lucas.mir.export <- lucas.mir.metadata %>%
+#   left_join(lucas.mir, by = "id.layer_local_c") %>%
+#   mutate_at(vars(starts_with("id.")), as.character)
+
+lucas.mir.export <- lucas.mir %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Saving version to dataset root dir
+mir.exp.file = path(dir, "ossl_mir_v1.3")
+readr::write_csv(lucas.mir.export, str_c(mir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(lucas.mir.export, str_c(mir.exp.file, ".parquet"))
+```
+
+### Quality control for MIR
+
+The final table must be joined as follows:
+
+- MIR is used as first reference for pairing with soil data.
+- Soil lab data are left joined to MIR. This drop data without any available scan.
+
+The availability of data is summarized below:
+```{r bind_test_mir, include=TRUE, echo=TRUE, eval=TRUE}
+# Taking a few representative columns for checking the consistency of joins
+lucas.availability2 <- lucas.mir.export %>%
+  select(id.layer_local_c, scan_mir.1000_abs) %>%
+  left_join(lucas.soildata, by = "id.layer_local_c") %>%
+  filter(!is.na(id.layer_local_c))
+
+# Availability of information from lucas
+lucas.availability2 %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
+
+# Repeats check - Duplicates are dropped
+lucas.availability2 %>%
+  mutate_all(as.character) %>%
+  select(id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  group_by(column, value) %>%
+  summarise(repeats = n()) %>%
+  group_by(column, repeats) %>%
+  summarise(count = n())
+```
+
+Soil analytical data summary for MIR. Note: many scans could not be linked with the wetchem.
+```{r summary_mir, include=TRUE, echo=TRUE, eval=TRUE}
+lucas.availability2 %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+MIR spectral visualization (100 random spectra):
+```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+set.seed(42)
+lucas.mir.export %>%
+  sample_n(100) %>%
+  select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+                      names_to = "wavenumber", values_to = "reflectance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = reflectance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1, color = "darkblue") +
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000),
+                     transform = "reverse") +
+  labs(title = "MIR Spectra (100 random scans)",
+       x = bquote("Wavenumber"~(cm^-1)),
+       y = "Absorbance")+
+  theme_light()
+```
+
+```{r end}
+toc()
+rm(list = ls())
+gc()
+```
+
+## References
