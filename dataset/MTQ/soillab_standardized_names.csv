@@ -1,13 +1,15 @@
-table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
-SoilCarbonMartinique_v2.tab,SOCg (g/kg soil < 2 mm),g/kg,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",oc_iso.10694_w.pct
-SoilCarbonMartinique_v2.tab,Nt (g/kg soil < 2 mm),g/kg,n.tot,iso.13878,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",n.tot_iso.13878_w.pct
-SoilCarbonMartinique_v2.tab,Clay 0-0.002 mm (% soil < 2 mm),%,clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",clay.tot_iso.11277_w.pct
-SoilCarbonMartinique_v2.tab,Sand.total.new,NA,sand.tot,iso.11277,w.pct,"ifelse(as.numeric(Sand 0.5-2 mm (% soil < 2 mm)) < 0, NA, as.numeric(Sand 0.5-2 mm (% soil < 2 mm)) + as.numeric(Sand 0.2-0.5 mm (% soil < 2 mm)) + as.numeric(Sand 0.05-0.2 mm (% soil < 2 mm)))",sand.tot_iso.11277_w.pct
-SoilCarbonMartinique_v2.tab,Sand 0.5-2 mm (% soil < 2 mm),%,sand.m.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.m.temporary_iso.11277_w.pct
-SoilCarbonMartinique_v2.tab,Sand 0.2-0.5 mm (% soil < 2 mm),%,sand.f.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.f.temporary_iso.11277_w.pct
-SoilCarbonMartinique_v2.tab,Sand 0.05-0.2 mm (% soil < 2 mm),%,san.vf.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",san.vf.temporary_iso.11277_w.pct
-SoilCarbonMartinique_v2.tab,Silt.total.new,NA,silt.tot,iso.11277,w.pct,"ifelse(as.numeric(Silt 0.002-0.02 mm (% soil < 2 mm)) < 0, NA, as.numeric(Silt 0.002-0.02 mm (% soil < 2 mm)) + as.numeric(Silt 0.02-0.05 mm (% soil < 2 mm)))",silt.tot_iso.11277_w.pct
-SoilCarbonMartinique_v2.tab,Silt 0.02-0.05 mm (% soil < 2 mm),%,silt.c.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.c.temporary_iso.11277_w.pct
-SoilCarbonMartinique_v2.tab,Silt 0.002-0.02 mm (% soil < 2 mm),%,silt.f.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.f.temporary_iso.11277_w.pct
-SoilCarbonMartinique_v2.tab,Bulk density (kg total soil/dm3 total soil),kg/dm3,bd,iso.11277,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",bd_iso.11277_g.cm3
-SoilCarbonMartinique_v2.tab,Coarse particles > 2 mm (% total soil),%,cf,iso.11464,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cf_iso.11464_w.pct
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+SoilCarbonMartinique_v2.tab,id.layer_local_c,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SoilCarbonMartinique_v2.tab,SOCg (g/kg soil < 2 mm),TRUE,g/kg,NA,dry combustion,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",oc_iso.10694_w.pct
+SoilCarbonMartinique_v2.tab,Nt (g/kg soil < 2 mm),TRUE,g/kg,NA,dry combustion,n.tot,iso.13878,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",n.tot_iso.13878_w.pct
+SoilCarbonMartinique_v2.tab,Clay 0-0.002 mm (% soil < 2 mm),TRUE,%,NA,soil organic matter destruction by hydrogen peroxide (H2O2),clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",clay.tot_iso.11277_w.pct
+SoilCarbonMartinique_v2.tab,Sand.total.new,TRUE,NA,NA,new created column,sand.tot,iso.11277,w.pct,"ifelse(as.numeric(Sand 0.5-2 mm (% soil < 2 mm)) < 0, NA, as.numeric(Sand 0.5-2 mm (% soil < 2 mm)) + as.numeric(Sand 0.2-0.5 mm (% soil < 2 mm)) + as.numeric(Sand 0.05-0.2 mm (% soil < 2 mm)))",sand.tot_iso.11277_w.pct
+SoilCarbonMartinique_v2.tab,Sand 0.5-2 mm (% soil < 2 mm),TRUE,%,NA,soil organic matter destruction by hydrogen peroxide (H2O2),sand.m.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.m.temporary_iso.11277_w.pct
+SoilCarbonMartinique_v2.tab,Sand 0.2-0.5 mm (% soil < 2 mm),TRUE,%,NA,soil organic matter destruction by hydrogen peroxide (H2O2),sand.f.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.f.temporary_iso.11277_w.pct
+SoilCarbonMartinique_v2.tab,Sand 0.05-0.2 mm (% soil < 2 mm),TRUE,%,NA,soil organic matter destruction by hydrogen peroxide (H2O2),san.vf.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",san.vf.temporary_iso.11277_w.pct
+SoilCarbonMartinique_v2.tab,Silt.total.new,TRUE,NA,NA,new created column,silt.tot,iso.11277,w.pct,"ifelse(as.numeric(Silt 0.002-0.02 mm (% soil < 2 mm)) < 0, NA, as.numeric(Silt 0.002-0.02 mm (% soil < 2 mm)) + as.numeric(Silt 0.02-0.05 mm (% soil < 2 mm)))",silt.tot_iso.11277_w.pct
+SoilCarbonMartinique_v2.tab,Silt 0.02-0.05 mm (% soil < 2 mm),TRUE,%,NA,soil organic matter destruction by hydrogen peroxide (H2O2),silt.c.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.c.temporary_iso.11277_w.pct
+SoilCarbonMartinique_v2.tab,Silt 0.002-0.02 mm (% soil < 2 mm),TRUE,%,NA,soil organic matter destruction by hydrogen peroxide (H2O2),silt.f.temporary,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.f.temporary_iso.11277_w.pct
+SoilCarbonMartinique_v2.tab,Bulk density (kg total soil/dm3 total soil),TRUE,kg/dm3,NA,determined using a 1-dm3 cylinder,bd,iso.11277,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",bd_iso.11277_g.cm3
+SoilCarbonMartinique_v2.tab,Coarse particles > 2 mm (% total soil),TRUE,%,NA,soil organic matter destruction by hydrogen peroxide (H2O2),cf,iso.11464,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cf_iso.11464_w.pct
+SoilCarbonMartinique_v2.tab,SOCv (kg/dm3 total soil),NA,kg/dm3,NA,NA,NA,NA,NA,NA,NA

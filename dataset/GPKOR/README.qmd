@@ -187,7 +187,7 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset folder.
 
 ```{r soilab_download, echo=TRUE, eval=FALSE}
 # Downloading from google sheet
@@ -318,6 +318,13 @@ scans.extreme.pos <- korean.nir.resampled %>%
 scans.summary <- scans.na.gaps %>%
   left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
   left_join(scans.extreme.pos, by = "id.layer_local_c")
+
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
 
 # Renaming and Metadata
 final.visnir.names <- paste0("scan_nir.", new.wavelengths, "_ref")

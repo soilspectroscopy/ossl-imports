@@ -194,7 +194,9 @@ googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP")
 googlesheets4::as_sheets_id(OSSL.soildata.importing)
 ```
 
-NOTE: The code chunk below must be run just once. Run for getting the column standardization rules after editing online on Google Sheets. A copy of the output file is saved to this folder for archiving purposes.
+NOTE: The code chunk below must be run just once. Run for getting the
+column standardization rules after editing online on Google Sheets. A
+copy of the edited standardization template is saved to this dataset folder.
 
 ```{r soilab_download, echo=TRUE, eval=FALSE}
 # Downloading from google sheet

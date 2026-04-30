@@ -1,20 +1,24 @@
-# Southwestern India dataset preparation for the OSSL
+# Spectra from Watershed soils of Southwestern India
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
-— 13 March, 2026.
 
 - [The Southwestern India original
   data](#the-southwestern-india-original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
+  - [Site information](#site-information)
+  - [Soil lab information (reference analytical
+    data)](#soil-lab-information-reference-analytical-data)
+  - [Mid-infrared spectra (MIR)](#mid-infrared-spectra-mir)
+  - [Quality control](#quality-control)
 - [References](#references)
 
 Code repository for preparing and importing the Southwestern India
-dataset into the Open Soil Spectral Library.
+(WS_SWIND) dataset into the Open Soil Spectral Library.
 
-Project: [Soil Spectroscopy for Global
+Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-03-13  
+Last update: 2026-04-30  
 Additional documentation:
 
 ## The Southwestern India original data
@@ -23,7 +27,7 @@ Site data, Soil lab data, and Mid-Infrared Spectra (MIR) from
 small-scale tropical, sub-humid and semi-arid watersheds under shrubland
 and dry deciduous forest in Southwestern India. Further information of
 the dataset can be found in detail at Bellè et al.
-([2022](#ref-belle_soil_2022)).
+([2022](#ref-Bell2022)).
 
 Original files:  
 - `20211111_MS_SOC_Stock_India_data_raw.csv`: csv file with site
@@ -34,7 +38,8 @@ Fourier-Transformed (DRIFT) spectroscopy.
 Directory/folder path with original files (not uploaded to GitHub).
 
 ``` r
-dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/South India"
+# dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/South India"
+dir = "~/mnt-ossl-private/database/datasets/WS_SWIND/"
 tic()
 ```
 
@@ -51,46 +56,88 @@ india.metadata <- india.rawdata %>%
   mutate(sample_id = paste(Site, Pit, Depth, sep = "_")) 
 
 india.sitedata <- india.metadata %>%
-  select(sample_id, Site, Pit, Depth, ) %>%
+  select(sample_id, Site, Pit, Depth) %>%
   separate(Depth, 
            into = c("layer.upper.depth_usda_cm", "layer.lower.depth_usda_cm"), 
            sep = "-", 
            convert = TRUE, 
            remove = FALSE) %>%
-  rename(id.layer_local_c = sample_id) %>%
-  mutate(across(id.layer_local_c, as.character)) %>%
-  mutate(id.project_ascii_txt = "South India Soil Spectral Library",
-         dataset.code_ascii_txt = "SouthIndia.MIR",
-         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
-         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
-         surveyor.title_utf8_txt = "Severin-Luca Bell`e, Samuel Abiven",
-         surveyor.contact_ietf_email = "abiven@biotite.ens.fr",
-         dataset.title_utf8_txt = "South India Soil Spectral Library",
-         dataset.owner_utf8_txt = "Samuel Abiven",
-         dataset.address_idn_url = "https://zenodo.org/records/5675793",
-         dataset.doi_idf_url = "https://zenodo.org/records/5675793",
-         dataset.license.title_ascii_txt = "CC-BY 4.0",
-         dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
-         dataset.contact.name_utf8_txt = "Samuel Abiven",
-         dataset.contact_ietf_email = "abiven@biotite.ens.fr") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt)),
-         .after = id.project_ascii_txt) %>%
+  select(-Depth) %>%
+  rename(id.layer_local_c = sample_id,
+         site.id_src_txt = Site,
+         site.pit_src_txt = Pit) %>%
+  mutate(across(c("id.layer_local_c","site.id_src_txt","site.pit_src_txt"), as.character)) %>%
+  # mutate(id.project_ascii_txt = "South India Soil Spectral Library",
+  #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+  #        observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+  #        surveyor.title_utf8_txt = "Severin-Luca Bell`e, Samuel Abiven",
+  #        surveyor.contact_ietf_email = "abiven@biotite.ens.fr",
+  #        dataset.title_utf8_txt = "South India Soil Spectral Library",
+  #        dataset.owner_utf8_txt = "Samuel Abiven",
+  #        dataset.address_idn_url = "https://zenodo.org/records/5675793",
+  #        dataset.doi_idf_url = "https://zenodo.org/records/5675793",
+  #        dataset.license.title_ascii_txt = "CC-BY 4.0",
+  #        dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/legalcode",
+  #        dataset.contact.name_utf8_txt = "Samuel Abiven",
+  #        dataset.contact_ietf_email = "abiven@biotite.ens.fr") %>%
+  mutate(dataset.code_ascii_txt = "WS_SWIND",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt)),
+         .before = 1) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 write_csv(india.metadata, "india_metadata.csv")
+
 # Saving version to dataset root dir
-site.qs = path(dir, "ossl_soilsite_v2.0.qs")
-qs::qsave(india.sitedata, site.qs, preset = "high")
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(india.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(india.sitedata, str_c(site.exp.file, ".parquet"))
 ```
+
+Plotting sites map (approximate location):
+
+``` r
+data("World")
+
+ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+```
+
+    Reading 'ne_110m_ocean.zip' from naturalearth...
+
+``` r
+points <- tibble(longitude.point_wgs84_dd = 76.5,
+                 latitude.point_wgs84_dd = 12) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+
+tmap_mode("plot")
+```
+
+    ℹ tmap modes "plot" - "view"
+    ℹ toggle with `tmap::ttm()`
+
+``` r
+tm_shape(ocean) +
+  tm_polygons(fill = "lightblue", col = NA) +
+  tm_shape(World) +
+  tm_polygons(fill = "#f0f0f0", fill_alpha = 0.5, col_alpha = 0.5) +
+  tm_shape(points) +
+  tm_dots(size = 0.5, fill = "firebrick") +
+  tm_crs("ESRI:54030") +
+  tm_layout(frame = FALSE)
+```
+
+    [tip] Consider a suitable map projection, e.g. by adding `+ tm_crs("auto")`.
+    This message is displayed once per session.
+
+![](README_files/figure-commonmark/map-1.png)
 
 ### Soil lab information (reference analytical data)
 
 NOTE: The code chunk below must be run just once for getting a template
 for scripted column standardization. Just run once for getting the
 original names of soil properties, descriptions, data types, and units.
-Then upload to Google Sheet for editing and manually defining the rules
-for integrating with the OSSL. Requires Google authentication. A copy of
-the output file is saved to this folder for archiving purposes.
+Then upload to Google Sheet for editing and defining the rules for
+integrating with the OSSL. Requires Google authentication. A copy of the
+output file is saved to this folder for archiving purposes.
 
 ``` r
 # Getting soillab original variables
@@ -134,7 +181,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -144,10 +192,7 @@ googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
 
 # Preparing soillab.names
 transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
-                                         sheet = "South-India") %>%
-  filter(import == TRUE) %>%
-  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
-
+                                         sheet = "WS_SWIND")
 # Saving to folder
 write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
 ```
@@ -156,7 +201,10 @@ Reading standardization rules:
 
 ``` r
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
-                        show_col_types = F)
+                        show_col_types = F) %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+
 knitr::kable(transvalues)
 ```
 
@@ -215,9 +263,9 @@ functions.list <- transvalues %>%
 
 # Applying transformation rules
 india.soildata.trans <- transform_values(df = india.soildata,
-                                       out.name = names(india.soildata),
-                                       in.name = names(india.soildata),
-                                       fun.lst = functions.list)
+                                         out.name = names(india.soildata),
+                                         in.name = names(india.soildata),
+                                         fun.lst = functions.list)
 ```
 
     Warning in ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.001): NAs introduced
@@ -246,8 +294,9 @@ india.soildata %>%
 
 ``` r
 # Saving version to dataset root dir
-soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
-qs::qsave(india.soildata, soillab.qs, preset = "high")
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(india.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(india.soildata, str_c(soillab.exp.file, ".parquet"))
 ```
 
 Soil lab data summary.
@@ -306,7 +355,7 @@ Data summary
 ``` r
 ## Firstly, read MIR data
 folder_path <- "20211111_DRIFT_data"
-file_list <- dir_ls(folder_path, glob = "*.dpt")
+file_list <- dir_ls(path(dir,folder_path), glob = "*.dpt")
 
 # Function to read a single .dpt file
 read_dpt <- function(file_path) {
@@ -322,11 +371,12 @@ mir_long <- file_list %>%
   map_df(~read_dpt(.x))
 
 india.mir <- mir_long %>%
-  mutate(wavenumber = paste0("scan_MIR_", round(wavenumber))) %>%
+  mutate(wavenumber = paste0("scan_mir.", round(wavenumber))) %>%
   pivot_wider(names_from = wavenumber, values_from = absorbance)
   
 ## Assign sample id to MIR data
-mir_id_map <- read_delim(file.path(folder_path, "20211111_DRIFT_ID_all.csv"), delim = ";", show_col_types = FALSE)
+mir_id_map <- read_delim(path(dir, folder_path, "20211111_DRIFT_ID_all.csv"),
+                         delim = ";", show_col_types = FALSE)
 
 mir_id_map <- mir_id_map %>%
   mutate(sample_id = paste(Site, Pit, Increment, sep = "_"),
@@ -337,45 +387,54 @@ india.mir <- india.mir %>%
   inner_join(mir_id_map %>% select(ID, sample_id), by = "ID") %>%
   select (sample_id, everything())
 
-## Combine MIR with metadata
-india.final <- inner_join(india.metadata, india.mir, by = "sample_id") %>%
-  relocate(sample_id, .before =1) %>%
-  select( - ID)
-
-write_csv(india.final, "india_fulldata.csv")
+write_csv(india.mir, path(dir, "20211111_mir_spectra.csv"))
 ```
+
+NOTE: Spectra was archived on Zenodo as baseline corrected. Must check
+with authors
 
 ``` r
 # Renaming
-india.mir.proc <- india.final %>%
-  rename(id.layer_local_c = sample_id) %>%
-  mutate(id.layer_local_c = as.character(id.layer_local_c))
+india.mir <- read_csv(path(dir, "20211111_mir_spectra.csv"))
+```
 
-mir_cols <- names(india.mir.proc)[grep("scan_MIR_", names(india.mir.proc))]
+    Rows: 182 Columns: 1868
+    ── Column specification ────────────────────────────────────────────────────────
+    Delimiter: ","
+    chr    (1): sample_id
+    dbl (1867): ID, scan_mir.3996, scan_mir.3994, scan_mir.3993, scan_mir.3991, ...
+
+    ℹ Use `spec()` to retrieve the full column specification for this data.
+    ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+india.mir.proc <- india.mir %>%
+  rename(id.layer_local_c = sample_id, scan.id_local_c = ID) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c),
+         scan.id_local_c = as.character(scan.id_local_c))
+
+spec.cols <- names(india.mir.proc)[grep("scan_mir.", names(india.mir.proc))]
+old.cols <- str_replace(spec.cols, "scan_mir.", "")
+
+india.mir.proc <- india.mir.proc %>%
+  rename_with(~old.cols, all_of(spec.cols))
 
 # Resample spectra
-old.wavenumber.num <- as.numeric(str_replace(mir_cols, "scan_MIR_", ""))
+old.wavenumber.num <- as.numeric(old.cols)
 new.wavenumber <- seq(600, 4000, by = 2)
 
-india.mir.matrix <- india.mir.proc %>%
-  select(all_of(mir_cols)) %>%
-  as.matrix()
-
-india.mir.resampled <- prospectr::resample(
-  X = india.mir.matrix, 
+india.mir.proc <- india.mir.proc %>%
+  select(all_of(old.cols)) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., 
   wav = old.wavenumber.num, 
   new.wav = new.wavenumber, 
-  interpol = "spline"
-) %>%
-  as_tibble()
-
-india.mir.proc <- bind_cols(
-  india.mir.proc %>% select(id.layer_local_c), 
-  india.mir.resampled
-)
+  interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({india.mir.proc %>%
+      select(-all_of(old.cols))}, .)
 
 # Gaps
-
 mir.na.gaps <- india.mir.proc %>%
   select(-id.layer_local_c) %>%
   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
@@ -396,7 +455,6 @@ mir.extreme.pos <- india.mir.proc %>%
   tibble(proportion_higherAbs5 = .) %>%
   bind_cols({india.mir.proc %>% select(id.layer_local_c)}, .)
 
-
 # Consistency summary - problematic scans
 mir.summary <- mir.na.gaps %>%
   left_join(mir.extreme.neg, by = "id.layer_local_c") %>%
@@ -410,87 +468,94 @@ mir.summary %>%
   summarise(count = n())
 ```
 
-    # A tibble: 1 × 2
-      check             count
-      <chr>             <int>
-    1 proportion_lower0   182
+    # A tibble: 2 × 2
+      check                 count
+      <chr>                 <int>
+    1 proportion_higherAbs5    54
+    2 proportion_lower0       182
 
 ``` r
 # Renaming
-final.mir.names <- paste0("scan_mir.", new.wavenumber, "_abs")
-names(india.mir.resampled) <- final.mir.names
+final.mir.names <- paste0("scan_mir.", new.wavenumber, "_bc.abs")
 
-india.mir.proc <- bind_cols(
-  india.mir.proc %>% select(id.layer_local_c),
-  india.mir.resampled
-)
+india.mir.proc <- india.mir.proc %>%
+  rename_with(~final.mir.names, as.character(new.wavenumber))
 
-# Preparing metadata
-india.mir.metadata <- india.mir.proc %>%
-  select(id.layer_local_c) %>%
-  mutate(id.scan_local_c = id.layer_local_c,
-         scan.mir.model.name_utf8_txt = "TENSOR 27 spectrophotometer, Bruker, Switzerland", 
-         scan.mir.license.title_ascii_txt = "CC-BY 4.0",
-         scan.mir.method.optics_any_txt = "",
-         scan.mir.method.preparation_any_txt = "All pit core samples were dried at 40◦C for 48 h and subsequently
-sieved to < 2 mm. Then samples were milled using a horizontal mill (2–5 min, 30 turns/
-s).",
-         scan.mir.doi_idf_url = "https://zenodo.org/records/5675793",
-         scan.mir.contact.name_utf8_txt = "Samuel Abiven",
-         scan.mir.contact.email_ietf_txt = "abiven@biotite.ens.fr")
+# # Preparing metadata
+# india.mir.metadata <- india.mir.proc %>%
+#   select(id.layer_local_c) %>%
+#   mutate(id.scan_local_c = id.layer_local_c,
+#          scan.mir.model.name_utf8_txt = "TENSOR 27 spectrophotometer, Bruker, Switzerland", 
+#          scan.mir.license.title_ascii_txt = "CC-BY 4.0",
+#          scan.mir.method.optics_any_txt = "Baseline correction",
+#          scan.mir.method.preparation_any_txt = "All pit core samples were dried at 40◦C for 48 h and subsequently
+# sieved to < 2 mm. Then samples were milled using a horizontal mill (2–5 min, 30 turns/
+# s).",
+#          scan.mir.doi_idf_url = "https://zenodo.org/records/5675793",
+#          scan.mir.contact.name_utf8_txt = "Samuel Abiven",
+#          scan.mir.contact.email_ietf_txt = "abiven@biotite.ens.fr")
 
 # Final preparation
-india.mir.export <- india.mir.metadata %>%
-  left_join(india.mir.proc, by = "id.layer_local_c") %>%
-  mutate(across(starts_with("id."), as.character))
+# india.mir.export <- india.mir.metadata %>%
+#   left_join(india.mir.proc, by = "id.layer_local_c") %>%
+#   mutate(across(starts_with("id."), as.character))
+
+india.mir.export <- india.mir.proc
 
 # Saving version to dataset root dir
-soilmir.qs = path(dir, "ossl_mir_v2.0.qs")
-qs::qsave(india.mir.export, soilmir.qs, preset = "high")
+mir.exp.file = path(dir, "ossl_mir_v1.3")
+readr::write_csv(india.mir.export, str_c(mir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(india.mir.export, str_c(mir.exp.file, ".parquet"))
 ```
 
 ### Quality control
 
 The final table must be joined as follows:
 
-- MIR is used as first reference for left join.
-- Then it is left joined with the site and soil lab data. This drop data
-  without any available scan.
+- MIR is used as first reference for pairing with soil data.
+- Soil lab data are left joined to MIR. This drop data without any
+  available scan.
 
 The availability of data is summarized below:
 
 ``` r
 # Taking a few representative columns for checking the consistency of joins
 india.availability <- india.mir.export %>%
-  select(id.layer_local_c, scan_mir.600_abs) %>%
-  left_join({india.sitedata %>%
-      select(id.layer_local_c)}, by = "id.layer_local_c") %>%
-  left_join({india.soildata %>%
-      select(id.layer_local_c, c.tot_iso.10694_w.pct)}, by = "id.layer_local_c") %>%
+  select(id.layer_local_c, scan_mir.1000_bc.abs) %>%
+  left_join(india.soildata, by = "id.layer_local_c") %>%
   filter(!is.na(id.layer_local_c))
 
 # Availability of information from besb
-india.info.summary <- india.availability %>%
+india.availability %>%
   mutate(across(everything(), as.character)) %>%
   pivot_longer(everything(), names_to = "column", values_to = "value") %>%
   filter(!is.na(value)) %>%
   group_by(column) %>%
   summarise(count = n())
-print("Availability Summary:")
 ```
 
-    [1] "Availability Summary:"
-
-``` r
-print(india.info.summary)
-```
-
-    # A tibble: 3 × 2
-      column                count
-      <chr>                 <int>
-    1 c.tot_iso.10694_w.pct   182
-    2 id.layer_local_c        182
-    3 scan_mir.600_abs        182
+    # A tibble: 19 × 2
+       column                   count
+       <chr>                    <int>
+     1 al.ext_usda.a1056_mg.kg    173
+     2 bd_iso.11272_g.cm3         182
+     3 c.tot_iso.10694_w.pct      182
+     4 ca.ext_usda.a1059_mg.kg    173
+     5 cec_iso.11260_cmolc.kg     173
+     6 clay.tot_iso.11277_w.pct   173
+     7 ec_iso.11265_ds.m          163
+     8 fe.ext_usda.a1064_mg.kg    173
+     9 id.layer_local_c           182
+    10 k.ext_usda.a1065_mg.kg     173
+    11 mg.ext_usda.a1066_mg.kg    173
+    12 n.tot_iso.13878_w.pct      182
+    13 na.ext_usda.a1068_mg.kg    173
+    14 oc_iso.10694_w.pct         182
+    15 p.ext_usda.a1070_mg.kg     134
+    16 ph.cacl2_iso.10390_index   173
+    17 sand.tot_iso.11279_w.pct   173
+    18 scan_mir.1000_bc.abs       182
+    19 silt.tot_iso.11278_w.pct   173
 
 ``` r
 # Repeats check - Duplicates are dropped
@@ -515,12 +580,11 @@ india.availability %>%
       <chr>              <int> <int>
     1 id.layer_local_c       1   182
 
-Soil analytical data summary for MIR. Note: many scans could not be
-linked with the wetchem.
+Soil analytical data summary for MIR. Note: some scans may not be linked
+with the wetchem.
 
 ``` r
-india.soildata %>%
-  filter(id.layer_local_c %in% india.mir.export$id.layer_local_c) %>%
+india.availability %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
@@ -530,11 +594,11 @@ india.soildata %>%
 |:-------------------------------------------------|:-----------|
 | Name                                             | Piped data |
 | Number of rows                                   | 182        |
-| Number of columns                                | 18         |
+| Number of columns                                | 19         |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
 | Column type frequency:                           |            |
 | factor                                           | 1          |
-| numeric                                          | 17         |
+| numeric                                          | 18         |
 | \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
 | Group variables                                  | None       |
 
@@ -550,6 +614,7 @@ Data summary
 
 | skim_variable | n_missing | mean | sd | p0 | p25 | p50 | p75 | p100 |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| scan_mir.1000_bc.abs | 0 | 0.22 | 0.05 | 0.09 | 0.18 | 0.22 | 0.26 | 0.39 |
 | bd_iso.11272_g.cm3 | 0 | 1.44 | 0.13 | 1.10 | 1.36 | 1.44 | 1.53 | 1.75 |
 | c.tot_iso.10694_w.pct | 0 | 1.60 | 0.96 | 0.37 | 0.89 | 1.38 | 2.00 | 4.95 |
 | oc_iso.10694_w.pct | 0 | 1.32 | 0.69 | 0.36 | 0.86 | 1.15 | 1.63 | 5.03 |
@@ -571,18 +636,16 @@ Data summary
 MIR spectral visualization (100 random spectra):
 
 ``` r
-set.seed(42)
 india.mir.export %>%
-  sample_n(100) %>%
   select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
   tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
                       names_to = "wavenumber", values_to = "absorbance") %>%
-  dplyr::mutate(wavenumber = as.numeric(gsub("scan_mir.|_abs", "", wavenumber))) %>%
+  dplyr::mutate(wavenumber = as.numeric(gsub("scan_mir.|_bc.abs", "", wavenumber))) %>%
   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
   geom_line(alpha = 0.1, color = "darkblue") +
   scale_x_continuous(breaks = seq(600, 4000, by = 400),
                      transform = "reverse") +
-  labs(title = "MIR Spectra (100 random scans)",
+  labs(title = "MIR Spectra (182 scans)",
        x = bquote("Wavenumber"~(cm^-1)),
        y = "Absorbance")+
   theme_light()
@@ -594,28 +657,28 @@ india.mir.export %>%
 toc()
 ```
 
-    2.138 sec elapsed
+    14.136 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-              used  (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
-    Ncells 4295972 229.5    6838968 365.3         NA  6838968 365.3
-    Vcells 7604193  58.1   25842636 197.2      24576 22477447 171.5
+               used  (Mb) gc trigger  (Mb) max used  (Mb)
+    Ncells  6424745 343.2   11160464 596.1  9982665 533.2
+    Vcells 11791511  90.0   31472910 240.2 31412930 239.7
 
 ## References
 
 <div id="refs" class="references csl-bib-body hanging-indent"
 entry-spacing="0" line-spacing="2">
 
-<div id="ref-belle_soil_2022" class="csl-entry">
+<div id="ref-Bell2022" class="csl-entry">
 
 Bellè, S.-L., Riotte, J., Sekhar, M., Ruiz, L., Schiedung, M., & Abiven,
 S. (2022). Soil organic carbon stocks and quality in small-scale
 tropical, sub-humid and semi-arid watersheds under shrubland and dry
-deciduous forest in southwestern India. *Geoderma*, *409*, 115606.
+deciduous forest in southwestern india. *Geoderma*, *409*, 115606.
 doi:[10.1016/j.geoderma.2021.115606](https://doi.org/10.1016/j.geoderma.2021.115606)
 
 </div>

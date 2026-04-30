@@ -1,9 +1,11 @@
-table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
-soil fertility data.xlsx,Clay,g.dm3,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",clay.tot_usda.a334_w.pct
-soil fertility data.xlsx,OM,g.dm3,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",oc_iso.10694_w.pct
-soil fertility data.xlsx,CEC,mmolc.dm3,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",cec_usda.a723_cmolc.kg
-soil fertility data.xlsx,pH,NA,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
-soil fertility data.xlsx,exP,mg.dm3,p.ext,brazil.ier,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",p.ext_brazil.ier_mg.kg
-soil fertility data.xlsx,exK,mmolc.dm3,k.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",k.ext_brazil.ier_cmolc.kg
-soil fertility data.xlsx,exCa,mmolc.dm3,ca.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",ca.ext_brazil.ier_cmolc.kg
-soil fertility data.xlsx,exMg,mmolc.dm3,mg.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",mg.ext_brazil.ier_cmolc.kg
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+soil fertility data.xlsx,id.layer_local_c,NA,NA,NA,NA,NA,NA,NA,NA,NA
+soil fertility data.xlsx,Clay,TRUE,g.dm3,Bouyoucos Hydrometer,assuming a bulk density of 1 kg/dm3.,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",clay.tot_usda.a334_w.pct
+soil fertility data.xlsx,OM,TRUE,g.dm3,Potassium Dichromate,assuming a bulk density of 1 kg/dm3.,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",oc_iso.10694_w.pct
+soil fertility data.xlsx,CEC,TRUE,mmolc.dm3,NA,sum of the soil potential acidity and the sum of bases (ex-K + ex-Ca + ex-Mg),cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",cec_usda.a723_cmolc.kg
+soil fertility data.xlsx,pH,TRUE,NA,NA,calcium chloride solution.,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
+soil fertility data.xlsx,V,NA,%,NA,base saturation. represents the percentage of bases in the CEC,NA,NA,NA,NA,NA
+soil fertility data.xlsx,exP,TRUE,mg.dm3,ion exchange resin extraction,exchangeable P,p.ext,brazil.ier,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",p.ext_brazil.ier_mg.kg
+soil fertility data.xlsx,exK,TRUE,mmolc.dm3,ion exchange resin extraction,exchangeable K,k.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",k.ext_brazil.ier_cmolc.kg
+soil fertility data.xlsx,exCa,TRUE,mmolc.dm3,ion exchange resin extraction,exchangeable Ca,ca.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",ca.ext_brazil.ier_cmolc.kg
+soil fertility data.xlsx,exMg,TRUE,mmolc.dm3,ion exchange resin extraction,exchangeable Mg,mg.ext,brazil.ier,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.1)",mg.ext_brazil.ier_cmolc.kg

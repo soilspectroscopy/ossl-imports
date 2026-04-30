@@ -1,27 +1,30 @@
-# Tropical farm from Brazilian dataset preparation for the OSSL
+# Spectra from two Brazilian farms
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
-— 06 March, 2026.
 
 - [The Tropical farm original data](#the-tropical-farm-original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
+  - [Site information](#site-information)
+  - [Soil lab information (reference analytical
+    data)](#soil-lab-information-reference-analytical-data)
+  - [Vis-NIR spectra](#vis-nir-spectra)
+  - [Quality control for Vis-NIR](#quality-control-for-vis-nir)
 - [References](#references)
 
-Code repository for preparing and importing the Tropical farm from two
-Brazilian agricultural areas dataset into the Open Soil Spectral
-Library.
+Code repository for preparing and importing the spectra from two
+Brazilian local farms into the Open Soil Spectral Library.
 
-Project: [Soil Spectroscopy for Global
+Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-03-06  
+Last update: 2026-04-30  
 Additional documentation:
 
 ## The Tropical farm original data
 
 Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from
 Brazilian agricultural areas. Further information of the dataset can be
-found in detail at Tavares et al. ([2022](#ref-tavares_spectral_2022)).
+found in detail at Tavares et al. ([2022](#ref-Tavares2022)).
 
 Original files:  
 - `soil fertility data.xlsx`: xlsx file with site information and soil
@@ -31,7 +34,8 @@ data.
 Directory/folder path with original files (not uploaded to GitHub).
 
 ``` r
-dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/TropicalFarm"
+# dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/TropicalFarm"
+dir = "~/mnt-ossl-private/database/datasets/LF_BRA"
 tic()
 ```
 
@@ -44,26 +48,28 @@ tropical.metadata <- read_excel(path(dir, "soil fertility data.xlsx"))
 
 tropical.sitedata <- tropical.metadata %>%
   select(ID, Field) %>%
-  rename(id.layer_local_c = ID) %>%
+  rename(id.layer_local_c = ID,
+         loc.field_src_txt = Field) %>%
   mutate(layer.upper.depth_usda_cm = 0,
          layer.lower.depth_usda_cm = 20) %>%
-  mutate(id.project_ascii_txt = "Spectral data of tropical soils using dry-chemistry techniques",
-         dataset.code_ascii_txt = "Tropical_Farm.SSL",
-         observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
-         observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
-         dataset.owner_utf8_txt = "Universidade de Sao Paulo",
-         dataset.doi_idf_url = "https://data.mendeley.com/datasets/88c5kvmgbf/1",
-         dataset.license.title_ascii_txt = "CC-BY 4.0",
-         dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         dataset.contact.name_utf8_txt = "Tiago Rodrigues Tavares",
-         dataset.contact_ietf_email = "tiagosrt@usp.br") %>%
-  mutate(id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
-         .after = id.project_ascii_txt) %>%
+  # mutate(id.project_ascii_txt = "Spectral data of tropical soils using dry-chemistry techniques",
+  #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+  #        observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+  #        dataset.owner_utf8_txt = "Universidade de Sao Paulo",
+  #        dataset.doi_idf_url = "https://data.mendeley.com/datasets/88c5kvmgbf/1",
+  #        dataset.license.title_ascii_txt = "CC-BY 4.0",
+  #        dataset.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
+  #        dataset.contact.name_utf8_txt = "Tiago Rodrigues Tavares",
+  #        dataset.contact_ietf_email = "tiagosrt@usp.br") %>%
+  mutate(dataset.code_ascii_txt = "LF_BRA",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
   mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
-site.qs = path(dir, "ossl_soilsite_v2.0.qs")
-qs::qsave(tropical.sitedata, site.qs, preset = "high")
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(tropical.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(tropical.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
 ### Soil lab information (reference analytical data)
@@ -126,9 +132,7 @@ googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
 
 # Preparing soillab.names
 transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
-                                         sheet = "TropicalFarm") %>%
-  filter(import == TRUE) %>%
-  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+                                         sheet = "LF_BRA")
 
 # Saving to folder
 write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
@@ -138,7 +142,10 @@ Reading standardization rules:
 
 ``` r
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
-                        show_col_types = F)
+                        show_col_types = F)  %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "original_unit" , "ossl_")))
+
 knitr::kable(transvalues)
 ```
 
@@ -183,9 +190,9 @@ functions.list <- transvalues %>%
 
 # Applying transformation rules
 tropical.soildata.trans <- transform_values(df = tropical.soildata,
-                                       out.name = names(tropical.soildata),
-                                       in.name = names(tropical.soildata),
-                                       fun.lst = functions.list)
+                                            out.name = names(tropical.soildata),
+                                            in.name = names(tropical.soildata),
+                                            fun.lst = functions.list)
 
 # Final soillab data
 tropical.soildata <- tropical.soildata.trans %>%
@@ -202,8 +209,9 @@ tropical.soildata %>%
 
 ``` r
 # Saving version to dataset root dir
-soillab.qs = path(dir, "ossl_soillab_v2.0.qs")
-qs::qsave(tropical.soildata, soillab.qs, preset = "high")
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(tropical.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(tropical.soildata, str_c(soillab.exp.file, ".parquet"))
 ```
 
 Soil lab data summary.
@@ -263,24 +271,23 @@ tropical.visnir.proc <- tropical.visnir %>%
 spec.cols <- setdiff(names(tropical.visnir.proc), c("id.layer_local_c", "Field"))
 old.wavelengths <- as.numeric(spec.cols)
 
-new.wavelengths <- seq(440, 2150, by = 2)
+new.wavelengths <- seq(450, 2150, by = 2)
 
 # Resampling spectra
 tropical.visnir.resampled <- tropical.visnir.proc %>%
   select(id.layer_local_c, all_of(spec.cols)) %>%
-  mutate(across(all_of(spec.cols), ~ as.numeric(.x) / 100)) %>% 
-  { 
-    temp_data <- .
-    spectra_matrix <- as.matrix(select(temp_data, all_of(spec.cols)))
-    resampled_mat <- prospectr::resample(
-      X = spectra_matrix, 
-      wav = old.wavelengths, 
-      new.wav = new.wavelengths, 
-      interpol = "spline"
-    )
-    as_tibble(resampled_mat) %>%
-      bind_cols(temp_data %>% select(id.layer_local_c), .)
-  } %>%
+  mutate(across(all_of(spec.cols), ~ as.numeric(.x) / 100))
+
+tropical.visnir.resampled <- tropical.visnir.resampled %>%
+  select(all_of(spec.cols)) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., 
+                      wav = old.wavelengths, 
+                      new.wav = new.wavelengths, 
+                      interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({tropical.visnir.resampled %>%
+      select(id.layer_local_c)}, .) %>%
   select(id.layer_local_c, as.character(new.wavelengths))
 
 # Gaps Analysis
@@ -300,8 +307,8 @@ scans.extreme.neg <- tropical.visnir.resampled %>%
 # Extreme positive checks
 scans.extreme.pos <- tropical.visnir.resampled %>%
   select(-id.layer_local_c) %>%
-  apply(., 1, function(x) {round(100*(sum(x > 1.5, na.rm=TRUE))/(length(x)), 2)}) %>%
-  tibble(proportion_higherAbs5 = .) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherRef1 = .) %>%
   bind_cols(tropical.visnir.resampled %>% select(id.layer_local_c), .)
 
 # Consistency summary
@@ -324,38 +331,42 @@ scans.summary %>%
 ``` r
 # Final column renaming for OSSL standard
 final.visnir.names <- paste0("scan_visnir.", new.wavelengths, "_ref")
+
 tropical.visnir.proc_final <- tropical.visnir.resampled %>%
   rename_with(~final.visnir.names, as.character(new.wavelengths))
 
-# Preparing metadata
-tropical.visnir.metadata <- tropical.visnir.proc_final %>%
-  select(id.layer_local_c) %>%
-  mutate(id.scan_local_c = id.layer_local_c,
-         scan.visnir.model.name_utf8_txt = "Veris MSP3 (Veris Technologies, Salina, Kansas, USA)", 
-         scan.visnir.license.title_ascii_txt = "CC-BY 4.0",
-         scan.visnir.method.optics_any_txt = "",
-         scan.visnir.method.preparation_any_txt = "loose powder soil samples (air-dry and grain size ≤ 2 mm).",
-         scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
-         scan.visnir.doi_idf_url = "https://data.mendeley.com/datasets/88c5kvmgbf/1",
-         scan.visnir.contact.name_utf8_txt = "Tiago Rodrigues Tavares",
-         scan.visnir.contact.email_ietf_txt = "tiagosrt@usp.br")
+# # Preparing metadata
+# tropical.visnir.metadata <- tropical.visnir.proc_final %>%
+#   select(id.layer_local_c) %>%
+#   mutate(id.scan_local_c = id.layer_local_c,
+#          scan.visnir.model.name_utf8_txt = "Veris MSP3 (Veris Technologies, Salina, Kansas, USA)", 
+#          scan.visnir.license.title_ascii_txt = "CC-BY 4.0",
+#          scan.visnir.method.optics_any_txt = "",
+#          scan.visnir.method.preparation_any_txt = "loose powder soil samples (air-dry and grain size ≤ 2 mm).",
+#          scan.visnir.license.address_idn_url = "https://creativecommons.org/licenses/by/4.0/",
+#          scan.visnir.doi_idf_url = "https://data.mendeley.com/datasets/88c5kvmgbf/1",
+#          scan.visnir.contact.name_utf8_txt = "Tiago Rodrigues Tavares",
+#          scan.visnir.contact.email_ietf_txt = "tiagosrt@usp.br")
+# 
+# # Final preparation
+# tropical.visnir.export <- tropical.visnir.metadata %>%
+#   left_join(tropical.visnir.proc_final, by = "id.layer_local_c") %>%
+#   mutate(across(starts_with("id."), as.character))
 
-# Final preparation
-tropical.visnir.export <- tropical.visnir.metadata %>%
-  left_join(tropical.visnir.proc_final, by = "id.layer_local_c") %>%
-  mutate(across(starts_with("id."), as.character))
+tropical.visnir.export <- tropical.visnir.proc_final
 
-# Saving
-soilvisnir.qs = path(dir, "ossl_visnir_v2.0.qs")
-qs::qsave(tropical.visnir.export, soilvisnir.qs, preset = "high")
+# Saving version to dataset root dir
+visnir.exp.file = path(dir, "ossl_visnir_v1.3")
+readr::write_csv(tropical.visnir.export, str_c(visnir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(tropical.visnir.export, str_c(visnir.exp.file, ".parquet"))
 ```
 
 ### Quality control for Vis-NIR
 
 The final table must be joined as follows:
 
-- Vis-NIR is used as first reference for left join.
-- Then it is left joined with the site and soil lab data. This drop data
+- VisNIR is used as first reference for pairing with soil data.
+- Site and soil lab data are left joined to VisNIR. This drop data
   without any available scan.
 
 The availability of data is summarized below:
@@ -363,11 +374,8 @@ The availability of data is summarized below:
 ``` r
 # Taking a few representative columns for checking the consistency of joins
 tropical.availability <- tropical.visnir.export %>%
-  select(id.layer_local_c, scan_visnir.440_ref) %>%
-  left_join({tropical.metadata %>%
-      rename(id.layer_local_c = ID) %>%
-      mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
-      select(id.layer_local_c, Clay, CEC, pH)}, by = "id.layer_local_c") %>%
+  select(id.layer_local_c, scan_visnir.500_ref) %>%
+  left_join(tropical.soildata, by = "id.layer_local_c") %>%
   filter(!is.na(id.layer_local_c))
 
 # Availability of information summary
@@ -380,14 +388,19 @@ tropical.availability %>%
   summarise(count = n())
 ```
 
-    # A tibble: 5 × 2
-      column              count
-      <chr>               <int>
-    1 CEC                   102
-    2 Clay                  102
-    3 id.layer_local_c      102
-    4 pH                    102
-    5 scan_visnir.440_ref   102
+    # A tibble: 10 × 2
+       column                     count
+       <chr>                      <int>
+     1 ca.ext_brazil.ier_cmolc.kg   102
+     2 cec_usda.a723_cmolc.kg       102
+     3 clay.tot_usda.a334_w.pct     102
+     4 id.layer_local_c             102
+     5 k.ext_brazil.ier_cmolc.kg    102
+     6 mg.ext_brazil.ier_cmolc.kg   102
+     7 oc_iso.10694_w.pct           102
+     8 p.ext_brazil.ier_mg.kg       102
+     9 ph.cacl2_iso.10390_index     102
+    10 scan_visnir.500_ref          102
 
 ``` r
 # Repeats check - Checking for duplicate SAMPLE_TDR_IDs
@@ -406,12 +419,11 @@ tropical.availability %>%
       <chr>              <int> <int>
     1 id.layer_local_c       1   102
 
-Soil analytical data summary for Vis-NIR. Note: many scans could not be
+Soil analytical data summary for Vis-NIR. Note: some scans may not be
 linked with the wetchem.
 
 ``` r
 tropical.soildata %>%
-  filter(id.layer_local_c %in% tropical.visnir.export$id.layer_local_c) %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
@@ -453,9 +465,7 @@ Data summary
 Vis-NIR spectral visualization (100 random spectra):
 
 ``` r
-set.seed(42)
 tropical.visnir.export %>%
-  sample_n(100) %>%
   select(all_of(c("id.layer_local_c")), starts_with("scan_visnir.")) %>%
   tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
                       names_to = "wavelength", values_to = "reflectance") %>%
@@ -476,23 +486,23 @@ tropical.visnir.export %>%
 toc()
 ```
 
-    0.87 sec elapsed
+    6.114 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-              used  (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
-    Ncells 4236365 226.3    6838120 365.2         NA  6838120 365.2
-    Vcells 7228596  55.2   14820318 113.1      24576 14758560 112.6
+               used  (Mb) gc trigger  (Mb) max used  (Mb)
+    Ncells  6067641 324.1   11068771 591.2  8371680 447.1
+    Vcells 10245821  78.2   17824054 136.0 17823937 136.0
 
 ## References
 
 <div id="refs" class="references csl-bib-body hanging-indent"
 entry-spacing="0" line-spacing="2">
 
-<div id="ref-tavares_spectral_2022" class="csl-entry">
+<div id="ref-Tavares2022" class="csl-entry">
 
 Tavares, T. R., Molin, J. P., Nunes, L. C., Alves, E. E. N., Krug, F.
 J., & Carvalho, H. W. P. de. (2022). Spectral data of tropical soils

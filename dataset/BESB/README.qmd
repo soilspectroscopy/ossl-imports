@@ -147,7 +147,7 @@ Then upload to Google Sheet for editing and manually defining the rules
 for integrating with the OSSL. Requires Google authentication. A copy of
 the output file is saved to this folder for archiving purposes.
 
-**Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.**
+**Always leave the sheet name as TEMP to avoid overwriting, then rename online to download locally.**
 
 ```{r soil_template, echo=TRUE, eval=FALSE}
 # Getting soillab original variables
@@ -189,7 +189,7 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset folder.
 
 ```{r soilab_download, echo=TRUE, eval=FALSE}
 # Downloading from google sheet

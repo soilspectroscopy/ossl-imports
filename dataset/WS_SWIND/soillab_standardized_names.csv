@@ -1,18 +1,22 @@
-table,original_name,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
-india_metadata.csv,BD,g/cm3,bd,iso.11272,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",bd_iso.11272_g.cm3
-india_metadata.csv,TC,%,c.tot,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",c.tot_iso.10694_w.pct
-india_metadata.csv,TOC,%,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct
-india_metadata.csv,TN,%,n.tot,iso.13878,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",n.tot_iso.13878_w.pct
-india_metadata.csv,pH,NA,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
-india_metadata.csv,EC,μS/cm,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.001)",ec_iso.11265_ds.m
-india_metadata.csv,CEC,meq/100g,cec,iso.11260,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cec_iso.11260_cmolc.kg
-india_metadata.csv,Clay,%,clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",clay.tot_iso.11277_w.pct
-india_metadata.csv,Silt,%,silt.tot,iso.11278,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.tot_iso.11278_w.pct
-india_metadata.csv,Sand,%,sand.tot,iso.11279,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.tot_iso.11279_w.pct
-india_metadata.csv,Fetot,%,fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",fe.ext_usda.a1064_mg.kg
-india_metadata.csv,Altot,%,al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",al.ext_usda.a1056_mg.kg
-india_metadata.csv,Ktot,%,k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",k.ext_usda.a1065_mg.kg
-india_metadata.csv,Natot,%,na.ext,usda.a1068,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",na.ext_usda.a1068_mg.kg
-india_metadata.csv,Catot,%,ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",ca.ext_usda.a1059_mg.kg
-india_metadata.csv,Ptot,%,p.ext,usda.a1070,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",p.ext_usda.a1070_mg.kg
-india_metadata.csv,Mgtot,%,mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",mg.ext_usda.a1066_mg.kg
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+india_metadata.csv,sample_id,NA,NA,NA,NA,NA,NA,NA,NA,NA
+india_metadata.csv,BD,TRUE,g/cm3,NA,NA,bd,iso.11272,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",bd_iso.11272_g.cm3
+india_metadata.csv,TC,TRUE,%,NA,NA,c.tot,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",c.tot_iso.10694_w.pct
+india_metadata.csv,TOC,TRUE,%,NA,NA,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct
+india_metadata.csv,SOC stock,NA,mg/ha,NA,NA,NA,NA,NA,NA,NA
+india_metadata.csv,TN,TRUE,%,NA,NA,n.tot,iso.13878,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",n.tot_iso.13878_w.pct
+india_metadata.csv,CN,NA,NA,NA,C/N ratio,NA,NA,NA,NA,NA
+india_metadata.csv,pH,TRUE,NA,NA,NA,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
+india_metadata.csv,EC,TRUE,μS/cm,NA,NA,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 0.001)",ec_iso.11265_ds.m
+india_metadata.csv,CEC,TRUE,meq/100g,NA,NA,cec,iso.11260,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cec_iso.11260_cmolc.kg
+india_metadata.csv,Clay,TRUE,%,NA,NA,clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",clay.tot_iso.11277_w.pct
+india_metadata.csv,Silt,TRUE,%,NA,NA,silt.tot,iso.11278,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.tot_iso.11278_w.pct
+india_metadata.csv,Sand,TRUE,%,NA,NA,sand.tot,iso.11279,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.tot_iso.11279_w.pct
+india_metadata.csv,Fetot,TRUE,%,NA,NA,fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",fe.ext_usda.a1064_mg.kg
+india_metadata.csv,Altot,TRUE,%,NA,NA,al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",al.ext_usda.a1056_mg.kg
+india_metadata.csv,Sitot,NA,%,NA,NA,NA,NA,NA,NA,NA
+india_metadata.csv,Ktot,TRUE,%,NA,NA,k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",k.ext_usda.a1065_mg.kg
+india_metadata.csv,Natot,TRUE,%,NA,NA,na.ext,usda.a1068,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",na.ext_usda.a1068_mg.kg
+india_metadata.csv,Catot,TRUE,%,NA,NA,ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",ca.ext_usda.a1059_mg.kg
+india_metadata.csv,Ptot,TRUE,%,NA,NA,p.ext,usda.a1070,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",p.ext_usda.a1070_mg.kg
+india_metadata.csv,Mgtot,TRUE,%,NA,NA,mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 10000)",mg.ext_usda.a1066_mg.kg
