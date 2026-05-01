@@ -1,70 +1,60 @@
----
-title: "Africa Soil Information Service Phase II (AFSIS2) prep"
-author: 
-  - name: Jose L. Safanelli
-    email: jsafanelli@woodwellclimate.org
-  - name: Ran Zhi
-    email: jsafanelli@woodwellclimate.org
-  - name: Tomislav Hengl
-    email: tom.hengl@opengeohub.org
-  - name: Jonathan Sanderman
-    email: jsanderman@woodwellclimate.org
-format: 
-  gfm:
-    toc: true
-    toc-depth: 3
-bibliography: reference.bib
-csl: ../../tex/apa.csl
-cite-method: citeproc
-link-citations: true
-twitter-card:
-  site: "@soilspec"
-editor: 
-  markdown: 
-    wrap: 72
----
+# Africa Soil Information Service Phase II (AFSIS2) prep
+Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
 
-Code repository for standardizing and importing the ICRAF Soil and Plant Spectroscopy Laboratory: Africa Soil Information Service Phase II, which includes the National 
-Soil Information Systems: TanSIS (Tanzania), NiSIS (Nigeria) and GhanSIS (Ghana).
+- [Original data](#original-data)
+- [Data standardization to the OSSL
+  format](#data-standardization-to-the-ossl-format)
+  - [Site information](#site-information)
+  - [Soil lab information (reference analytical
+    data)](#soil-lab-information-reference-analytical-data)
+  - [Mid-infrared spectra](#mid-infrared-spectra)
+- [Quality control](#quality-control)
+- [References](#references)
 
-Website: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  \
-Development: <https://github.com/soilspectroscopy>\
-Last update: `r Sys.Date()`\
+Code repository for standardizing and importing the ICRAF Soil and Plant
+Spectroscopy Laboratory: Africa Soil Information Service Phase II, which
+includes the National Soil Information Systems: TanSIS (Tanzania), NiSIS
+(Nigeria) and GhanSIS (Ghana).
+
+Website: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)  
+Development: <https://github.com/soilspectroscopy>  
+Last update: 2026-05-01  
 Additional documentation:
 
 ## Original data
 
-Site data, soil lab data, and Mid-Infrared Spectra (MIR) from the ICRAF Soil and Plant Spectroscopy Laboratory: Africa Soil Information Service Phase II.
+Site data, soil lab data, and Mid-Infrared Spectra (MIR) from the ICRAF
+Soil and Plant Spectroscopy Laboratory: Africa Soil Information Service
+Phase II.
 
-The three datasets are available from <https://doi.org/10.34725/DVN/XUDGJY>, <https://doi.org/10.34725/DVN/WLAKR2> and <https://doi.org/10.34725/DVN/SPRSFN>. 
+The three datasets are available from
+<https://doi.org/10.34725/DVN/XUDGJY>,
+<https://doi.org/10.34725/DVN/WLAKR2> and
+<https://doi.org/10.34725/DVN/SPRSFN>.
 
-Data has been analyzed at the ICRAF Soil-Plant Spectral Diagnostics Laboratory, Nairobi, and the Rothamsted Research.
+Data has been analyzed at the ICRAF Soil-Plant Spectral Diagnostics
+Laboratory, Nairobi, and the Rothamsted Research.
 
-Coordinates for points are not provided and soil reference data is available only for a limited subset of points.
+Coordinates for points are not provided and soil reference data is
+available only for a limited subset of points.
 
-Further information about the datasets can be found in @Vagen2018 and @Hengl2021.
+Further information about the datasets can be found in Vågen,
+Winowiecki, Neely, Chesterman, & Bourne ([2018](#ref-Vagen2018)) and
+Hengl et al. ([2021](#ref-Hengl2021)).
 
-Coordinates for TanSIS points are available with a different coding system via <https://registry.opendata.aws/afsis/>.
+Coordinates for TanSIS points are available with a different coding
+system via <https://registry.opendata.aws/afsis/>.
 
 Input datasets:  
-- `glob2rx("*samples.csv")`: Separate csv files with site and soil analytes.\
-- `afsis_mir_2013`: folder with MIR soil spectral data.\
-- `Calibration_MPA_NIR.csv`: VNIR soil spectral data.\
+- `glob2rx("*samples.csv")`: Separate csv files with site and soil
+analytes.  
+- `afsis_mir_2013`: folder with MIR soil spectral data.  
+- `Calibration_MPA_NIR.csv`: VNIR soil spectral data.  
 
-```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
-packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
-              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
-              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
+Directory/folder path with original files (not uploaded to GitHub).
 
-invisible(lapply(packages, library, character.only = TRUE))
-
-source("../../R/functions/SSL_functions.R")
-gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
-options(scipen = 999)
-```
-
-Directory/folder path with original files (not uploaded to GitHub). 
-```{r}
+``` r
 # dir = "./"
 dir = "~/mnt-ossl-private/database/datasets/AFSIS2/"
 tic()
@@ -74,7 +64,7 @@ tic()
 
 ### Site information
 
-```{r}
+``` r
 sample.files <- list.files(dir, pattern = glob2rx("*samples.csv"), full.names = T)
 
 samples <- sample.files %>%
@@ -196,14 +186,25 @@ nanoparquet::write_parquet(afsis2.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
 Plotting map:
-```{r map, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 data("World")
 
 ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+```
 
+    Reading 'ne_110m_ocean.zip' from naturalearth...
+
+``` r
 countries <- World[World$name %in% c("Ghana","Tanzania","Nigeria"), ]
 
 tmap_mode("plot")
+```
+
+    ℹ tmap modes "plot" - "view"
+    ℹ toggle with `tmap::ttm()`
+
+``` r
 tm_shape(ocean) +
   tm_polygons(fill = "lightblue", col = NA) +
   tm_shape(World) +
@@ -214,13 +215,24 @@ tm_shape(ocean) +
   tm_layout(frame = FALSE)
 ```
 
+    [tip] Consider a suitable map projection, e.g. by adding `+ tm_crs("auto")`.
+    This message is displayed once per session.
+
+![](README_files/figure-commonmark/map-1.png)
+
 ### Soil lab information (reference analytical data)
 
-NOTE: The code chunk below must be run just once for getting a template for scripted column standardization. Just run once for getting the original names of soil properties, descriptions, data types, and units. Then upload to Google Sheet for editing and manually defining the rules for integrating with the OSSL. Requires Google authentication. A copy of the output file is saved to this folder for archiving purposes.
+NOTE: The code chunk below must be run just once for getting a template
+for scripted column standardization. Just run once for getting the
+original names of soil properties, descriptions, data types, and units.
+Then upload to Google Sheet for editing and manually defining the rules
+for integrating with the OSSL. Requires Google authentication. A copy of
+the output file is saved to this folder for archiving purposes.
 
-**Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.**
+**Always leave the sheet name as TEMP to avoid overwritting, then rename
+online to download locally.**
 
-```{r soil_template, echo=TRUE, eval=FALSE}
+``` r
 # Getting soillab original variables
 variables.files = list.files(dir, glob2rx("0Variables Description*"),
                              full.names=TRUE, recursive = TRUE)
@@ -275,9 +287,10 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the edited standardization template is saved to this dataset folder.
+copy of the edited standardization template is saved to this dataset
+folder.
 
-```{r soilab_download, echo=TRUE, eval=FALSE}
+``` r
 # Downloading from google sheet
 
 # Checking metadata
@@ -292,7 +305,8 @@ write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
 ```
 
 Reading standardization rules:
-```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
                         show_col_types = F) %>%
   filter(import == TRUE) %>%
@@ -301,8 +315,26 @@ transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
 knitr::kable(transvalues)
 ```
 
+| table | original_name | ossl_abbrev | ossl_method | ossl_unit | ossl_convert | ossl_name |
+|:---|:---|:---|:---|:---|:---|:---|
+| GhanSIS;NiSIS;TanSIS | pH | ph.h2o | usda.a268 | index | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.h2o_usda.a268_index |
+| GhanSIS;NiSIS;TanSIS | m3.Al | al.ext | usda.a1056 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | al.ext_usda.a1056_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.B | b.ext | mel3 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | b.ext_mel3_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Ca | ca.ext | usda.a1059 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ca.ext_usda.a1059_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Cu | cu.ext | usda.a1063 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | cu.ext_usda.a1063_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Fe | fe.ext | usda.a1064 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | fe.ext_usda.a1064_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.K | k.ext | usda.a1065 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | k.ext_usda.a1065_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Mg | mg.ext | usda.a1066 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mg.ext_usda.a1066_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Mn | mn.ext | usda.a1067 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mn.ext_usda.a1067_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.S | s.ext | mel3 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | s.ext_mel3_mg.kg |
+| GhanSIS;NiSIS;TanSIS | m3.Zn | zn.ext | usda.a1073 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | zn.ext_usda.a1073_mg.kg |
+| GhanSIS;NiSIS;TanSIS | N | n.tot | usda.a623 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | n.tot_usda.a623_w.pct |
+| GhanSIS;NiSIS;TanSIS | TC | c.tot | usda.a622 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | c.tot_usda.a622_w.pct |
+| GhanSIS;NiSIS;TanSIS | SOC | oc | usda.c1059 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | oc_usda.c1059_w.pct |
+
 Standardizing soil data to the OSSL format:
-```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 reference.files <- list.files(dir, pattern = glob2rx("*reference.csv"), full.names = T)
 
 afsis2.reference <- reference.files %>%
@@ -354,7 +386,12 @@ afsis2.soildata <- afsis2.soildata.trans %>%
 afsis2.soildata %>%
   distinct(id.layer_local_c) %>%
   summarise(count = n())
-  
+```
+
+      count
+    1   819
+
+``` r
 # Saving version to dataset root dir
 soillab.exp.file = path(dir, "ossl_soillab_v1.3")
 readr::write_csv(afsis2.soildata, str_c(soillab.exp.file, ".csv.gz"))
@@ -362,22 +399,68 @@ nanoparquet::write_parquet(afsis2.soildata, str_c(soillab.exp.file, ".parquet"))
 ```
 
 Soil lab data summary.
-```{r soil_lab_summary, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 afsis2.soildata %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
 ```
 
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 819        |
+| Number of columns                                | 15         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| factor                                           | 1          |
+| numeric                                          | 14         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
+
+Data summary
+
+**Variable type: factor**
+
+| skim_variable    | n_missing | ordered | n_unique | top_counts                     |
+|:-----------------|----------:|:--------|---------:|:-------------------------------|
+| id.layer_local_c |         0 | FALSE   |      819 | GHB: 1, GHB: 1, GHB: 1, GHB: 1 |
+
+**Variable type: numeric**
+
+| skim_variable | n_missing | mean | sd | p0 | p25 | p50 | p75 | p100 |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| ph.h2o_usda.a268_index | 11 | 6.31 | 0.80 | 4.10 | 5.80 | 6.34 | 6.76 | 8.72 |
+| al.ext_usda.a1056_mg.kg | 1 | 766.22 | 321.64 | 18.00 | 521.25 | 769.50 | 956.00 | 1851.00 |
+| b.ext_mel3_mg.kg | 526 | 1.79 | 0.70 | 0.30 | 1.00 | 2.00 | 2.00 | 4.00 |
+| ca.ext_usda.a1059_mg.kg | 1 | 1484.03 | 1801.00 | 12.00 | 404.00 | 858.50 | 1961.50 | 21565.00 |
+| cu.ext_usda.a1063_mg.kg | 15 | 2.22 | 2.41 | 0.03 | 0.53 | 1.40 | 3.16 | 18.19 |
+| fe.ext_usda.a1064_mg.kg | 1 | 123.62 | 77.15 | 13.20 | 78.10 | 103.05 | 145.65 | 578.00 |
+| k.ext_usda.a1065_mg.kg | 2 | 280.76 | 426.69 | 5.00 | 51.00 | 125.00 | 316.00 | 3600.00 |
+| mg.ext_usda.a1066_mg.kg | 1 | 304.29 | 365.74 | 2.00 | 89.00 | 190.00 | 368.75 | 3241.00 |
+| mn.ext_usda.a1067_mg.kg | 1 | 154.51 | 120.37 | 0.70 | 58.70 | 129.55 | 225.90 | 741.10 |
+| s.ext_mel3_mg.kg | 9 | 8.57 | 18.51 | 1.00 | 3.00 | 5.00 | 8.00 | 266.00 |
+| zn.ext_usda.a1073_mg.kg | 29 | 1.79 | 3.17 | 0.06 | 0.40 | 0.90 | 2.10 | 48.79 |
+| n.tot_usda.a623_w.pct | 0 | 0.10 | 0.08 | 0.01 | 0.05 | 0.08 | 0.13 | 0.53 |
+| c.tot_usda.a622_w.pct | 0 | 1.28 | 1.04 | 0.10 | 0.58 | 0.99 | 1.66 | 7.15 |
+| oc_usda.c1059_w.pct | 0 | 1.26 | 1.01 | 0.10 | 0.58 | 0.99 | 1.62 | 7.09 |
+
 ### Mid-infrared spectra
 
-```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
+``` r
 # Floating wavenumbers
 mir.files <- list.files(dir, pattern = glob2rx("*_ZnSe_*.csv$"), full.names = T)
 
 mir.scans <- mir.files %>%
   purrr::map_dfr(fread, header = TRUE, colClasses = 'character')
+```
 
+    Warning in .f(.x[[i]], ...): Stopped early on line 3825. Expected 1713 fields
+    but found 2. Consider fill=TRUE. First discarded non-empty line:
+    <<,TanSISTOPWVs5NHbs>>
+
+``` r
 # # Some prefixes are either wrong or shuffled for anonimity
 # mir.scans %>%
 #   mutate(prefix = str_sub(SSN, 1, 7)) %>%
@@ -431,6 +514,11 @@ afsis2.mir <- mir.scans %>%
 
 # Need to resample spectra
 old.wavenumber <- na.omit(as.numeric(names(afsis2.mir)))
+```
+
+    Warning in na.omit(as.numeric(names(afsis2.mir))): NAs introduced by coercion
+
+``` r
 new.wavenumbers <- rev(seq(600, 4000, by = 2))
 
 afsis2.mir <- afsis2.mir %>%
@@ -475,7 +563,12 @@ scans.summary %>%
   filter(value > 0) %>%
   group_by(check) %>%
   summarise(count = n())
+```
 
+    # A tibble: 0 × 2
+    # ℹ 2 variables: check <chr>, count <int>
+
+``` r
 # Renaming
 old.wavenumbers <- seq(600, 4000, by = 2)
 new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
@@ -517,10 +610,12 @@ nanoparquet::write_parquet(afsis2.mir.export, str_c(mir.exp.file, ".parquet"))
 The final table must be joined as follows:
 
 - MIR is used as first reference for pairing with soil data.
-- Soil lab data are left joined to MIR. This drop data without any available scan.
+- Soil lab data are left joined to MIR. This drop data without any
+  available scan.
 
 The availability of data is summarized below:
-```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 # Taking a few representative columns for checking the consistency of joins
 afsis2.availability <- afsis2.mir.export %>%
   select(id.layer_local_c, scan_mir.800_abs) %>%
@@ -534,7 +629,29 @@ afsis2.availability %>%
   filter(!is.na(value)) %>%
   group_by(column) %>%
   summarise(count = n())
+```
 
+    # A tibble: 16 × 2
+       column                  count
+       <chr>                   <int>
+     1 al.ext_usda.a1056_mg.kg   151
+     2 b.ext_mel3_mg.kg            7
+     3 c.tot_usda.a622_w.pct     151
+     4 ca.ext_usda.a1059_mg.kg   151
+     5 cu.ext_usda.a1063_mg.kg   150
+     6 fe.ext_usda.a1064_mg.kg   151
+     7 id.layer_local_c         8382
+     8 k.ext_usda.a1065_mg.kg    150
+     9 mg.ext_usda.a1066_mg.kg   151
+    10 mn.ext_usda.a1067_mg.kg   151
+    11 n.tot_usda.a623_w.pct     151
+    12 oc_usda.c1059_w.pct       151
+    13 ph.h2o_usda.a268_index    151
+    14 s.ext_mel3_mg.kg          151
+    15 scan_mir.800_abs         8382
+    16 zn.ext_usda.a1073_mg.kg   138
+
+``` r
 # Repeats check - Duplicates are dropped
 afsis2.availability %>%
   mutate_all(as.character) %>%
@@ -546,8 +663,20 @@ afsis2.availability %>%
   summarise(count = n())
 ```
 
+    `summarise()` has grouped output by 'column'. You can override using the
+    `.groups` argument.
+    `summarise()` has grouped output by 'column'. You can override using the
+    `.groups` argument.
+
+    # A tibble: 1 × 3
+    # Groups:   column [1]
+      column           repeats count
+      <chr>              <int> <int>
+    1 id.layer_local_c       1  8382
+
 MIR spectral visualization (100 random spectra):
-```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 set.seed(42)
 afsis2.mir %>%
   sample_n(100) %>%
@@ -564,10 +693,45 @@ afsis2.mir %>%
   theme_light()
 ```
 
-```{r}
+![](README_files/figure-commonmark/mir_plot-1.png)
+
+``` r
 toc()
+```
+
+    91.968 sec elapsed
+
+``` r
 rm(list = ls())
 gc()
 ```
 
+               used  (Mb) gc trigger   (Mb)  max used   (Mb)
+    Ncells  6423731 343.1   19833416 1059.3  18977846 1013.6
+    Vcells 15299962 116.8  130426272  995.1 163032836 1243.9
+
 ## References
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0" line-spacing="2">
+
+<div id="ref-Hengl2021" class="csl-entry">
+
+Hengl, T., Miller, M. A. E., Križan, J., Shepherd, K. D., Sila, A.,
+Kilibarda, M., … Crouch, J. (2021). African soil properties and
+nutrients mapped at 30 m spatial resolution using two-scale ensemble
+machine learning. *Scientific Reports*, *11*(1).
+doi:[10.1038/s41598-021-85639-y](https://doi.org/10.1038/s41598-021-85639-y)
+
+</div>
+
+<div id="ref-Vagen2018" class="csl-entry">
+
+Vågen, T.-G., Winowiecki, L. A., Neely, C., Chesterman, S., & Bourne, M.
+(2018). Spatial assessments of soil organic carbon for stakeholder
+decision-making – a case study from kenya. *SOIL*, *4*(4), 259–266.
+doi:[10.5194/soil-4-259-2018](https://doi.org/10.5194/soil-4-259-2018)
+
+</div>
+
+</div>

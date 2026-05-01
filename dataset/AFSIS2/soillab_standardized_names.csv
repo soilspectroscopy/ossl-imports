@@ -1,0 +1,18 @@
+table,original_name,import,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+GhanSIS;NiSIS;TanSIS,SSN,NA,NA,NA,NA,NA,NA,NA
+GhanSIS;NiSIS;TanSIS,Country,NA,NA,NA,NA,NA,NA,NA
+GhanSIS;NiSIS;TanSIS,Depth,NA,Topsoil = 0-20 cm depth; Subsoil = 20-50 cm depth,NA,NA,NA,NA,NA
+GhanSIS;NiSIS;TanSIS,pH,TRUE,Potentiometric; Voltmeter; 1:2 ratio,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+GhanSIS;NiSIS;TanSIS,m3.Al,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a1056_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.B,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),b.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",b.ext_mel3_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Ca,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a1059_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Cu,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),cu.ext,usda.a1063,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cu.ext_usda.a1063_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Fe,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",fe.ext_usda.a1064_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.K,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a1065_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Mg,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a1066_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Mn,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),mn.ext,usda.a1067,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mn.ext_usda.a1067_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.S,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),s.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",s.ext_mel3_mg.kg
+GhanSIS;NiSIS;TanSIS,m3.Zn,TRUE,Mehlich-3; Optical Emission spectrometry ( ICP-OES),zn.ext,usda.a1073,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",zn.ext_usda.a1073_mg.kg
+GhanSIS;NiSIS;TanSIS,N,TRUE,Dry combustion; Leco TruMac CN Combustion analyzer,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_usda.a623_w.pct
+GhanSIS;NiSIS;TanSIS,TC,TRUE,Dry combustion; Leco TruMac CN Combustion analyzer,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_usda.a622_w.pct
+GhanSIS;NiSIS;TanSIS,SOC,TRUE,TC minus inorganic C measured in carbonates,oc,usda.c1059,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",oc_usda.c1059_w.pct
