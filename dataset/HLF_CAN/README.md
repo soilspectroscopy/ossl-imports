@@ -1,63 +1,43 @@
----
-title: "High-Latitude Forest soils of North Canada (HLF_CAN)"
-author: 
-  - name: Jose L. Safanelli
-    email: jsafanelli@woodwellclimate.org
-  - name: Ran Zhi
-    email: jsafanelli@woodwellclimate.org
-  - name: Tomislav Hengl
-    email: tom.hengl@opengeohub.org
-  - name: Jonathan Sanderman
-    email: jsanderman@woodwellclimate.org
-format: 
-  gfm:
-    toc: true
-    toc-depth: 3
-bibliography: reference.bib
-csl: ../../tex/apa.csl
-cite-method: citeproc
-link-citations: true
-twitter-card:
-  site: "@soilspec"
-editor: 
-  markdown: 
-    wrap: 72
----
+# High-Latitude Forest soils of North Canada (HLF_CAN)
+Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
 
-Code repository for standardizing and importing spectra from High-Latitude Forest soils of North Canada.
+- [Original data](#original-data)
+- [Data standardization to the OSSL
+  format](#data-standardization-to-the-ossl-format)
+  - [Site information](#site-information)
+  - [Soil lab information (reference analytical
+    data)](#soil-lab-information-reference-analytical-data)
+  - [Mid-infrared spectra](#mid-infrared-spectra)
+- [Quality control](#quality-control)
+- [References](#references)
 
-Website: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  \
-Development: <https://github.com/soilspectroscopy>\
-Last update: `r Sys.Date()`\
+Code repository for standardizing and importing spectra from
+High-Latitude Forest soils of North Canada.
+
+Website: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)  
+Development: <https://github.com/soilspectroscopy>  
+Last update: 2026-05-01  
 Additional documentation:
 
 ## Original data
 
-Site, Soil, and Mid-Infrared Spectra compiled and analyzed by @Schiedung2022, with a public version  available on [Zenodo](https://doi.org/10.5281/zenodo.6024831).
+Site, Soil, and Mid-Infrared Spectra compiled and analyzed by Schiedung,
+Bellè, Malhotra, & Abiven ([2022](#ref-Schiedung2022)), with a public
+version available on [Zenodo](https://doi.org/10.5281/zenodo.6024831).
 
 Input datasets:  
 - `ID_DRIFT_all.xlsx`: excel file with site information;  
 - `ID_DRIFT_all.xlsx`: csv file with soil information;  
 - `Schiedung_opusimport.xlsx`: MIR spectral scans;
 
-Input files:
-- `cssl_metadata_all.csv`: csv file with site information;
-- `ssl_refdata_all.csv`: csv file with soil information;
-- `cssl_spectra.csv`: csv with MIR spectral scans;
-
-```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
-packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
-              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
-              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
-
-invisible(lapply(packages, library, character.only = TRUE))
-
-source("../../R/functions/SSL_functions.R")
-gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
-```
+Input files: - `cssl_metadata_all.csv`: csv file with site
+information; - `ssl_refdata_all.csv`: csv file with soil information; -
+`cssl_spectra.csv`: csv with MIR spectral scans;
 
 Directory/folder path with original files (not uploaded to GitHub).
-```{r dir}
+
+``` r
 # dir = "./"
 dir = "~/mnt-ossl-private/database/datasets/HLF_CAN"
 tic()
@@ -67,7 +47,7 @@ tic()
 
 ### Site information
 
-```{r soil site}
+``` r
 # Reading site information
 schiedung.info <- read_xlsx(path(dir, "/ID_DRIFT_all.xlsx"), sheet = 1)
 
@@ -120,17 +100,28 @@ nanoparquet::write_parquet(schiedung.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
 Plotting map:
-```{r map, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 data("World")
 
 ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+```
 
+    Reading 'ne_110m_ocean.zip' from naturalearth...
+
+``` r
 points <- schiedung.sitedata %>%
   filter(!is.na(longitude.point_wgs84_dd),
          !is.na(latitude.point_wgs84_dd)) %>%
   st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
 
 tmap_mode("plot")
+```
+
+    ℹ tmap modes "plot" - "view"
+    ℹ toggle with `tmap::ttm()`
+
+``` r
 tm_shape(ocean) +
   tm_polygons(fill = "lightblue", col = NA) +
   tm_shape(World) +
@@ -141,13 +132,24 @@ tm_shape(ocean) +
   tm_layout(frame = FALSE)
 ```
 
+    [tip] Consider a suitable map projection, e.g. by adding `+ tm_crs("auto")`.
+    This message is displayed once per session.
+
+![](README_files/figure-commonmark/map-1.png)
+
 ### Soil lab information (reference analytical data)
 
-NOTE: The code chunk below must be run just once for getting a template for scripted column standardization. Just run once for getting the original names of soil properties, descriptions, data types, and units. Then upload to Google Sheet for editing and manually defining the rules for integrating with the OSSL. Requires Google authentication. A copy of the output file is saved to this folder for archiving purposes.
+NOTE: The code chunk below must be run just once for getting a template
+for scripted column standardization. Just run once for getting the
+original names of soil properties, descriptions, data types, and units.
+Then upload to Google Sheet for editing and manually defining the rules
+for integrating with the OSSL. Requires Google authentication. A copy of
+the output file is saved to this folder for archiving purposes.
 
-**Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.**
+**Always leave the sheet name as TEMP to avoid overwritting, then rename
+online to download locally.**
 
-```{r soil_template, echo=TRUE, eval=FALSE}
+``` r
 # Checking shared files
 # list.files(dir)
 
@@ -186,9 +188,10 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the edited standardization template is saved to this dataset folder.
+copy of the edited standardization template is saved to this dataset
+folder.
 
-```{r soilab_download, echo=TRUE, eval=FALSE}
+``` r
 # Downloading from google sheet
 
 # Checking metadata
@@ -203,7 +206,8 @@ write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
 ```
 
 Reading standardization rules:
-```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
                         show_col_types = F) %>%
   filter(import == TRUE) %>%
@@ -212,8 +216,21 @@ transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
 knitr::kable(transvalues)
 ```
 
+| original_name | ossl_abbrev | ossl_method | ossl_unit | ossl_convert | ossl_name |
+|:---|:---|:---|:---|:---|:---|
+| BD_fine | bd | iso.11272 | g.cm3 | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | bd_iso.11272_g.cm3 |
+| TN | n.tot | iso.13878 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | n.tot_iso.13878_w.pct |
+| TC | c.tot | iso.10694 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | c.tot_iso.10694_w.pct |
+| SOC | oc | iso.10694 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | oc_iso.10694_w.pct |
+| pH_CaCl2_site | ph.cacl2 | iso.10390 | index | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.cacl2_iso.10390_index |
+| EC_CaCl2_site | ec | iso.11265 | ds.m | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ec_iso.11265_ds.m |
+| clay_site | clay.tot | iso.11277 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | clay.tot_iso.11277_w.pct |
+| silt_site | silt.tot | iso.11277 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | silt.tot_iso.11277_w.pct |
+| sand_site | sand.tot | iso.11277 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | sand.tot_iso.11277_w.pct |
+
 Standardizing soil data to the OSSL format:
-```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 # Reading soil information
 schiedung.info <- read_xlsx(paste0(dir, "/ID_DRIFT_all.xlsx"), sheet = 1)
 
@@ -231,14 +248,30 @@ schiedung.soildata <- schiedung.info %>%
   rename_with(~analytes.new.names, all_of(analytes.old.names)) %>%
   mutate(across(-id.layer_local_c, ~as.numeric(.x))) %>%
   as.data.frame()
+```
 
+    Warning: There were 5 warnings in `mutate()`.
+    The first warning was:
+    ℹ In argument: `across(-id.layer_local_c, ~as.numeric(.x))`.
+    Caused by warning:
+    ! NAs introduced by coercion
+    ℹ Run `dplyr::last_dplyr_warnings()` to see the 4 remaining warnings.
+
+``` r
 # Removing duplicates
 schiedung.soildata %>%
   group_by(id.layer_local_c) %>%
   summarise(repeats = n()) %>%
   group_by(repeats) %>%
   summarise(count = n())
+```
 
+    # A tibble: 1 × 2
+      repeats count
+        <int> <int>
+    1       1   289
+
+``` r
 # Getting the formulas
 functions.list <- transvalues %>%
   mutate(ossl_name = factor(ossl_name, levels = names(schiedung.soildata))) %>%
@@ -260,7 +293,12 @@ schiedung.soildata <- schiedung.soildata.trans %>%
 schiedung.soildata %>%
   distinct(id.layer_local_c) %>%
   summarise(count = n())
+```
 
+      count
+    1   289
+
+``` r
 # Saving version to dataset root dir
 soillab.exp.file = path(dir, "ossl_soillab_v1.3")
 readr::write_csv(schiedung.soildata, str_c(soillab.exp.file, ".csv.gz"))
@@ -268,18 +306,54 @@ nanoparquet::write_parquet(schiedung.soildata, str_c(soillab.exp.file, ".parquet
 ```
 
 Soil lab data summary.
-```{r soil_lab_summary, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 schiedung.soildata %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
 ```
 
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 289        |
+| Number of columns                                | 10         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| factor                                           | 1          |
+| numeric                                          | 9          |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
+
+Data summary
+
+**Variable type: factor**
+
+| skim_variable    | n_missing | ordered | n_unique | top_counts                     |
+|:-----------------|----------:|:--------|---------:|:-------------------------------|
+| id.layer_local_c |         0 | FALSE   |      289 | 1.1: 1, 1.1: 1, 1.1: 1, 1.1: 1 |
+
+**Variable type: numeric**
+
+| skim_variable            | n_missing |  mean |    sd |    p0 |   p25 |   p50 |   p75 |  p100 |
+|:-------------------------|----------:|------:|------:|------:|------:|------:|------:|------:|
+| bd_iso.11272_g.cm3       |         0 |  1.27 |  0.25 |  0.38 |  1.17 |  1.33 |  1.44 |  1.72 |
+| n.tot_iso.13878_w.pct    |        23 |  0.10 |  0.09 |  0.02 |  0.04 |  0.07 |  0.14 |  0.68 |
+| c.tot_iso.10694_w.pct    |         0 |  1.79 |  1.97 |  0.00 |  0.53 |  1.24 |  2.38 | 15.68 |
+| oc_iso.10694_w.pct       |         0 |  1.56 |  1.87 |  0.07 |  0.31 |  0.90 |  2.13 | 11.84 |
+| ph.cacl2_iso.10390_index |        13 |  5.24 |  0.91 |  3.65 |  4.53 |  5.18 |  5.87 |  7.07 |
+| ec_iso.11265_ds.m        |        13 |  2.32 |  0.03 |  2.25 |  2.31 |  2.32 |  2.34 |  2.41 |
+| clay.tot_iso.11277_w.pct |        13 | 14.18 | 11.32 |  2.00 |  5.00 |  8.00 | 25.00 | 40.00 |
+| silt.tot_iso.11277_w.pct |        13 | 30.47 | 18.68 |  3.00 | 15.00 | 28.00 | 50.00 | 66.00 |
+| sand.tot_iso.11277_w.pct |        13 | 54.16 | 29.64 | 12.00 | 23.75 | 65.00 | 81.00 | 95.00 |
+
 ### Mid-infrared spectra
 
-Samples have different spectral range, therefore two spectral sets were formatted and binded together.
+Samples have different spectral range, therefore two spectral sets were
+formatted and binded together.
 
-```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
+``` r
 # excel_sheets(paste0(dir, "/Schiedung_opusimport.xlsx"))
 
 # First dataset
@@ -293,6 +367,12 @@ schiedung.spec1 <- schiedung.spec1 %>%
 
 # Need to resample spectra
 old.wavenumber <- na.omit(as.numeric(names(schiedung.spec1)))
+```
+
+    Warning in na.omit(as.numeric(names(schiedung.spec1))): NAs introduced by
+    coercion
+
+``` r
 new.wavenumbers <- rev(seq(600, 4000, by = 2))
 
 schiedung.mir1 <- schiedung.spec1 %>%
@@ -315,6 +395,12 @@ schiedung.spec2 <- schiedung.spec2 %>%
 
 # Need to resample spectra
 old.wavenumber <- na.omit(as.numeric(names(schiedung.spec2)))
+```
+
+    Warning in na.omit(as.numeric(names(schiedung.spec2))): NAs introduced by
+    coercion
+
+``` r
 new.wavenumbers <- rev(seq(600, 4000, by = 2))
 
 schiedung.mir2 <- schiedung.spec2 %>%
@@ -365,7 +451,12 @@ scans.summary %>%
   filter(value > 0) %>%
   group_by(check) %>%
   summarise(count = n())
+```
 
+    # A tibble: 0 × 2
+    # ℹ 2 variables: check <chr>, count <int>
+
+``` r
 # Renaming
 old.wavenumbers <- seq(600, 4000, by = 2)
 new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
@@ -400,16 +491,17 @@ readr::write_csv(schiedung.mir, str_c(mir.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(schiedung.mir, str_c(mir.exp.file, ".parquet"))
 ```
 
-
 ## Quality control
 
 The final table must be joined as follows:
 
 - MIR is used as first reference for pairing with soil data.
-- Soil lab data are left joined to MIR. This drop data without any available scan.
+- Soil lab data are left joined to MIR. This drop data without any
+  available scan.
 
 The availability of data is summarized below:
-```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 # Taking a few representative columns for checking the consistency of joins
 schiedung.availability <- schiedung.mir %>%
   select(id.layer_local_c, scan_mir.800_abs) %>%
@@ -423,7 +515,24 @@ schiedung.availability %>%
   filter(!is.na(value)) %>%
   group_by(column) %>%
   summarise(count = n())
+```
 
+    # A tibble: 11 × 2
+       column                   count
+       <chr>                    <int>
+     1 bd_iso.11272_g.cm3         259
+     2 c.tot_iso.10694_w.pct      259
+     3 clay.tot_iso.11277_w.pct   250
+     4 ec_iso.11265_ds.m          250
+     5 id.layer_local_c           271
+     6 n.tot_iso.13878_w.pct      239
+     7 oc_iso.10694_w.pct         259
+     8 ph.cacl2_iso.10390_index   250
+     9 sand.tot_iso.11277_w.pct   250
+    10 scan_mir.800_abs           271
+    11 silt.tot_iso.11277_w.pct   250
+
+``` r
 # Repeats check - Duplicates are dropped
 schiedung.availability %>%
   mutate_all(as.character) %>%
@@ -435,8 +544,20 @@ schiedung.availability %>%
   summarise(count = n())
 ```
 
+    `summarise()` has grouped output by 'column'. You can override using the
+    `.groups` argument.
+    `summarise()` has grouped output by 'column'. You can override using the
+    `.groups` argument.
+
+    # A tibble: 1 × 3
+    # Groups:   column [1]
+      column           repeats count
+      <chr>              <int> <int>
+    1 id.layer_local_c       1   271
+
 MIR spectral visualization (100 random spectra):
-```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 set.seed(42)
 schiedung.mir %>%
   sample_n(100) %>%
@@ -453,10 +574,35 @@ schiedung.mir %>%
   theme_light()
 ```
 
-```{r end}
+![](README_files/figure-commonmark/mir_plot-1.png)
+
+``` r
 toc()
+```
+
+    12.157 sec elapsed
+
+``` r
 rm(list = ls())
 gc()
 ```
 
+               used  (Mb) gc trigger  (Mb) max used  (Mb)
+    Ncells  6436077 343.8   11094752 592.6  8836653 472.0
+    Vcells 11271410  86.0   25983906 198.3 25804640 196.9
+
 ## References
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0" line-spacing="2">
+
+<div id="ref-Schiedung2022" class="csl-entry">
+
+Schiedung, M., Bellè, S.-L., Malhotra, A., & Abiven, S. (2022). Organic
+carbon stocks, quality and prediction in permafrost-affected forest
+soils in north canada. *CATENA*, *213*, 106194.
+doi:[10.1016/j.catena.2022.106194](https://doi.org/10.1016/j.catena.2022.106194)
+
+</div>
+
+</div>
