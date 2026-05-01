@@ -1,7 +1,7 @@
 # Austrian NIR soil spectral library (AUT) for soil health assessments
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
 
-- [The AUT original data](#the-aut-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -18,10 +18,10 @@ Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-29  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The AUT original data
+## Original data
 
 Site data, Soil lab data, and Near-Infrared (NIR) data from all
 environmental zones of Austria.
@@ -84,7 +84,7 @@ readr::write_csv(austrian.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(austrian.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting Austrian map:
+Plotting map:
 
 ``` r
 data("World")
@@ -553,7 +553,7 @@ austrian.nir.final %>%
 toc()
 ```
 
-    17.461 sec elapsed
+    17.886 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -561,8 +561,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6379700 340.8   11335541 605.4  9904677 529.0
-    Vcells 10922337  83.4   33618927 256.5 42023658 320.7
+    Ncells  6379700 340.8   11335494 605.4  9904677 529.0
+    Vcells 10922328  83.4   33618815 256.5 42023518 320.7
 
 ## References
 

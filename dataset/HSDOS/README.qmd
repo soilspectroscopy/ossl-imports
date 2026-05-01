@@ -30,7 +30,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The HSDOS original data
+## Original data
 
 Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from the Hungarian Soil Degradation Observation System (HSDOS). Further information of the dataset can be at @meszaros_vis-nir_2025.
 
@@ -101,7 +101,7 @@ readr::write_csv(hsdos.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(hsdos.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
 
@@ -427,7 +427,7 @@ hsdos.visnir.proc %>%
   theme_light()
 ```
 
-```{r}
+```{r end}
 toc()
 rm(list = ls())
 gc()

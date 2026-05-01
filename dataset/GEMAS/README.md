@@ -5,7 +5,7 @@ Janik, Clemens Reimann (former lead, retired), Geological Survey of
 Norway (NGU), Anna Ladenberger, Geological Survey of Sweden
 (SGU), Philippe Negrel, French Geological Survey (BRGM)
 
-- [The GEMAS original data](#the-gemas-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -22,10 +22,10 @@ Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-29  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The GEMAS original data
+## Original data
 
 Site data, Soil lab data, and Mid-Infrared Spectra (MIR) from the
 Geochemical Mapping of Agricultural and Grazing Land Soil (GEMAS).
@@ -93,7 +93,7 @@ readr::write_csv(gemas.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(gemas.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 
 ``` r
 data("World")
@@ -184,7 +184,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -539,7 +540,7 @@ gemas.mir.export %>%
 toc()
 ```
 
-    21.441 sec elapsed
+    24.727 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -547,8 +548,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6415287 342.7   11436087 610.8 10717487 572.4
-    Vcells 11271768  86.0   53001508 404.4 66251263 505.5
+    Ncells  6415287 342.7   11436152 610.8 10717487 572.4
+    Vcells 11271762  86.0   53001501 404.4 66251257 505.5
 
 ## References
 

@@ -1,7 +1,7 @@
 # Spectra from two Brazilian farms
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
 
-- [The Tropical farm original data](#the-tropical-farm-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -17,10 +17,10 @@ Brazilian local farms into the Open Soil Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-30  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The Tropical farm original data
+## Original data
 
 Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from
 Brazilian agricultural areas. Further information of the dataset can be
@@ -122,7 +122,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -486,16 +487,16 @@ tropical.visnir.export %>%
 toc()
 ```
 
-    6.114 sec elapsed
+    7.109 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-               used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6067641 324.1   11068771 591.2  8371680 447.1
-    Vcells 10245821  78.2   17824054 136.0 17823937 136.0
+               used  (Mb) gc trigger  (Mb) max used (Mb)
+    Ncells  6067641 324.1   11115327 593.7  8369344  447
+    Vcells 10245810  78.2   17824054 136.0 17823926  136
 
 ## References
 

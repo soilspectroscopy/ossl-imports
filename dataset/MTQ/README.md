@@ -1,7 +1,7 @@
 # Martinique dataset preparation for the OSSL
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
 
-- [The MTQ original data](#the-mtq-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -17,10 +17,10 @@ Spectral Dataset (MTQ) into the Open Soil Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-30  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The MTQ original data
+## Original data
 
 Site data, Soil lab data, and Near-Infrared (NIR) data from rural areas
 of the Martinique island. Further information of the dataset can be
@@ -114,7 +114,7 @@ readr::write_csv(martinique.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(martinique.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 
 ``` r
 data("World")
@@ -594,7 +594,7 @@ martinique.nir.export %>%
 toc()
 ```
 
-    9.311 sec elapsed
+    9.99 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -602,8 +602,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6404810 342.1   10922775 583.4  8372005 447.2
-    Vcells 10921110  83.4   21517506 164.2 17857031 136.3
+    Ncells  6404810 342.1   10922661 583.4  8372795 447.2
+    Vcells 10921106  83.4   21478978 163.9 17830444 136.1
 
 ## References
 

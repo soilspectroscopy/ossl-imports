@@ -30,7 +30,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The Geocradle original data
+## Original data
 
 Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from the Geocradle regional soil spectral library.
 
@@ -112,7 +112,7 @@ readr::write_csv(geocradle.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(geocradle.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
 

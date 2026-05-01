@@ -1,7 +1,7 @@
 # LUCAS dataset preparation for the OSSL
 Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
 
-- [The LUCAS data](#the-lucas-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -19,10 +19,10 @@ Library (lucas) into the Open Soil Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-30  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The LUCAS data
+## Original data
 
 Soil samples from the LUCAS (Land Use/Cover Area frame statistical
 Survey) of 23-28 European Union member states collected between 2009 and
@@ -1168,7 +1168,7 @@ lucas.mir.export %>%
 toc()
 ```
 
-    267.163 sec elapsed
+    302.942 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1176,8 +1176,8 @@ gc()
 ```
 
                used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    Ncells  6469817 345.6   10821018  578.0  10821018  578.0
-    Vcells 12200376  93.1  360262142 2748.6 450327541 3435.8
+    Ncells  6469649 345.6   10821042  578.0  10821042  578.0
+    Vcells 12199309  93.1  360262142 2748.6 450327541 3435.8
 
 ## References
 

@@ -30,7 +30,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The Tropical farm original data
+## Original data
 
 Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from Brazilian agricultural areas. Further information of the dataset can be found in detail at @Tavares2022.
 
@@ -385,7 +385,7 @@ tropical.visnir.export %>%
   theme_light()
 ```
 
-```{r}
+```{r end}
 toc()
 rm(list = ls())
 gc()

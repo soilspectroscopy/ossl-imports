@@ -1,5 +1,5 @@
 ---
-title: "Africa Soil Information Service Phase I (AFSIS1) preparation for the OSSL"
+title: "Africa Soil Information Service Phase I (AFSIS1) prep"
 author: 
   - name: Jose L. Safanelli
     email: jsafanelli@woodwellclimate.org
@@ -13,7 +13,7 @@ format:
   gfm:
     toc: true
     toc-depth: 3
-bibliography: ../../tex/refs.bib
+bibliography: reference.bib
 csl: ../../tex/apa.csl
 cite-method: citeproc
 link-citations: true
@@ -31,7 +31,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The AFIS1 original data
+## Original data
 
 Site data, soil lab data, and Mid-Infrared Spectra (MIR) from AFSIS1.
 
@@ -112,7 +112,7 @@ afsis1.sitedata <- afsis1.geo %>%
   #        dataset.license.address_idn_url = "https://opendatacommons.org/licenses/odbl/",
   #        dataset.contact.name_utf8_txt = "Keith Shepherd",
   #        dataset.contact_ietf_email = "afsis.info@africasoils.net") %>%
-  mutate(dataset.code_ascii_txt = "AFSIS1.SSL",
+  mutate(dataset.code_ascii_txt = "AFSIS1",
          id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
          .before = 1)
 
@@ -143,7 +143,7 @@ readr::write_csv(afsis1.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(afsis1.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting AFSIS1 map:
+Plotting map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
 

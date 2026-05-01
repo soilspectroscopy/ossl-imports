@@ -12,8 +12,8 @@ author:
 format: 
   gfm:
     toc: true
-    toc-depth: 2
-bibliography: ../../tex/refs.bib
+    toc-depth: 3
+bibliography: reference.bib
 csl: ../../tex/apa.csl
 cite-method: citeproc
 link-citations: true

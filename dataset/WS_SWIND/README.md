@@ -1,8 +1,7 @@
 # Spectra from Watershed soils of Southwestern India
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
 
-- [The Southwestern India original
-  data](#the-southwestern-india-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -18,10 +17,10 @@ Code repository for preparing and importing the Southwestern India
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-30  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The Southwestern India original data
+## Original data
 
 Site data, Soil lab data, and Mid-Infrared Spectra (MIR) from
 small-scale tropical, sub-humid and semi-arid watersheds under shrubland
@@ -657,7 +656,7 @@ india.mir.export %>%
 toc()
 ```
 
-    14.136 sec elapsed
+    14.8 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -665,8 +664,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6424745 343.2   11160464 596.1  9982665 533.2
-    Vcells 11791511  90.0   31472910 240.2 31412930 239.7
+    Ncells  6424748 343.2   11160400 596.1  9982668 533.2
+    Vcells 11791505  90.0   31472903 240.2 31412924 239.7
 
 ## References
 

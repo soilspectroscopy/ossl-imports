@@ -30,7 +30,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The Southwestern India original data
+## Original data
 
 Site data, Soil lab data, and Mid-Infrared Spectra (MIR) from small-scale tropical, sub-humid and semi-arid watersheds under shrubland and dry deciduous forest in Southwestern India. Further information of the dataset can be found in detail at @Bell2022.
 
@@ -52,7 +52,7 @@ options(scipen = 999)
 
 Directory/folder path with original files (not uploaded to GitHub).
 
-```{r}
+```{r dir}
 # dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/South India"
 dir = "~/mnt-ossl-private/database/datasets/WS_SWIND/"
 tic()
@@ -62,7 +62,7 @@ tic()
 
 ### Site information
 
-```{r}
+```{r soilsite}
 india.rawdata <- fread(path(dir, "20211111_MS_SOC_Stock_India_data_raw.csv"), header = T)
 india.compdata <- fread(path(dir, "20211111_MS_SOC_Stock_India_data_composites.csv"), header = T)
 
@@ -464,7 +464,7 @@ india.mir.export %>%
   theme_light()
 ```
 
-```{r}
+```{r end}
 toc()
 rm(list = ls())
 gc()

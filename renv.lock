@@ -4111,6 +4111,22 @@
       "Maintainer": "Wolfgang Viechtbauer <wvb@wvbauer.com>",
       "Repository": "CRAN"
     },
+    "measurements": {
+      "Package": "measurements",
+      "Version": "1.5.1",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Tools for Units of Measurement",
+      "Date": "2023-04-28",
+      "Author": "Matthew A. Birk",
+      "Maintainer": "Matthew A. Birk <matthewabirk@gmail.com>",
+      "Description": "Collection of tools to make working with physical measurements easier. Convert between metric and imperial units, or calculate a dimension's unknown value from other dimensions' measurements.",
+      "License": "GPL-3",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.2.3",
+      "NeedsCompilation": "no",
+      "Repository": "CRAN"
+    },
     "memoise": {
       "Package": "memoise",
       "Version": "2.0.1",

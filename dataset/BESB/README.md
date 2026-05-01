@@ -1,7 +1,7 @@
 # Brazilian Soil Spectral Library (BESB) preparation for the OSSL
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
 
-- [The BESB data](#the-besb-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -19,10 +19,10 @@ Library (BESB) into the Open Soil Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-29  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The BESB data
+## Original data
 
 Site data, Soil lab data, Mid-Infrared Spectra (MIR), and Visible,
 Near-Infrared and Shortwave-Infrared (Vis-NIR-SWIR) from the Brazilian
@@ -101,7 +101,7 @@ readr::write_csv(besb.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(besb.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 
 ``` r
 data("World")
@@ -148,7 +148,7 @@ Then upload to Google Sheet for editing and manually defining the rules
 for integrating with the OSSL. Requires Google authentication. A copy of
 the output file is saved to this folder for archiving purposes.
 
-**Always leave the sheet name as TEMP to avoid overwritting, then rename
+**Always leave the sheet name as TEMP to avoid overwriting, then rename
 online to download locally.**
 
 ``` r
@@ -191,7 +191,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -778,7 +779,7 @@ besb.mir.export %>%
 toc()
 ```
 
-    106.78 sec elapsed
+    80.795 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -786,8 +787,8 @@ gc()
 ```
 
                used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    Ncells  6416700 342.7   11484534  613.4  11484534  613.4
-    Vcells 11324178  86.4  151391615 1155.1 230018693 1755.0
+    Ncells  6416700 342.7   11484618  613.4  11484618  613.4
+    Vcells 11324176  86.4  151391613 1155.1 230018691 1755.0
 
 ## References
 

@@ -13,7 +13,7 @@ format:
   gfm:
     toc: true
     toc-depth: 3
-bibliography: ../../tex/refs.bib
+bibliography: reference.bib
 csl: ../../tex/apa.csl
 cite-method: citeproc
 link-citations: true
@@ -31,7 +31,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The CAF original data
+## Original data
 
 Site data, soil lab data, and Mid-Infrared Spectra (MIR) from the Central African Soil Spectral Library (CAF). Further information can be found in detail at @summerauer2021central.
 
@@ -127,7 +127,7 @@ readr::write_csv(caf.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(caf.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting CAF map:
+Plotting map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
 

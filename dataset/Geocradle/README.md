@@ -1,7 +1,7 @@
 # Geocradle dataset preparation for the OSSL
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
 
-- [The Geocradle original data](#the-geocradle-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -17,10 +17,10 @@ the Open Soil Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-29  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The Geocradle original data
+## Original data
 
 Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from
 the Geocradle regional soil spectral library.
@@ -103,7 +103,7 @@ readr::write_csv(geocradle.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(geocradle.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 
 ``` r
 data("World")
@@ -195,7 +195,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -572,7 +573,7 @@ geocradle.visnir.proc %>%
 toc()
 ```
 
-    14.797 sec elapsed
+    16.303 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -580,8 +581,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6462420 345.2   11589711 619.0 11589711 619.0
-    Vcells 11170118  85.3   30109810 229.8 30109744 229.8
+    Ncells  6462423 345.2   11590118 619.0 11590118 619.0
+    Vcells 11170116  85.3   30109728 229.8 30109694 229.8
 
 ## References
 

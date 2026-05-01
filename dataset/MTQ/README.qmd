@@ -30,7 +30,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The MTQ original data
+## Original data
 
 Site data, Soil lab data, and Near-Infrared (NIR) data from rural areas of the Martinique island. Further information of the dataset can be found at @barthes_soil_2024.
 
@@ -50,7 +50,7 @@ gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
 
 Directory/folder path with original files (not uploaded to GitHub).
 
-```{r}
+```{r dir}
 # dir = "/Users/rzhi/Projects/git/ossl-imports-internal/dataset/Martinique"
 dir = "~/mnt-ossl-private/database/datasets/MTQ"
 tic()
@@ -60,7 +60,7 @@ tic()
 
 ### Site information
 
-```{r}
+```{r soilsite}
 martinique.metadata <- read_tsv(path(dir, "SoilCarbonMartinique_v2.tab"),
                                 locale = locale(encoding = "latin1"))
 
@@ -120,7 +120,7 @@ readr::write_csv(martinique.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(martinique.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
 
@@ -461,7 +461,7 @@ martinique.nir.export %>%
 ```
 
 
-```{r}
+```{r end}
 toc()
 rm(list = ls())
 gc()

@@ -1,8 +1,7 @@
-# Africa Soil Information Service Phase I (AFSIS1) preparation for the
-OSSL
+# Africa Soil Information Service Phase I (AFSIS1) prep
 Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
 
-- [The AFIS1 original data](#the-afis1-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -19,17 +18,17 @@ Spectroscopy Laboratory: Africa Soil Information Service Phase I
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-30  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The AFIS1 original data
+## Original data
 
 Site data, soil lab data, and Mid-Infrared Spectra (MIR) from AFSIS1.
 
-Further information can be found in
-([**Towett2015?**](#ref-Towett2015)),
-([**Vagen2016?**](#ref-Vagen2016)), and
-([**Vagen2020?**](#ref-Vagen2020)).
+Further information can be found in Towett et al.
+([2015](#ref-Towett2015)), T.-G. Vågen, Winowiecki, Tondoh, Desta, &
+Gumbricht ([2016](#ref-Vagen2016)), and T.-G. Vågen et al.
+([2020](#ref-Vagen2020)).
 
 Input datasets:  
 - `AfSIS_reference.csv`: Database with site and soil analytes.  
@@ -97,7 +96,7 @@ afsis1.sitedata <- afsis1.geo %>%
   #        dataset.license.address_idn_url = "https://opendatacommons.org/licenses/odbl/",
   #        dataset.contact.name_utf8_txt = "Keith Shepherd",
   #        dataset.contact_ietf_email = "afsis.info@africasoils.net") %>%
-  mutate(dataset.code_ascii_txt = "AFSIS1.SSL",
+  mutate(dataset.code_ascii_txt = "AFSIS1",
          id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
          .before = 1)
 
@@ -135,7 +134,7 @@ readr::write_csv(afsis1.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(afsis1.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting AFSIS1 map:
+Plotting map:
 
 ``` r
 data("World")
@@ -610,7 +609,7 @@ afsis1.mir.export %>%
 toc()
 ```
 
-    89.852 sec elapsed
+    103.865 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -618,7 +617,41 @@ gc()
 ```
 
                used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    Ncells  6440603 344.0   11078362  591.7  11078362  591.7
-    Vcells 11288361  86.2  196090455 1496.1 245110844 1870.1
+    Ncells  6440603 344.0   11078262  591.7  11078262  591.7
+    Vcells 11288314  86.2  196090358 1496.1 245110796 1870.1
 
 ## References
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0" line-spacing="2">
+
+<div id="ref-Towett2015" class="csl-entry">
+
+Towett, E. K., Shepherd, K. D., Tondoh, J. E., Winowiecki, L. A.,
+Lulseged, T., Nyambura, M., … Cadisch, G. (2015). Total elemental
+composition of soils in sub-saharan africa and relationship with soil
+forming factors. *Geoderma Regional*, *5*, 157–168.
+doi:[10.1016/j.geodrs.2015.06.002](https://doi.org/10.1016/j.geodrs.2015.06.002)
+
+</div>
+
+<div id="ref-Vagen2020" class="csl-entry">
+
+Vågen, T.-G., Winowiecki, L. A., Desta, L., Tondoh, E. J., Weullow, E.,
+Shepherd, K., & Sila, A. (2020). Mid-infrared spectra (MIRS) from ICRAF
+soil and plant spectroscopy laboratory: Africa soil information service
+(AfSIS) phase i 2009-2013. World Agroforestry (ICRAF).
+doi:[10.34725/DVN/QXCWP1](https://doi.org/10.34725/DVN/QXCWP1)
+
+</div>
+
+<div id="ref-Vagen2016" class="csl-entry">
+
+Vågen, T.-G., Winowiecki, L. A., Tondoh, J. E., Desta, L. T., &
+Gumbricht, T. (2016). Mapping of soil properties and land degradation
+risk in africa using MODIS reflectance. *Geoderma*, *263*, 216–225.
+doi:[10.1016/j.geoderma.2015.06.023](https://doi.org/10.1016/j.geoderma.2015.06.023)
+
+</div>
+
+</div>

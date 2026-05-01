@@ -31,7 +31,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The BESB data
+## Original data
 
 Site data, Soil lab data, Mid-Infrared Spectra (MIR), and Visible,
 Near-Infrared and Shortwave-Infrared (Vis-NIR-SWIR) from the Brazilian
@@ -115,7 +115,7 @@ readr::write_csv(besb.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(besb.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 ```{r map, include=TRUE, echo=TRUE, eval=TRUE}
 data("World")
 
@@ -586,5 +586,6 @@ toc()
 rm(list = ls())
 gc()
 ```
+
 ## References
 

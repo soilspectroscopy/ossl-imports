@@ -1,7 +1,7 @@
 # Hungarian dataset preparation for the OSSL
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
 
-- [The HSDOS original data](#the-hsdos-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -18,10 +18,10 @@ Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-29  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The HSDOS original data
+## Original data
 
 Site data, Soil lab data, and Visible Near-Infrared (Vis-NIR) data from
 the Hungarian Soil Degradation Observation System (HSDOS). Further
@@ -84,7 +84,7 @@ readr::write_csv(hsdos.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(hsdos.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 
 ``` r
 data("World")
@@ -175,7 +175,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -547,16 +548,16 @@ hsdos.visnir.proc %>%
 toc()
 ```
 
-    21.52 sec elapsed
+    21.586 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-               used  (Mb) gc trigger (Mb) max used  (Mb)
-    Ncells  6407889 342.3   11459205  612 10048994 536.7
-    Vcells 11079259  84.6   50324058  384 62904875 480.0
+               used  (Mb) gc trigger  (Mb) max used  (Mb)
+    Ncells  6407892 342.3   11461330 612.2 10048997 536.7
+    Vcells 11079262  84.6   50324061 384.0 62904878 480.0
 
 ## References
 

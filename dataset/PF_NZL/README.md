@@ -1,75 +1,52 @@
----
-title: "Planted Forests from New Zealand"
-author: 
-  - name: Jose L. Safanelli
-    email: jsafanelli@woodwellclimate.org
-  - name: Ran Zhi
-    email: jsafanelli@woodwellclimate.org
-  - name: Tomislav Hengl
-    email: tom.hengl@opengeohub.org
-  - name: Jonathan Sanderman
-    email: jsanderman@woodwellclimate.org
-format: 
-  gfm:
-    toc: true
-    toc-depth: 3
-bibliography: reference.bib
-csl: ../../tex/apa.csl
-cite-method: citeproc
-link-citations: true
-twitter-card:
-  site: "@soilspec"
-editor: 
-  markdown: 
-    wrap: 72
----
+# Planted Forests from New Zealand
+Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
 
-Code repository for standardizing and importing spectra from Planted Forest Soils of New Zealand.
+- [The PF_NZL original data](#the-pf_nzl-original-data)
 
-Website: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  \
-Development: <https://github.com/soilspectroscopy>\
-Last update: `r Sys.Date()`\
+Code repository for standardizing and importing spectra from Planted
+Forest Soils of New Zealand.
+
+Website: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)  
+Development: <https://github.com/soilspectroscopy>  
+Last update: `r Sys.Date()`  
 Additional documentation:
 
-## Original data
+## The PF_NZL original data
 
-Site data, soil lab data, and Mid-Infrared Spectra (MIR) from different trials:\
-- FR380 trial series: <https://doi.org/10.6084/m9.figshare.20506587>.\
-- FR531 trial series: <https://doi.org/10.6084/m9.figshare.23605746>.\
-- FR556 trial series: <https://doi.org/10.6084/m9.figshare.21273114>.\
+Site data, soil lab data, and Mid-Infrared Spectra (MIR) from different
+trials:  
+- FR380 trial series: <https://doi.org/10.6084/m9.figshare.20506587>.  
+- FR531 trial series: <https://doi.org/10.6084/m9.figshare.23605746>.  
+- FR556 trial series: <https://doi.org/10.6084/m9.figshare.21273114>.  
 
-Further information about the trials and sampling methodology can be found in @Garrett2022, @Smaill2023, and @Paul2024.
+Further information about the trials and sampling methodology can be
+found in Garrett et al. ([2022](#ref-Garrett2022)),
+([**Smaill2023?**](#ref-Smaill2023)), and
+([**Paul2024?**](#ref-Paul2024)).
 
 <!-- Input files:   -->
 <!-- - `cssl_metadata_all.csv`: csv file with site information;   -->
 <!-- - `ssl_refdata_all.csv`: csv file with soil information;   -->
 <!-- - `cssl_spectra.csv`: csv with MIR spectral scans; -->
-
 <!-- ```{r packages, include=FALSE, echo=FALSE, eval=TRUE} -->
 <!-- packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr", -->
 <!--               "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth", -->
 <!--               "skimr", "prospectr", "tictoc", "nanoparquet", "fs") -->
-
 <!-- invisible(lapply(packages, library, character.only = TRUE)) -->
-
 <!-- source("../../R/functions/SSL_functions.R") -->
 <!-- gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json") -->
 <!-- ``` -->
-
 <!-- Directory/folder path with original files (not uploaded to GitHub).  -->
 <!-- ```{r} -->
 <!-- # dir = "./" -->
 <!-- dir = "~/mnt-ossl-private/database/datasets/CAF/" -->
 <!-- tic() -->
 <!-- ``` -->
-
 <!-- ## Data standardization to the OSSL format -->
-
 <!-- ### Site information -->
-
 <!-- ```{r} -->
 <!-- caf.metadata <- fread(path(dir, "cssl_metadata_all.csv"), header = T) -->
-
 <!-- caf.sitedata <- caf.metadata %>% -->
 <!--   select(sample_id, sample_location, -->
 <!--          country_name, country_code, province_name, subdivision_name, subdivision_type, -->
@@ -125,24 +102,19 @@ Further information about the trials and sampling methodology can be found in @G
 <!--          id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)), -->
 <!--          .before = 1) %>% -->
 <!--   mutate_at(vars(starts_with("id.")), as.character) -->
-
 <!-- # Saving version to dataset root dir -->
 <!-- site.exp.file = path(dir, "ossl_soilsite_v1.3") -->
 <!-- readr::write_csv(caf.sitedata, str_c(site.exp.file, ".csv.gz")) -->
 <!-- nanoparquet::write_parquet(caf.sitedata, str_c(site.exp.file, ".parquet")) -->
 <!-- ``` -->
-
 <!-- Plotting CAF map: -->
 <!-- ```{r map, include=TRUE, echo=TRUE, eval=TRUE} -->
 <!-- data("World") -->
-
 <!-- ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf") -->
-
 <!-- points <- caf.sitedata %>% -->
 <!--   filter(!is.na(longitude.point_wgs84_dd), -->
 <!--          !is.na(latitude.point_wgs84_dd)) %>% -->
 <!--   st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326) -->
-
 <!-- tmap_mode("plot") -->
 <!-- tm_shape(ocean) + -->
 <!--   tm_polygons(fill = "lightblue", col = NA) + -->
@@ -153,94 +125,68 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   tm_crs("ESRI:54030") + -->
 <!--   tm_layout(frame = FALSE) -->
 <!-- ``` -->
-
 <!-- ### Soil lab information (reference analytical data) -->
-
 <!-- NOTE: The code chunk below must be run just once for getting a template for scripted column standardization. Just run once for getting the original names of soil properties, descriptions, data types, and units. Then upload to Google Sheet for editing and manually defining the rules for integrating with the OSSL. Requires Google authentication. A copy of the output file is saved to this folder for archiving purposes. -->
-
 <!-- **Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.** -->
-
 <!-- ```{r soil_template, echo=TRUE, eval=FALSE} -->
 <!-- # Getting soillab original variables -->
-
 <!-- cassl.soildata <- fread(path(dir, "ssl_refdata_all.csv"), header = T) -->
-
 <!-- soillab.names <- cassl.soildata %>% -->
 <!--   names(.) %>% -->
 <!--   tibble(original_name = .) %>% -->
 <!--   dplyr::mutate(table = 'ssl_refdata_all', .before = 1) %>% -->
 <!--   dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>% -->
 <!--   dplyr::mutate(comment = '') -->
-
 <!-- readr::write_csv(soillab.names, paste0(getwd(), "/soillab_original_names.csv")) -->
-
 <!-- # Uploading to google sheet -->
-
 <!-- # Drive 'Open Soil Spectral Library' -->
 <!-- # Folder 'Database v2' -->
 <!-- googledrive::drive_ls(as_id("1l9VM4fFks2xBloDE69EFTfPgQeFx5aGw")) -->
-
 <!-- # Use the ID of the file 'OSSL_v2_tab2_soildata_importing' -->
 <!-- OSSL.soildata.importing <- "1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es" -->
-
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
-
 <!-- # Checking readme -->
 <!-- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme') -->
-
 <!-- # Preparing soillab.names for this dataset -->
 <!-- upload <- dplyr::as_tibble(soillab.names) -->
-
 <!-- # Uploading with TEMP name. Check online, move to sequence, and update name -->
 <!-- googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP") -->
-
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
 <!-- ``` -->
-
 <!-- NOTE: The code chunk below must be run just once. Run for getting the -->
 <!-- column standardization rules after editing online on Google Sheets. A -->
 <!-- copy of the edited standardization template is saved to this dataset folder. -->
-
 <!-- ```{r soilab_download, echo=TRUE, eval=FALSE} -->
 <!-- # Downloading from google sheet -->
-
 <!-- # Checking metadata -->
 <!-- googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es") -->
-
 <!-- # Preparing soillab.names -->
 <!-- transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es", -->
 <!--                                          sheet = "CAF") -->
-
 <!-- # Saving to folder -->
 <!-- write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv")) -->
 <!-- ``` -->
-
 <!-- Reading standardization rules: -->
 <!-- ```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE} -->
 <!-- transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"), -->
 <!--                         show_col_types = F) %>% -->
 <!--   filter(import == TRUE) %>% -->
 <!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
-
 <!-- knitr::kable(transvalues) -->
 <!-- ``` -->
-
 <!-- Standardizing soil data to the OSSL format: -->
 <!-- ```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE} -->
 <!-- caf.reference <- fread(path(dir, "ssl_refdata_all.csv"), -->
 <!--                        header = T) -->
-
 <!-- # Harmonization of names and units -->
 <!-- analytes.old.names <- transvalues %>% -->
 <!--   filter(table == "cssl_refdata_all") %>% -->
 <!--   pull(original_name) -->
-
 <!-- analytes.new.names <- transvalues %>% -->
 <!--   filter(table == "cssl_refdata_all") %>% -->
 <!--   pull(ossl_name) -->
-
 <!-- # Selecting and renaming -->
 <!-- caf.soildata <- caf.reference %>% -->
 <!--   rename(id.layer_local_c = sample_id) %>% -->
@@ -248,14 +194,12 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   rename_with(~analytes.new.names, all_of(analytes.old.names)) %>% -->
 <!--   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>% -->
 <!--   as.data.frame() -->
-
 <!-- # Removing duplicates -->
 <!-- # caf.soildata %>% -->
 <!-- #   group_by(id.layer_local_c) %>% -->
 <!-- #   summarise(repeats = n()) %>% -->
 <!-- #   group_by(repeats) %>% -->
 <!-- #   summarise(count = n()) -->
-
 <!-- # Getting the formulas -->
 <!-- functions.list <- transvalues %>% -->
 <!--   filter(table == "cssl_refdata_all") %>% -->
@@ -263,28 +207,23 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   arrange(ossl_name) %>% -->
 <!--   pull(ossl_convert) %>% -->
 <!--   c("x", .) -->
-
 <!-- # Applying transformation rules -->
 <!-- caf.soildata.trans <- transform_values(df = caf.soildata, -->
 <!--                                        out.name = names(caf.soildata), -->
 <!--                                        in.name = names(caf.soildata), -->
 <!--                                        fun.lst = functions.list) -->
-
 <!-- # Final soillab data -->
 <!-- caf.soildata <- caf.soildata.trans %>% -->
 <!--   mutate_at(vars(starts_with("id.")), as.character) -->
-
 <!-- # Checking total number of observations -->
 <!-- caf.soildata %>% -->
 <!--   distinct(id.layer_local_c) %>% -->
 <!--   summarise(count = n()) -->
-
 <!-- # Saving version to dataset root dir -->
 <!-- soillab.exp.file = path(dir, "ossl_soillab_v1.3") -->
 <!-- readr::write_csv(caf.soildata, str_c(soillab.exp.file, ".csv.gz")) -->
 <!-- nanoparquet::write_parquet(caf.soildata, str_c(soillab.exp.file, ".parquet")) -->
 <!-- ``` -->
-
 <!-- Soil lab data summary. -->
 <!-- ```{r soil_lab_summary, include=TRUE, echo=TRUE, eval=TRUE} -->
 <!-- caf.soildata %>% -->
@@ -292,25 +231,19 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   skimr::skim() %>% -->
 <!--   dplyr::select(-numeric.hist, -complete_rate) -->
 <!-- ``` -->
-
 <!-- ### Mid-infrared spectra -->
-
 <!-- ```{r mir, include=TRUE, echo=TRUE, eval=TRUE} -->
 <!-- # Floating wavenumbers -->
 <!-- caf.spectra <- fread(path(dir, "cssl_spectra.csv"), header = T) -->
-
 <!-- # Renaming -->
 <!-- old.names <- names(caf.spectra) -->
-
 <!-- caf.mir <- caf.spectra %>% -->
 <!--   rename(id.layer_local_c = sample_id) %>% -->
 <!--   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>% -->
 <!--   mutate_at(vars(all_of(old.names[-1])), as.numeric) -->
-
 <!-- # Need to resample spectra -->
 <!-- old.wavenumber <- na.omit(as.numeric(names(caf.mir))) -->
 <!-- new.wavenumbers <- rev(seq(600, 4000, by = 2)) -->
-
 <!-- caf.mir <- caf.mir %>% -->
 <!--   select(-id.layer_local_c) %>% -->
 <!--   as.matrix() %>% -->
@@ -320,47 +253,39 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   bind_cols({caf.mir %>% -->
 <!--       select(id.layer_local_c)}, .) %>% -->
 <!--   select(id.layer_local_c, as.character(rev(new.wavenumbers))) -->
-
 <!-- # Gaps -->
 <!-- scans.na.gaps <- caf.mir %>% -->
 <!--   select(-id.layer_local_c) %>% -->
 <!--   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>% -->
 <!--   tibble(proportion_NA = .) %>% -->
 <!--   bind_cols({caf.mir %>% select(id.layer_local_c)}, .) -->
-
 <!-- # Extreme negative - irreversible erratic patterns -->
 <!-- scans.extreme.neg <- caf.mir %>% -->
 <!--   select(-id.layer_local_c) %>% -->
 <!--   apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>% -->
 <!--   tibble(proportion_lower0 = .) %>% -->
 <!--   bind_cols({caf.mir %>% select(id.layer_local_c)}, .) -->
-
 <!-- # Extreme positive, irreversible erratic patterns -->
 <!-- scans.extreme.pos <- caf.mir %>% -->
 <!--   select(-id.layer_local_c) %>% -->
 <!--   apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>% -->
 <!--   tibble(proportion_higherAbs5 = .) %>% -->
 <!--   bind_cols({caf.mir %>% select(id.layer_local_c)}, .) -->
-
 <!-- # Consistency summary - problematic scans -->
 <!-- scans.summary <- scans.na.gaps %>% -->
 <!--   left_join(scans.extreme.neg, by = "id.layer_local_c") %>% -->
 <!--   left_join(scans.extreme.pos, by = "id.layer_local_c") -->
-
 <!-- scans.summary %>% -->
 <!--   select(-id.layer_local_c) %>% -->
 <!--   pivot_longer(everything(), names_to = "check", values_to = "value") %>% -->
 <!--   filter(value > 0) %>% -->
 <!--   group_by(check) %>% -->
 <!--   summarise(count = n()) -->
-
 <!-- # Renaming -->
 <!-- old.wavenumbers <- seq(600, 4000, by = 2) -->
 <!-- new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs") -->
-
 <!-- caf.mir <- caf.mir %>% -->
 <!--   rename_with(~new.wavenumbers, as.character(old.wavenumbers)) -->
-
 <!-- # # Preparing metadata -->
 <!-- # caf.mir.metadata <- caf.mir %>% -->
 <!-- #   select(id.layer_local_c) %>% -->
@@ -376,27 +301,19 @@ Further information about the trials and sampling methodology can be found in @G
 <!-- #          scan.mir.doi_idf_url = "https://doi.org/10.5281/zenodo.4351254", -->
 <!-- #          scan.mir.contact.name_utf8_txt = "Laura Summerauer", -->
 <!-- #          scan.mir.contact.email_ietf_txt = "laura.summerauer@usys.ethz.ch") -->
-
 <!-- # Final preparation -->
 <!-- caf.mir.export <- caf.mir -->
-
 <!-- # caf.mir.export <- caf.mir.metadata %>% -->
 <!-- #   left_join(caf.mir, by = "id.layer_local_c") %>% -->
 <!-- #   mutate_at(vars(starts_with("id.")), as.character) -->
-
 <!-- mir.exp.file = path(dir, "ossl_mir_v1.3") -->
 <!-- readr::write_csv(caf.mir.export, str_c(mir.exp.file, ".csv.gz")) -->
 <!-- nanoparquet::write_parquet(caf.mir.export, str_c(mir.exp.file, ".parquet")) -->
 <!-- ``` -->
-
-
 <!-- ## Quality control -->
-
 <!-- The final table must be joined as follows: -->
-
 <!-- - MIR is used as first reference for pairing with soil data. -->
 <!-- - Soil lab data are left joined to MIR. This drop data without any available scan. -->
-
 <!-- The availability of data is summarized below: -->
 <!-- ```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE} -->
 <!-- # Taking a few representative columns for checking the consistency of joins -->
@@ -404,7 +321,6 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   select(id.layer_local_c, scan_mir.600_abs) %>% -->
 <!--   left_join(caf.soildata, by = "id.layer_local_c") %>% -->
 <!--   filter(!is.na(id.layer_local_c)) -->
-
 <!-- # Availability of information from caf -->
 <!-- caf.availability %>% -->
 <!--   mutate_all(as.character) %>% -->
@@ -412,7 +328,6 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   filter(!is.na(value)) %>% -->
 <!--   group_by(column) %>% -->
 <!--   summarise(count = n()) -->
-
 <!-- # Repeats check - Duplicates are dropped -->
 <!-- caf.availability %>% -->
 <!--   mutate_all(as.character) %>% -->
@@ -423,7 +338,6 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   group_by(column, repeats) %>% -->
 <!--   summarise(count = n()) -->
 <!-- ``` -->
-
 <!-- MIR spectral visualization (100 random spectra): -->
 <!-- ```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE} -->
 <!-- set.seed(42) -->
@@ -441,11 +355,24 @@ Further information about the trials and sampling methodology can be found in @G
 <!--   labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") + -->
 <!--   theme_light() -->
 <!-- ``` -->
-
 <!-- ```{r} -->
 <!-- toc() -->
 <!-- rm(list = ls()) -->
 <!-- gc() -->
 <!-- ``` -->
-
 <!-- ## References -->
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0" line-spacing="2">
+
+<div id="ref-Garrett2022" class="csl-entry">
+
+Garrett, L. G., Sanderman, J., Palmer, D. J., Dean, F., Patel, S.,
+Bridson, J. H., & Carlin, T. (2022). Mid-infrared spectroscopy for
+planted forest soil and foliage nutrition predictions, new zealand case
+study. *Trees, Forests and People*, *8*, 100280.
+doi:[10.1016/j.tfp.2022.100280](https://doi.org/10.1016/j.tfp.2022.100280)
+
+</div>
+
+</div>

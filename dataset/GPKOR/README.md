@@ -1,7 +1,7 @@
 # Gyeonggi Province, South Korea, dataset preparation for the OSSL
 Ran Zhi, Jose L. Safanelli, Jonathan Sanderman
 
-- [The GPKOR original data](#the-gpkor-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -18,10 +18,10 @@ Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-29  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The GPKOR original data
+## Original data
 
 Site data, Soil lab data, and Near-Infrared (NIR) data from Gyeonggi
 Province, South Korea. Further information of the dataset can be found
@@ -98,7 +98,7 @@ readr::write_csv(korean.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(korean.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting sites map:
+Plotting map:
 
 ``` r
 data("World")
@@ -186,7 +186,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -355,6 +356,18 @@ scans.summary <- scans.na.gaps %>%
   left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
   left_join(scans.extreme.pos, by = "id.layer_local_c")
 
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+```
+
+    # A tibble: 0 × 2
+    # ℹ 2 variables: check <chr>, count <int>
+
+``` r
 # Renaming and Metadata
 final.visnir.names <- paste0("scan_nir.", new.wavelengths, "_ref")
 
@@ -483,7 +496,7 @@ korean.nir.final %>%
 toc()
 ```
 
-    11.542 sec elapsed
+    12.12 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -491,8 +504,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6407473 342.2   10973251 586.1  8932959 477.1
-    Vcells 10892384  83.2   24913125 190.1 24912994 190.1
+    Ncells  6410209 342.4   10975735 586.2  9024171 482.0
+    Vcells 10897646  83.2   24913296 190.1 24913284 190.1
 
 ## References
 

@@ -33,7 +33,7 @@ Development: <https://github.com/soilspectroscopy>\
 Last update: `r Sys.Date()`\
 Additional documentation:
 
-## The LUCAS data
+## Original data
 
 Soil samples from the LUCAS (Land Use/Cover Area frame statistical Survey) of 23-28 European Union member states collected between 2009 and 2015 were scanned for VisNIR (@Stevens2013, @Nocita2014).
 

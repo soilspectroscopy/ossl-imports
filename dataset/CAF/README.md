@@ -1,7 +1,7 @@
 # Central African (CAF) dataset preparation for the OSSL
 Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
 
-- [The CAF original data](#the-caf-original-data)
+- [Original data](#original-data)
 - [Data standardization to the OSSL
   format](#data-standardization-to-the-ossl-format)
   - [Site information](#site-information)
@@ -17,10 +17,10 @@ Spectral Library (CAF) into the Open Soil Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-04-29  
+Last update: 2026-05-01  
 Additional documentation:
 
-## The CAF original data
+## Original data
 
 Site data, soil lab data, and Mid-Infrared Spectra (MIR) from the
 Central African Soil Spectral Library (CAF). Further information can be
@@ -109,7 +109,7 @@ readr::write_csv(caf.sitedata, str_c(site.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(caf.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
-Plotting CAF map:
+Plotting map:
 
 ``` r
 data("World")
@@ -200,7 +200,8 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the output file is saved to this folder for archiving purposes.
+copy of the edited standardization template is saved to this dataset
+folder.
 
 ``` r
 # Downloading from google sheet
@@ -564,7 +565,7 @@ caf.mir %>%
 toc()
 ```
 
-    24.213 sec elapsed
+    21.847 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -572,8 +573,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6431412 343.5   10885260 581.4  9839314 525.5
-    Vcells 11267221  86.0   42854643 327.0 42854643 327.0
+    Ncells  6431468 343.5   10898224 582.1  9839370 525.5
+    Vcells 11267232  86.0   42854646 327.0 42854646 327.0
 
 ## References
 
