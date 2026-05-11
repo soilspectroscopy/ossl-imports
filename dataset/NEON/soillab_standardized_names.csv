@@ -1,0 +1,94 @@
+table,original_name,import,original_description,original_unit,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+ssl_refdata_all,uid,NA,Unique ID within NEON database; an identifier for the record,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,WHRCID,NA,Woodwell Climate internal ID,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,biogeoID,NA,Identifier for the biogeochemistry sample,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,domainID,NA,Unique identifier of the NEON domain,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,siteID,NA,NEON site code,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,pitNamedLocation,NA,Named location identifier for the soil pit,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,pitID,NA,An identifier for the soil pit,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,horizonID,NA,An identifier for the soil horizon,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,horizonName,NA,Soil horizon name,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,biogeoHorizonProportion,NA,NA,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,biogeoSampleType,NA,NA,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,setDate,NA,Date that trap was set,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,collectDate,NA,Date of the collection event,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,laboratoryName,NA,Name of the laboratory or facility that is processing the sample,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,labProjID,NA,Identifier for soil physical properties analyses,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,biogeoTopDepth,NA,Top depth of the biogeochemistry sample,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,biogeoBottomDepth,NA,Bottom depth of the biogeochemistry sample,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,biogeoCenterDepth,NA,Depth of the center of the biogeochemistry sample,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,remarks,NA,Technician notes; free text comments accompanying the record,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,carbonTot,TRUE,Total carbon concentration of the <2 mm fraction,gramsPerKilogram,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",c.tot_usda.a622_w.pct
+ssl_refdata_all,nitrogenTot,TRUE,Total nitrogen concentration of the <2 mm fraction,gramsPerKilogram,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_usda.a623_w.pct
+ssl_refdata_all,sulfurTot,TRUE,Total sulfur concentration of the <2 mm fraction,gramsPerKilogram,s.tot,usda.a624,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",s.tot_usda.a624_w.pct
+ssl_refdata_all,estimatedOC,TRUE,"Estimated organic carbon concentration of the <2 mm fraction, after subtraction of inorganic carbon",gramsPerKilogram,oc,usda.c729,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",oc_usda.c729_w.pct
+ssl_refdata_all,finalOC,NA,NA,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,airDryOvenDry,NA,Airdry/ovendry ratio of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,alMjelm,NA,Total dissolution aluminum from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,caMjelm,NA,Total dissolution calcium from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,feMjelm,NA,Total dissolution iron from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,kMjelm,NA,Total dissolution potassium from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,mgMjelm,NA,Total dissolution magnesium from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,mnMjelm,NA,Total dissolution manganese from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,naMjelm,NA,Total dissolution sodium from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,pMjelm,NA,Total dissolution phosphorous from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,siMjelm,NA,Total dissolution silicon from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,srMjelm,NA,Total dissolution strontium from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,tiMjelm,NA,Total dissolution titanium from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,zrMjelm,NA,Total dissolution zirconium from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,phCacl2,TRUE,pH of the <2 mm fraction in CaCl2,pH,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+ssl_refdata_all,phH2o,TRUE,pH of the <2 mm fraction in water,pH,ph.cacl2,usda.a481,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_usda.a481_index
+ssl_refdata_all,ec12pre,TRUE,1:2 Electrical conductivity of the <2 mm fraction,decisiemensPerMeter,ec,usda.a364,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ec_usda.a364_ds.m
+ssl_refdata_all,gypsumConc,NA,NA,gramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,caco3Conc,TRUE,Carbonate concentration of the <2 mm fraction expressed as calcium carbonate,gramsPerKilogram,caco3,usda.a54,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_usda.a54_w.pct
+ssl_refdata_all,caNh4d,TRUE,Ammonium acetate extractable Calcium from the <2 mm fraction,centimolesChargePerKilogram,ca.ext,usda.a722,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a722_cmolc.kg
+ssl_refdata_all,kNh4d,TRUE,Ammonium acetate extractable potassium from the <2 mm fraction,centimolesChargePerKilogram,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a725_cmolc.kg
+ssl_refdata_all,mgNh4d,TRUE,Ammonium acetate extractable magnesium from the <2 mm fraction,centimolesChargePerKilogram,mg.ext,usda.a724,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a724_cmolc.kg
+ssl_refdata_all,naNh4d,TRUE,Ammonium acetate extractable sodium from the <2 mm fraction,centimolesChargePerKilogram,na.ext,usda.a726,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a726_cmolc.kg
+ssl_refdata_all,cecdNh4,TRUE,Ammonium acetate cation exchange capacity (CEC) of the <2 mm fraction,centimolesChargePerKilogram,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_usda.a723_cmolc.kg
+ssl_refdata_all,alSatCecd33,NA,Aluminum saturation of the <2 mm fraction,percent,NA,NA,NA,NA,NA
+ssl_refdata_all,baseSumCecd10,NA,Sum of ammonium acetate extractable bases (calcium + potassium + magnesium + sodium) from the <2 mm fraction,centimolesChargePerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,bsesatCecd10,NA,Base saturation of the <2 mm fraction,percent,NA,NA,NA,NA,NA
+ssl_refdata_all,ececCecd33,NA,"Effective cation exchange capacity (CEC) of the <2 mm fraction, calculated as the sum of NH4OAc ext bases plus Al ext",centimolesChargePerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,alKcl,TRUE,KCl extractable aluminum from the <2 mm fraction,centimolesChargePerKilogram,al.ext,usda.a69,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a69_cmolc.kg
+ssl_refdata_all,feKcl,NA,KCl extractable iron from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,mnKcl,NA,KCl extractable manganese from the <2 mm fraction,milligramsPerKilogram,NA,NA,NA,NA,NA
+ssl_refdata_all,bSatx,NA,Boron in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,brSatx,NA,Bromine in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,caSatx,NA,Calcium in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,clSatx,NA,Chlorine in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,co3Satx,NA,Carbonate in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,ecSatp,NA,Electrical conductivity of the saturated paste from the <2 mm fraction,decisiemensPerMeter,NA,NA,NA,NA,NA
+ssl_refdata_all,flSatx,NA,Florine in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,waterSatx,NA,Water content on a mass basis of the saturation extract from the <2 mm fraction,percent,NA,NA,NA,NA,NA
+ssl_refdata_all,hco3Sx,NA,Bicarbonate in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,kSatx,NA,Potassium in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,mgSatx,NA,Magnesium in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,naSatx,NA,Sodium in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,no2Satx,NA,Nitrite in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,no3Satx,NA,Nitrate in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,pSatx,NA,Phosphate in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,phSp,NA,pH of the saturation extract from the <2 mm fraction,pH,NA,NA,NA,NA,NA
+ssl_refdata_all,resist,NA,Resistivity of the saturation extract from the <2 mm fraction,siemensPerCentimeter,NA,NA,NA,NA,NA
+ssl_refdata_all,so4Satx,NA,Sulfate in the saturation extract from the <2 mm fraction,millimolesPerLiter,NA,NA,NA,NA,NA
+ssl_refdata_all,coarseFrag2To5,TRUE,Coarse fragment (2-5 mm) content of the <20 mm size fraction of the biogeochemistry soil sample,gramsPerKilogram,cf,usda.c232,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",cf_usda.c232_w.pct
+ssl_refdata_all,coarseFrag5To20,TRUE,Coarse fragment (5-20 mm) content of the <20 mm size fraction of the biogeochemistry soil sample,gramsPerKilogram,cf,usda.c235,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",cf_usda.c235_w.pct
+ssl_refdata_all,sandTotal,TRUE,Total sand (0.047-2 mm) content on a weight basis of the <2 mm fraction,percent,sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct
+ssl_refdata_all,siltTotal,TRUE,Total silt (0.002-0.047 mm) content on a weight basis of the <2 mm fraction,percent,silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct
+ssl_refdata_all,clayTotal,TRUE,Total clay (<0.002 mm) content on a weight basis of the <2 mm fraction,percent,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct
+ssl_refdata_all,carbonateClay,NA,Carbonate clay (<0.002 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,clayFineContent,NA,Fine clay (<0.0002 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,siltFineContent,NA,Fine silt (0.002-0.02 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,siltCoarseContent,NA,Coarse silt (0.02-0.047 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,sandVeryFineContent,NA,Very fine sand (0.047-0.105 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,sandFineContent,NA,Fine sand (0.105-0.25 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,sandMediumContent,NA,Medium sand (0.25-0.5 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,sandCoarseContent,NA,Coarse sand (0.5-1 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,sandVeryCoarseContent,NA,Very coarse sand (1-2 mm) content on a weight basis of the <2 mm fraction,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,bulkDensID,NA,NA,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,bulkDensCenterDepth,NA,Depth of the vertical center of the bulk sample below the soil surface,centimeter,NA,NA,NA,NA,NA
+ssl_refdata_all,bulkDensTopDepth,NA,Top depth of the bulk density sample,centimeter,NA,NA,NA,NA,NA
+ssl_refdata_all,bulkDensBottomDepth,NA,Bottom depth of the bulk density sample,centimeter,NA,NA,NA,NA,NA
+ssl_refdata_all,bulkDensHorizonProportion,NA,Proportion of horizon represented by bulk density sample on a volume basis,proportion,NA,NA,NA,NA,NA
+ssl_refdata_all,bulkDensSampleType,NA,Type of bulk density sample,NA,NA,NA,NA,NA,NA
+ssl_refdata_all,bulkDensExclCoarseFrag,TRUE,Bulk density of soil excluding coarse fragments (>2 mm),gramsPerCubicCentimeter,bd,usda.a4,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a4_g.cm3
