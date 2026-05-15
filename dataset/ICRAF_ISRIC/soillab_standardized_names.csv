@@ -1,0 +1,65 @@
+table,original_name,comment,import,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+ICRAF_ISRIC_reference_data.csv,Batch and labid,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,ICRAF sample codes.SAMPLENO,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Country name,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Plotcode,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,HORI,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,BTOP,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,BBOT,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Dsed,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,N / S,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Lat: degr,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Lat: min,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Lat: sec,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,E / W,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Long: degr,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Long: min,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Long: sec,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Sample no,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,pH (H2O),1:2.5,TRUE,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+ICRAF_ISRIC_reference_data.csv,pH (KCl),NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,pH (CaCl2),1:2.5,TRUE,ph.cacl2,usda.a481,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_usda.a481_index
+ICRAF_ISRIC_reference_data.csv,CaCO3,NA,TRUE,caco3,usda.a54,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",caco3_usda.a54_w.pct
+ICRAF_ISRIC_reference_data.csv,CaSO4,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Org C,NA,TRUE,oc,usda.c1059,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",oc_usda.c1059_w.pct
+ICRAF_ISRIC_reference_data.csv,Org N,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,C/N ratio,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Ca,ammonium acetate,TRUE,ca.ext,usda.a722,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a722_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Mg,NA,TRUE,mg.ext,usda.a724,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a724_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Na,NA,TRUE,na.ext,usda.a726,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a726_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,K,NA,TRUE,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a725_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Sum cat,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Exch acid,NA,TRUE,acidity,usda.a795,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",acidity_usda.a795_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,Exch Al,NA,TRUE,al.ext,usda.a69,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a69_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,CEC soil,NA,TRUE,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_usda.a723_cmolc.kg
+ICRAF_ISRIC_reference_data.csv,CEC clay,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,CEC OM,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,ECEC,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Base sat,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Al sat,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,ESP,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,El cond,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Remarks...41,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,VCS,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,CS,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,MS,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,FS,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,VFS,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Tot S,NA,TRUE,sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct
+ICRAF_ISRIC_reference_data.csv,CSi,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,FSi,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Tot Si,NA,TRUE,silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct
+ICRAF_ISRIC_reference_data.csv,Clay,pipete and C removal,TRUE,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct
+ICRAF_ISRIC_reference_data.csv,Disp clay,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,BD,NA,TRUE,bd,usda.a21,g.cm3,"ifelse(as.numeric(x) < 0.05, NA, as.numeric(x)*1)",bd_usda.a21_g.cm3
+ICRAF_ISRIC_reference_data.csv,pF0,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,pF1.0,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,pF1.5,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,pF2.0,NA,TRUE,wr.10kPa,usda.a8,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.10kPa_usda.a8_w.pct
+ICRAF_ISRIC_reference_data.csv,pF2.3,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,pF2.7,NA,TRUE,wr.33kPa,usda.a9,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.33kPa_usda.a9_w.pct
+ICRAF_ISRIC_reference_data.csv,pF3.4,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,pF4.2,NA,TRUE,wr.1500kPa,usda.a417,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.1500kPa_usda.a417_w.pct
+ICRAF_ISRIC_reference_data.csv,COLE,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,SSA,NA,NA,NA,NA,NA,NA,NA
+ICRAF_ISRIC_reference_data.csv,Remarks...64,NA,NA,NA,NA,NA,NA,NA

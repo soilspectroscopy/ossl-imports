@@ -1,0 +1,31 @@
+original_name,import,original_description,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+ID,NA,ID of the DRIFT spectra dpt file,NA,NA,NA,NA,NA
+Site_ID,NA,ID of the site as used in the manuscript,NA,NA,NA,NA,NA
+EUP,NA,Site ID as used in the field (Ecosystem Unit Plot),NA,NA,NA,NA,NA
+Sample Point,NA,Number of pit at each sampling site within the EUP (30x30 m plot),NA,NA,NA,NA,NA
+Increment,NA,Depth of sampling in [cm],NA,NA,NA,NA,NA
+Location,NA,north and south location,NA,NA,NA,NA,NA
+Latitude_DMS,NA,Latitude in degree minutes seconds WGS84,NA,NA,NA,NA,NA
+Longidtue_DMS,NA,Longitude in degree minutes seconds DMS WGS84,NA,NA,NA,NA,NA
+Latitude_DD,NA,Latitude in decimal degree,NA,NA,NA,NA,NA
+Longitude_DD,NA,Longitude in decimal degree,NA,NA,NA,NA,NA
+BD_bulk,NA,Uncorrected bulk density in [g/cm3] for each sample,NA,NA,NA,NA,NA
+BD_fine,TRUE,Bulk density of the fine soil and corrected for rock/root fragmens (>2mm) in [g/cm3] for each sample,bd,iso.11272,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_iso.11272_g.cm3
+TN,TRUE,Total nitrogen in [%] for each sample; ISO 13878:1998,n.tot,iso.13878,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_iso.13878_w.pct
+d13C_TC,NA,Delta 13C of total carbon in [permil] for each sample,NA,NA,NA,NA,NA
+TC,TRUE,"Total carbon in [%] for each sample, dry combustion",c.tot,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_iso.10694_w.pct
+d13C_SOC,NA,Delta 13C of soil organic carbon in [permil] for each sample,NA,NA,NA,NA,NA
+SOC,TRUE,SOC content in [%] for each sample,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",oc_iso.10694_w.pct
+Moisture_class_site,NA,"Moisture class with (1) dry, (2) moist and (3) wet for site",NA,NA,NA,NA,NA
+pH_CaCl2_site,TRUE,pH value measured in 1M CaCl [-] for site,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.cacl2_iso.10390_index
+EC_CaCl2_site,TRUE,Electric conductivity measured in 1M CaCl [-] for site,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ec_iso.11265_ds.m
+Fe_XRF_site,NA,Total Fe content determined with XRF in [%] for site,NA,NA,NA,NA,NA
+Al_XRF_site,NA,Total Al content determined with XRF in [%] for site,NA,NA,NA,NA,NA
+Si_XRF_site,NA,Total Si content determined with XRF in [%] for site,NA,NA,NA,NA,NA
+K_XRF_site,NA,Total K content determined with XRF in [%] for site,NA,NA,NA,NA,NA
+Mn_XRF_site,NA,Total Mn content determined with XRF in [%] for site,NA,NA,NA,NA,NA
+P_XRF_site,NA,Total P content determined with XRF in [%] for site,NA,NA,NA,NA,NA
+eff_CEC_site,NA,Effective cation exchange capacity in [meq/100g soil] for site; ISO 23470:2018,NA,NA,NA,NA,NA
+clay_site,TRUE,Clay content in [%] for site; ISO 11277:2009,clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_iso.11277_w.pct
+silt_site,TRUE,Silt content in [%] for site; ISO 11277:2009,silt.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_iso.11277_w.pct
+sand_site,TRUE,Sand content in [%] for site; ISO 11277:2009,sand.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_iso.11277_w.pct

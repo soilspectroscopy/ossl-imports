@@ -1,0 +1,20 @@
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+SSL_GEOCRADLE_1.csv,id.layer_local_c,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,Sand_Fraction,TRUE,%,Bouyoucos (1962) method,NA,sand.tot,usda.c405,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.tot_usda.c405_w.pct
+SSL_GEOCRADLE_1.csv,Clay_Fraction,TRUE,%,Bouyoucos (1962) method,NA,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",clay.tot_usda.a334_w.pct
+SSL_GEOCRADLE_1.csv,Silt_Fraction,TRUE,%,Bouyoucos (1962) method,NA,silt.tot,usda.c407,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.tot_usda.c407_w.pct
+SSL_GEOCRADLE_1.csv,USDA_texture,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,OC,TRUE,%,Walkley-Black method,NA,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct
+SSL_GEOCRADLE_1.csv,OM,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,Soil_type_extended_WRB,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,Soil_type_USDA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,Soil_extended_WRB,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,Soil_type_WRB_description,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,CaCO3,TRUE,%,volumetric calcimeter,NA,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",caco3_iso.10693_w.pct
+SSL_GEOCRADLE_1.csv,CEC,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,LOI,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,pH_H2O,TRUE,NA,1:1 water/soil ratio,NA,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.h2o_usda.a268_index
+SSL_GEOCRADLE_1.csv,pH_KCl,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,pH_CaCl2,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,EC_muS,TRUE,mS/cm,soil : water = 1:5,NA,ec,iso.11265,ds.m,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ec_iso.11265_ds.m
+SSL_GEOCRADLE_1.csv,NO3,NA,NA,NA,NA,NA,NA,NA,NA,NA

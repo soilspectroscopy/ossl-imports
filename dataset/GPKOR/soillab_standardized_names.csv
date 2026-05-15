@@ -1,0 +1,3 @@
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+Gyeonggi Soil Spectral Library (G-SSL).xlsx,id.layer_local_c,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Gyeonggi Soil Spectral Library (G-SSL).xlsx,mSOC(%),TRUE,%,Dry combustion,NA,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct

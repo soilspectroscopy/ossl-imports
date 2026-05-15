@@ -1,0 +1,461 @@
+---
+title: "National Ecological Observatory Network (NEON)"
+author: 
+  - name: Jose L. Safanelli
+    email: jsafanelli@woodwellclimate.org
+  - name: Ran Zhi
+    email: jsafanelli@woodwellclimate.org
+  - name: Tomislav Hengl
+    email: tom.hengl@opengeohub.org
+  - name: Jonathan Sanderman
+    email: jsanderman@woodwellclimate.org
+format: 
+  gfm:
+    toc: true
+    toc-depth: 3
+bibliography: reference.bib
+csl: ../../tex/apa.csl
+cite-method: citeproc
+link-citations: true
+twitter-card:
+  site: "@soilspec"
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+Code repository for standardizing and importing the National Ecological Observatory Network (NEON) Megapit Soil Archive into the Open Soil Spectral Library.
+
+Website: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  \
+Development: <https://github.com/soilspectroscopy>\
+Last update: `r Sys.Date()`\
+Additional documentation:
+
+## Original data
+
+Site data, soil lab data, and Mid-Infrared Spectra (MIR) from the National Ecological Observatory Network (NEON) (@Keller2008) and its Megapit Soil Archive @NEON_soil.
+
+MIR spectra was collected at the Kellog Soil Survey Laboratory and Woodwell Climate with different spectrophotometers. Further information can be found in @Dangal2020.
+
+The official NEON Megapit Soil Archive website is <https://www.neonscience.org/samples/soil-archive>.
+
+"The National Ecological Observatory Network is a program sponsored by the National Science Foundation and operated under cooperative agreement by Battelle Memorial Institute. This material is based in part upon work supported by the National Science Foundation through the NEON Program, including samples provided by the NEON Megapit Soil Archive."
+
+Input files:  
+- `NEON_soilp`: site and soil information.\
+- `NEON_soilp`: MIR spectra from KSSL (Bruker Vertex 70 with HTS-HX accessory).\
+- `cssl_spectra.csv`: MIR spectra from Woodwell Climate (Bruker Vertex 70 with Pike AutoDiff).\
+
+```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
+packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
+              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
+              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
+
+invisible(lapply(packages, library, character.only = TRUE))
+
+source("../../R/functions/SSL_functions.R")
+gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
+```
+
+Directory/folder path with original files (not uploaded to GitHub).
+```{r dir}
+# dir = "./"
+dir = "~/mnt-ossl-private/database/datasets/NEON/"
+tic()
+```
+
+## Data standardization to the OSSL format
+
+### Site information
+
+```{r}
+neon.soilp <- read_csv(path(dir, "NEON_soilp.csv"))
+
+neon.sitedata <- neon.soilp %>%
+  select(uid,
+         biogeoID, domainID, siteID, pitID, collectDate,
+         pitNamedLocation, horizonName,
+         biogeoTopDepth, biogeoBottomDepth) %>%
+  rename(id.layer_local_c = uid,
+         id.biogeo_src_txt = biogeoID,
+         site.domain_src_txt = domainID,
+         site.id_src_txt = siteID,
+         site.pit_src_txt = pitID,
+         site.pit.name_src_txt = pitNamedLocation,
+         pedon.horizon_src_tst = horizonName,
+         observation.date_src_yyyy.mm.dd = collectDate,
+         layer.upper.depth_usda_cm = biogeoTopDepth,
+         layer.lower.depth_usda_cm = biogeoBottomDepth) %>%
+  mutate(observation.date_src_yyyy.mm.dd = mdy(observation.date_src_yyyy.mm.dd)) %>%
+  mutate(dataset.code_ascii_txt = "NEON",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Saving version to dataset root dir
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(neon.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(neon.sitedata, str_c(site.exp.file, ".parquet"))
+```
+
+### Soil lab information (reference analytical data)
+
+NOTE: The code chunk below must be run just once for getting a template for scripted column standardization. Just run once for getting the original names of soil properties, descriptions, data types, and units. Then upload to Google Sheet for editing and manually defining the rules for integrating with the OSSL. Requires Google authentication. A copy of the output file is saved to this folder for archiving purposes.
+
+**Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.**
+
+```{r soil_template, echo=TRUE, eval=FALSE}
+# Getting soillab original variables
+neon.soilp <- read_csv(path(dir, "NEON_soilp.csv"))
+
+soillab.names <- neon.soilp %>%
+  names(.) %>%
+  tibble(original_name = .) %>%
+  dplyr::mutate(table = 'ssl_refdata_all', .before = 1) %>%
+  dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>%
+  dplyr::mutate(comment = '')
+
+readr::write_csv(soillab.names, paste0(getwd(), "/soillab_original_names.csv"))
+
+# Uploading to google sheet
+
+# Drive 'Open Soil Spectral Library'
+# Use the ID of the file 'OSSL_v2_tab2_soildata_importing'
+OSSL.soildata.importing <- "1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es"
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+
+# Checking readme
+googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
+
+# Preparing soillab.names for this dataset
+upload <- dplyr::as_tibble(soillab.names)
+
+# Uploading with TEMP name. Check online, move to sequence, and update name
+googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP")
+```
+
+NOTE: The code chunk below must be run just once. Run for getting the
+column standardization rules after editing online on Google Sheets. A
+copy of the edited standardization template is saved to this dataset folder.
+
+```{r soilab_download, echo=TRUE, eval=FALSE}
+# Downloading from google sheet
+
+# Checking metadata
+googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
+
+# Preparing soillab.names
+transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
+                                         sheet = "NEON")
+
+# Saving to folder
+write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
+```
+
+Reading standardization rules:
+```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
+                        show_col_types = F) %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "ossl_")))
+
+knitr::kable(transvalues)
+```
+
+Standardizing soil data to the OSSL format:
+```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+neon.soilp <- read_csv(path(dir, "NEON_soilp.csv"))
+
+# Harmonization of names and units
+analytes.old.names <- transvalues %>%
+  filter(table == "ssl_refdata_all") %>%
+  pull(original_name)
+
+analytes.new.names <- transvalues %>%
+  filter(table == "ssl_refdata_all") %>%
+  pull(ossl_name)
+
+# Selecting and renaming
+neon.soildata <- neon.soilp %>%
+  rename(id.layer_local_c = uid) %>%
+  select(id.layer_local_c, all_of(analytes.old.names)) %>%
+  rename_with(~analytes.new.names, all_of(analytes.old.names)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  as.data.frame()
+
+# Removing duplicates
+# neon.soildata %>%
+#   group_by(id.layer_local_c) %>%
+#   summarise(repeats = n()) %>%
+#   group_by(repeats) %>%
+#   summarise(count = n())
+
+# Getting the formulas
+functions.list <- transvalues %>%
+  filter(table == "ssl_refdata_all") %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(neon.soildata))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+neon.soildata.trans <- transform_values(df = neon.soildata,
+                                        out.name = names(neon.soildata),
+                                        in.name = names(neon.soildata),
+                                        fun.lst = functions.list)
+
+# Final soillab data
+neon.soildata <- neon.soildata.trans %>%
+  mutate_at(vars(starts_with("id.")), as.character) %>%
+  mutate(caco3_usda.a54_w.pct = replace_na(caco3_usda.a54_w.pct, 0))
+
+# Checking total number of observations
+neon.soildata %>%
+  distinct(id.layer_local_c) %>%
+  summarise(count = n())
+
+# Saving version to dataset root dir
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(neon.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(neon.soildata, str_c(soillab.exp.file, ".parquet"))
+```
+
+Soil lab data summary.
+```{r soil_lab_summary, include=TRUE, echo=TRUE, eval=TRUE}
+neon.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+### Mid-infrared spectra
+
+```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
+spectra.kssl <- read_csv(path(dir,"NEON_kssl.csv"), show_col_types = F)
+spectra.wcrc <- read_csv(path(dir,"NEON_whrc.csv"), show_col_types = F)
+
+## Woodwell spectra
+
+# Renaming
+old.spectral.columns <- spectra.wcrc %>%
+  select(starts_with("X")) %>%
+  names()
+
+head(old.spectral.columns)
+tail(old.spectral.columns)
+
+wcrc.mir <- spectra.wcrc %>%
+  rename(id.layer_local_c = uid,
+         id.scan_local_c = WHRCID) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c),
+         id.scan_local_c = as.character(id.scan_local_c)) %>%
+  mutate(across(all_of(old.spectral.columns), as.numeric))
+
+# Removing X in the spectral columns
+clean.spectral.columns <- gsub("X", "", old.spectral.columns)
+
+wcrc.mir <- wcrc.mir %>%
+  rename_with(~clean.spectral.columns, all_of(old.spectral.columns))
+
+# Need to resample spectra
+old.wavenumbers <- as.numeric(clean.spectral.columns)
+new.wavenumbers <- rev(seq(628, 4000, by = 2))
+
+wcrc.mir <- wcrc.mir %>%
+  select(-starts_with("id.")) %>%
+  as.matrix() %>%
+  prospectr::resample(X = .,
+                      wav = old.wavenumbers,
+                      new.wav = new.wavenumbers,
+                      interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({wcrc.mir %>%
+      select(starts_with("id."))}, .)
+
+wcrc.mir <- wcrc.mir %>%
+  mutate(id.scan.lab_src_txt = "WCRC", .before = 1)
+
+# Gaps
+scans.na.gaps <- wcrc.mir %>%
+  select(-starts_with("id.")) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({wcrc.mir %>% select(starts_with("id."))}, .)
+
+# Extreme negative - irreversible erratic patterns
+scans.extreme.neg <- wcrc.mir %>%
+  select(-starts_with("id.")) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({wcrc.mir %>% select(starts_with("id."))}, .)
+
+# Extreme positive, irreversible erratic patterns
+scans.extreme.pos <- wcrc.mir %>%
+  select(-starts_with("id.")) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols({wcrc.mir %>% select(starts_with("id."))}, .)
+
+# Consistency summary - problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg) %>%
+  left_join(scans.extreme.pos)
+
+scans.summary %>%
+  select(-starts_with("id.")) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+
+## KSSL spectra
+
+# Renaming
+old.spectral.columns <- spectra.kssl %>%
+  select(-sample_id, -uid) %>%
+  names()
+
+head(old.spectral.columns)
+tail(old.spectral.columns)
+
+kssl.mir <- spectra.kssl %>%
+  rename(id.layer_local_c = uid,
+         id.scan_local_c = sample_id) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c),
+         id.scan_local_c = as.character(id.scan_local_c)) %>%
+  mutate(across(all_of(old.spectral.columns), as.numeric))
+
+# Need to resample spectra
+old.wavenumbers <- as.numeric(old.spectral.columns)
+new.wavenumbers <- rev(seq(600, 4000, by = 2))
+
+kssl.mir <- kssl.mir %>%
+  select(-starts_with("id.")) %>%
+  as.matrix() %>%
+  prospectr::resample(X = .,
+                      wav = old.wavenumbers,
+                      new.wav = new.wavenumbers,
+                      interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({kssl.mir %>%
+      select(starts_with("id."))}, .)
+
+kssl.mir <- kssl.mir %>%
+  mutate(id.scan.lab_src_txt = "KSSL", .before = 1)
+
+# Gaps
+scans.na.gaps <- kssl.mir %>%
+  select(-starts_with("id.")) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({kssl.mir %>% select(starts_with("id."))}, .)
+
+# Extreme negative - irreversible erratic patterns
+scans.extreme.neg <- kssl.mir %>%
+  select(-starts_with("id.")) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({kssl.mir %>% select(starts_with("id."))}, .)
+
+# Extreme positive, irreversible erratic patterns
+scans.extreme.pos <- kssl.mir %>%
+  select(-starts_with("id.")) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols({kssl.mir %>% select(starts_with("id."))}, .)
+
+# Consistency summary - problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg) %>%
+  left_join(scans.extreme.pos)
+
+scans.summary %>%
+  select(-starts_with("id.")) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+
+## Merging both spectral datasets together
+neon.mir <- bind_rows(kssl.mir, wcrc.mir) %>%
+  select(starts_with("id"),
+         all_of(as.character(rev(new.wavenumbers))))
+
+# Renaming
+old.wavenumbers <- seq(600, 4000, by = 2)
+new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
+
+neon.mir <- neon.mir %>%
+  rename_with(~new.wavenumbers, as.character(old.wavenumbers))
+
+# Exporting
+mir.exp.file = path(dir, "ossl_mir_v1.3")
+readr::write_csv(neon.mir, str_c(mir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(neon.mir, str_c(mir.exp.file, ".parquet"))
+```
+
+
+## Quality control
+
+The final table must be joined as follows:
+
+- MIR is used as first reference for pairing with soil data.
+- Soil lab data are left joined to MIR. This drop data without any available scan.
+
+The availability of data is summarized below:
+```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
+# Taking a few representative columns for checking the consistency of joins
+# KSSL spectra dropped for this check
+neon.availability <- neon.mir %>%
+  filter(id.scan.lab_src_txt == "WCRC") %>%
+  select(id.layer_local_c, scan_mir.1000_abs) %>%
+  left_join(neon.soildata, by = "id.layer_local_c") %>%
+  filter(!is.na(id.layer_local_c))
+
+# Availability of information from neon
+neon.availability %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
+
+# Repeats check - Duplicates are dropped
+neon.availability %>%
+  mutate_all(as.character) %>%
+  select(id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  group_by(column, value) %>%
+  summarise(repeats = n(), .groups = 'drop') %>%
+  group_by(column, repeats) %>%
+  summarise(count = n(), .groups = 'drop')
+```
+
+MIR spectral visualization (100 random spectra):
+```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+set.seed(42)
+neon.mir %>%
+  filter(id.scan.lab_src_txt == "WCRC") %>%
+  sample_n(100) %>%
+  select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+                      names_to = "wavenumber", values_to = "absorbance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1, color = "darkblue") +
+  scale_x_continuous(breaks = c(628, 1200, 1800, 2400, 3000, 3600, 4000),
+                     transform = "reverse") +
+  labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
+  theme_light()
+```
+
+```{r}
+toc()
+rm(list = ls())
+gc()
+```
+
+## References

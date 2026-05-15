@@ -1,0 +1,17 @@
+table,original_name,import,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name,comment
+SSSL.xlsx,soil_type,NA,NA,NA,NA,NA,NA,NA
+SSSL.xlsx,sample_id,NA,NA,NA,NA,NA,NA,NA
+SSSL.xlsx,location_use,NA,NA,NA,NA,NA,NA,NA
+SSSL.xlsx,latitude,NA,NA,NA,NA,NA,NA,NA
+SSSL.xlsx,longitude,NA,NA,NA,NA,NA,NA,NA
+SSSL.xlsx,depth_cm,NA,NA,NA,NA,NA,NA,NA
+SSSL.xlsx,silt_perc,TRUE,silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct,Pipette method
+SSSL.xlsx,clay_perc,TRUE,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct,Pipette method
+SSSL.xlsx,sand_perc,TRUE,sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct,Pipette method
+SSSL.xlsx,carbon_tot_gkg,TRUE,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",c.tot_usda.a622_w.pct,CHNS elemental analyzer
+SSSL.xlsx,carbon_org_gkg,TRUE,oc,usda.c729,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",oc_usda.c729_w.pct,"Estimated as SOC%=TC%-0.12*CaCO3%, orginal variable is discarded"
+SSSL.xlsx,carbon_inorg_gkg,NA,NA,NA,NA,NA,NA,NA
+SSSL.xlsx,ph,TRUE,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index,No info if water or salt solution
+SSSL.xlsx,nitrogen_tot_gkg,TRUE,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_usda.a623_w.pct,CHNS elemental analyzer
+SSSL.xlsx,cn_ratio,NA,NA,NA,NA,NA,NA,NA
+SSSL.xlsx,caco3_gkg,TRUE,caco3,usda.a54,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_usda.a54_w.pct,Volumetric with Scheibler calcimeter

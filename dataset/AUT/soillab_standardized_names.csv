@@ -1,0 +1,15 @@
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+Austrian NIR Soil Spectral Library_V4.xlsx,id.layer_local_c,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Austrian NIR Soil Spectral Library_V4.xlsx,SOC,TRUE,%,ÖNORM L 1080:2013-03-15,total carbon - carbonates,oc,usda.c729,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_usda.c729_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,SOC_to_clay_ratio,NA,NA,NA,The ratio of soc (%) and clay (%) content in soil,NA,NA,NA,NA,NA
+Austrian NIR Soil Spectral Library_V4.xlsx,TC,TRUE,%,ÖNORM L 1080:2013-03-15,dry combustion,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",c.tot_usda.a622_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,Labile_carbon,NA,mg/kg,NA,Labile carbon content of soil measured with KMnO4,NA,NA,NA,NA,NA
+Austrian NIR Soil Spectral Library_V4.xlsx,CaCO3,TRUE,%,ÖNORM L 1084:2016-07-01,gas-volumetrically,caco3,usda.a54,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",caco3_usda.a54_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,TN,TRUE,%,ÖNORM EN 16168:2012-10-01,elemental analysis,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",n.tot_usda.a623_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,Phosphorus,TRUE,mg/kg,ÖNORM L 1087:2012-12-01,calcium-acetate-lactate (cal) extraction,p.ext,austria.cal,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",p.ext_austria.cal_mg.kg
+Austrian NIR Soil Spectral Library_V4.xlsx,pH_CaCl2,TRUE,NA,ÖNORM EN 15933:2012-10-01,0.01 M CaCl2 at a soil-to-solution ratio of 1 : 5,ph.cacl2,iso.10390,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",ph.cacl2_iso.10390_index
+Austrian NIR Soil Spectral Library_V4.xlsx,pH_Acetate,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Austrian NIR Soil Spectral Library_V4.xlsx,CEC,TRUE,cmolc/kg,ÖNORM L 1086-1:2014-03-15,in barium chloride solution,cec,iso.11260,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",cec_iso.11260_cmolc.kg
+Austrian NIR Soil Spectral Library_V4.xlsx,Sand,TRUE,%,ÖNORM L 1061-2:2002-02-01,NA,sand.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",sand.tot_iso.11277_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,Silt,TRUE,%,ÖNORM L 1061-2:2002-02-01,NA,silt.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.tot_iso.11277_w.pct
+Austrian NIR Soil Spectral Library_V4.xlsx,Clay,TRUE,%,ÖNORM L 1061-2:2002-02-01,NA,clay.tot,iso.11277,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",clay.tot_iso.11277_w.pct
