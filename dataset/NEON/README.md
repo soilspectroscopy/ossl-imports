@@ -383,7 +383,7 @@ wcrc.mir <- wcrc.mir %>%
       select(-all_of(spectral.cols.spike))}, .) %>%
   pivot_longer(starts_with("X")) %>%
   mutate(name = as.numeric(gsub("X", "", name))) %>%
-  arrange(id.scan_local_c, name) %>%
+  arrange(id.scan_local_c, desc(name)) %>%
   pivot_wider()
 
 # Need to resample spectra
@@ -642,7 +642,7 @@ neon.mir %>%
 toc()
 ```
 
-    22.966 sec elapsed
+    22.609 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -650,8 +650,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6426430 343.3   10786761 576.1 10488616 560.2
-    Vcells 12028612  91.8   28956137 221.0 28956137 221.0
+    Ncells  6426161 343.2   10786874 576.1 10488349 560.2
+    Vcells 12027946  91.8   28955178 221.0 28955176 221.0
 
 ## References
 

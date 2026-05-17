@@ -274,7 +274,7 @@ wcrc.mir <- wcrc.mir %>%
       select(-all_of(spectral.cols.spike))}, .) %>%
   pivot_longer(starts_with("X")) %>%
   mutate(name = as.numeric(gsub("X", "", name))) %>%
-  arrange(id.scan_local_c, name) %>%
+  arrange(id.scan_local_c, desc(name)) %>%
   pivot_wider()
 
 # Need to resample spectra
