@@ -1,58 +1,40 @@
----
-title: "Central African (CAF) dataset preparation for the OSSL"
-author: 
-  - name: Jose L. Safanelli
-    email: jsafanelli@woodwellclimate.org
-  - name: Ran Zhi
-    email: jsafanelli@woodwellclimate.org
-  - name: Tomislav Hengl
-    email: tom.hengl@opengeohub.org
-  - name: Jonathan Sanderman
-    email: jsanderman@woodwellclimate.org
-format: 
-  gfm:
-    toc: true
-    toc-depth: 3
-bibliography: reference.bib
-csl: ../../tex/apa.csl
-cite-method: citeproc
-link-citations: true
-twitter-card:
-  site: "@soilspec"
-editor: 
-  markdown: 
-    wrap: 72
----
+# Central African (CAF) dataset preparation for the OSSL
+Jose L. Safanelli, Ran Zhi, Tomislav Hengl, Jonathan Sanderman
 
-Code repository for standardizing and importing the Central African Soil Spectral Library (CAF) into the Open Soil Spectral Library.
+- [Original data](#original-data)
+- [Data standardization to the OSSL
+  format](#data-standardization-to-the-ossl-format)
+  - [Site information](#site-information)
+  - [Soil lab information (reference analytical
+    data)](#soil-lab-information-reference-analytical-data)
+  - [Mid-infrared spectra](#mid-infrared-spectra)
+- [Quality control](#quality-control)
+- [References](#references)
 
-Website: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  \
-Development: <https://github.com/soilspectroscopy>\
-Last update: `r Sys.Date()`\
+Code repository for standardizing and importing the Central African Soil
+Spectral Library (CAF) into the Open Soil Spectral Library.
+
+Website: [Soil Spectroscopy for Global
+Good](https://soilspectroscopy.org)  
+Development: <https://github.com/soilspectroscopy>  
+Last update: 2026-05-17  
 Additional documentation:
 
 ## Original data
 
-Site data, soil lab data, and Mid-Infrared Spectra (MIR) from the Central African Soil Spectral Library (CAF). Further information can be found in detail at @summerauer2021central.
+Site data, soil lab data, and Mid-Infrared Spectra (MIR) from the
+Central African Soil Spectral Library (CAF). Further information can be
+found in detail at Summerauer et al.
+([2021](#ref-summerauer2021central)).
 
 Input files:  
 - `cssl_metadata_all.csv`: csv file with site information;  
 - `ssl_refdata_all.csv`: csv file with soil information;  
 - `cssl_spectra.csv`: csv with MIR spectral scans;
 
-```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
-packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
-              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
-              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
+Directory/folder path with original files (not uploaded to GitHub).
 
-invisible(lapply(packages, library, character.only = TRUE))
-
-source("../../R/functions/SSL_functions.R")
-gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
-```
-
-Directory/folder path with original files (not uploaded to GitHub). 
-```{r dir}
+``` r
 # dir = "./"
 dir = "~/mnt-ossl-private/database/datasets/CAF/"
 tic()
@@ -62,7 +44,7 @@ tic()
 
 ### Site information
 
-```{r soilsite}
+``` r
 caf.metadata <- fread(path(dir, "cssl_metadata_all.csv"), header = T)
 
 caf.sitedata <- caf.metadata %>%
@@ -128,17 +110,28 @@ nanoparquet::write_parquet(caf.sitedata, str_c(site.exp.file, ".parquet"))
 ```
 
 Plotting map:
-```{r map, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 data("World")
 
 ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+```
 
+    Reading 'ne_110m_ocean.zip' from naturalearth...
+
+``` r
 points <- caf.sitedata %>%
   filter(!is.na(longitude.point_wgs84_dd),
          !is.na(latitude.point_wgs84_dd)) %>%
   st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
 
 tmap_mode("plot")
+```
+
+    ℹ tmap modes "plot" - "view"
+    ℹ toggle with `tmap::ttm()`
+
+``` r
 tm_shape(ocean) +
   tm_polygons(fill = "lightblue", col = NA) +
   tm_shape(World) +
@@ -149,13 +142,24 @@ tm_shape(ocean) +
   tm_layout(frame = FALSE)
 ```
 
+    [tip] Consider a suitable map projection, e.g. by adding `+ tm_crs("auto")`.
+    This message is displayed once per session.
+
+![](README_files/figure-commonmark/map-1.png)
+
 ### Soil lab information (reference analytical data)
 
-NOTE: The code chunk below must be run just once for getting a template for scripted column standardization. Just run once for getting the original names of soil properties, descriptions, data types, and units. Then upload to Google Sheet for editing and manually defining the rules for integrating with the OSSL. Requires Google authentication. A copy of the output file is saved to this folder for archiving purposes.
+NOTE: The code chunk below must be run just once for getting a template
+for scripted column standardization. Just run once for getting the
+original names of soil properties, descriptions, data types, and units.
+Then upload to Google Sheet for editing and manually defining the rules
+for integrating with the OSSL. Requires Google authentication. A copy of
+the output file is saved to this folder for archiving purposes.
 
-**Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.**
+**Always leave the sheet name as TEMP to avoid overwritting, then rename
+online to download locally.**
 
-```{r soil_template, echo=TRUE, eval=FALSE}
+``` r
 # Getting soillab original variables
 
 cassl.soildata <- fread(path(dir, "ssl_refdata_all.csv"), header = T)
@@ -196,9 +200,10 @@ googlesheets4::as_sheets_id(OSSL.soildata.importing)
 
 NOTE: The code chunk below must be run just once. Run for getting the
 column standardization rules after editing online on Google Sheets. A
-copy of the edited standardization template is saved to this dataset folder.
+copy of the edited standardization template is saved to this dataset
+folder.
 
-```{r soilab_download, echo=TRUE, eval=FALSE}
+``` r
 # Downloading from google sheet
 
 # Checking metadata
@@ -213,7 +218,8 @@ write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
 ```
 
 Reading standardization rules:
-```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
                         show_col_types = F) %>%
   filter(import == TRUE) %>%
@@ -222,8 +228,27 @@ transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
 knitr::kable(transvalues)
 ```
 
+| table | original_name | ossl_abbrev | ossl_method | ossl_unit | ossl_convert | ossl_name |
+|:---|:---|:---|:---|:---|:---|:---|
+| cssl_refdata_all | tc | c.tot | usda.a622 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | c.tot_usda.a622_w.pct |
+| cssl_refdata_all | tn | n.tot | usda.a623 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | n.tot_usda.a623_w.pct |
+| cssl_refdata_all | ph_h2o | ph.h2o | usda.a268 | index | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.h2o_usda.a268_index |
+| cssl_refdata_all | ph_cacl2 | ph.cacl2 | usda.a481 | index | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ph.cacl2_usda.a481_index |
+| cssl_refdata_all | clay_0-0.002 | clay.tot | usda.a334 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | clay.tot_usda.a334_w.pct |
+| cssl_refdata_all | silt_0.002-0.05 | silt.tot | usda.c62 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | silt.tot_usda.c62_w.pct |
+| cssl_refdata_all | sand_0.05-2 | sand.tot | usda.c60 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | sand.tot_usda.c60_w.pct |
+| cssl_refdata_all | al_icp | al.ext | aquaregia | g.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | al.ext_aquaregia_g.kg |
+| cssl_refdata_all | fe_icp | fe.ext | aquaregia | g.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | fe.ext_aquaregia_g.kg |
+| cssl_refdata_all | ca_icp | ca.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | ca.ext_aquaregia_mg.kg |
+| cssl_refdata_all | mg_icp | mg.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mg.ext_aquaregia_mg.kg |
+| cssl_refdata_all | k_icp | k.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | k.ext_aquaregia_mg.kg |
+| cssl_refdata_all | mn_icp | mn.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | mn.ext_aquaregia_mg.kg |
+| cssl_refdata_all | na_icp | na.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | na.ext_aquaregia_mg.kg |
+| cssl_refdata_all | p_icp | p.ext | aquaregia | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_aquaregia_mg.kg |
+
 Standardizing soil data to the OSSL format:
-```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 caf.reference <- fread(path(dir, "ssl_refdata_all.csv"),
                        header = T)
 
@@ -273,7 +298,12 @@ caf.soildata <- caf.soildata.trans %>%
 caf.soildata %>%
   distinct(id.layer_local_c) %>%
   summarise(count = n())
-  
+```
+
+      count
+    1  1852
+
+``` r
 # Saving version to dataset root dir
 soillab.exp.file = path(dir, "ossl_soillab_v1.3")
 readr::write_csv(caf.soildata, str_c(soillab.exp.file, ".csv.gz"))
@@ -281,16 +311,63 @@ nanoparquet::write_parquet(caf.soildata, str_c(soillab.exp.file, ".parquet"))
 ```
 
 Soil lab data summary.
-```{r soil_lab_summary, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 caf.soildata %>%
   mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
   skimr::skim() %>%
   dplyr::select(-numeric.hist, -complete_rate)
 ```
 
+|                                                  |            |
+|:-------------------------------------------------|:-----------|
+| Name                                             | Piped data |
+| Number of rows                                   | 1852       |
+| Number of columns                                | 16         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |            |
+| Column type frequency:                           |            |
+| factor                                           | 1          |
+| logical                                          | 1          |
+| numeric                                          | 14         |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |            |
+| Group variables                                  | None       |
+
+Data summary
+
+**Variable type: factor**
+
+| skim_variable | n_missing | ordered | n_unique | top_counts |
+|:---|---:|:---|---:|:---|
+| id.layer_local_c | 0 | FALSE | 1852 | 08\_: 1, 08\_: 1, 08\_: 1, 08\_: 1 |
+
+**Variable type: logical**
+
+| skim_variable            | n_missing | mean | count |
+|:-------------------------|----------:|-----:|:------|
+| ph.cacl2_usda.a481_index |      1852 |  NaN | :     |
+
+**Variable type: numeric**
+
+| skim_variable | n_missing | mean | sd | p0 | p25 | p50 | p75 | p100 |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| c.tot_usda.a622_w.pct | 184 | 1.98 | 2.51 | 0.08 | 0.89 | 1.38 | 2.31 | 45.54 |
+| n.tot_usda.a623_w.pct | 168 | 0.16 | 0.18 | 0.01 | 0.07 | 0.11 | 0.18 | 2.92 |
+| ph.h2o_usda.a268_index | 1317 | 5.10 | 0.94 | 3.32 | 4.51 | 4.84 | 5.36 | 8.56 |
+| clay.tot_usda.a334_w.pct | 1262 | 34.63 | 21.73 | 1.04 | 12.41 | 34.88 | 51.59 | 86.88 |
+| silt.tot_usda.c62_w.pct | 1309 | 23.85 | 14.97 | 4.00 | 13.48 | 19.28 | 29.87 | 74.75 |
+| sand.tot_usda.c60_w.pct | 1309 | 42.30 | 23.77 | 1.30 | 21.12 | 40.50 | 61.12 | 89.90 |
+| al.ext_aquaregia_g.kg | 1128 | 25.20 | 24.69 | 0.16 | 7.94 | 12.37 | 36.24 | 121.32 |
+| fe.ext_aquaregia_g.kg | 1128 | 38.84 | 39.55 | 0.34 | 10.15 | 20.13 | 59.62 | 352.66 |
+| ca.ext_aquaregia_mg.kg | 1128 | 634.26 | 1352.25 | 0.00 | 52.50 | 186.94 | 589.29 | 19922.26 |
+| mg.ext_aquaregia_mg.kg | 1128 | 800.40 | 1425.40 | 9.27 | 79.37 | 141.16 | 836.50 | 9500.41 |
+| k.ext_aquaregia_mg.kg | 1128 | 616.41 | 1020.57 | 7.96 | 77.21 | 163.31 | 795.00 | 8073.54 |
+| mn.ext_aquaregia_mg.kg | 1128 | 480.73 | 934.36 | 2.23 | 30.09 | 64.16 | 455.98 | 6468.45 |
+| na.ext_aquaregia_mg.kg | 1128 | 69.57 | 128.62 | 0.00 | 4.99 | 13.99 | 71.72 | 1213.29 |
+| p.ext_aquaregia_mg.kg | 1128 | 534.89 | 773.33 | 13.90 | 130.72 | 214.20 | 580.34 | 6679.17 |
+
 ### Mid-infrared spectra
 
-```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
+``` r
 # Floating wavenumbers
 caf.spectra <- fread(path(dir, "cssl_spectra.csv"), header = T)
 
@@ -304,6 +381,11 @@ caf.mir <- caf.spectra %>%
 
 # Need to resample spectra
 old.wavenumber <- na.omit(as.numeric(names(caf.mir)))
+```
+
+    Warning in na.omit(as.numeric(names(caf.mir))): NAs introduced by coercion
+
+``` r
 new.wavenumbers <- rev(seq(600, 4000, by = 2))
 
 caf.mir <- caf.mir %>%
@@ -348,7 +430,12 @@ scans.summary %>%
   filter(value > 0) %>%
   group_by(check) %>%
   summarise(count = n())
+```
 
+    # A tibble: 0 × 2
+    # ℹ 2 variables: check <chr>, count <int>
+
+``` r
 # Renaming
 old.wavenumbers <- seq(600, 4000, by = 2)
 new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
@@ -384,16 +471,17 @@ readr::write_csv(caf.mir.export, str_c(mir.exp.file, ".csv.gz"))
 nanoparquet::write_parquet(caf.mir.export, str_c(mir.exp.file, ".parquet"))
 ```
 
-
 ## Quality control
 
 The final table must be joined as follows:
 
 - MIR is used as first reference for pairing with soil data.
-- Soil lab data are left joined to MIR. This drop data without any available scan.
+- Soil lab data are left joined to MIR. This drop data without any
+  available scan.
 
 The availability of data is summarized below:
-```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 # Taking a few representative columns for checking the consistency of joins
 caf.availability <- caf.mir.export %>%
   select(id.layer_local_c, scan_mir.600_abs) %>%
@@ -407,7 +495,29 @@ caf.availability %>%
   filter(!is.na(value)) %>%
   group_by(column) %>%
   summarise(count = n())
+```
 
+    # A tibble: 16 × 2
+       column                   count
+       <chr>                    <int>
+     1 al.ext_aquaregia_g.kg      493
+     2 c.tot_usda.a622_w.pct     1562
+     3 ca.ext_aquaregia_mg.kg     493
+     4 clay.tot_usda.a334_w.pct   511
+     5 fe.ext_aquaregia_g.kg      493
+     6 id.layer_local_c          1578
+     7 k.ext_aquaregia_mg.kg      493
+     8 mg.ext_aquaregia_mg.kg     493
+     9 mn.ext_aquaregia_mg.kg     493
+    10 n.tot_usda.a623_w.pct     1578
+    11 na.ext_aquaregia_mg.kg     493
+    12 p.ext_aquaregia_mg.kg      493
+    13 ph.h2o_usda.a268_index     483
+    14 sand.tot_usda.c60_w.pct    464
+    15 scan_mir.600_abs          1578
+    16 silt.tot_usda.c62_w.pct    464
+
+``` r
 # Repeats check - Duplicates are dropped
 caf.availability %>%
   mutate_all(as.character) %>%
@@ -419,8 +529,20 @@ caf.availability %>%
   summarise(count = n())
 ```
 
+    `summarise()` has grouped output by 'column'. You can override using the
+    `.groups` argument.
+    `summarise()` has grouped output by 'column'. You can override using the
+    `.groups` argument.
+
+    # A tibble: 1 × 3
+    # Groups:   column [1]
+      column           repeats count
+      <chr>              <int> <int>
+    1 id.layer_local_c       1  1578
+
 MIR spectral visualization (100 random spectra):
-```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+
+``` r
 set.seed(42)
 caf.mir %>%
   sample_n(100) %>%
@@ -437,10 +559,36 @@ caf.mir %>%
   theme_light()
 ```
 
-```{r end}
+![](README_files/figure-commonmark/mir_plot-1.png)
+
+``` r
 toc()
+```
+
+    20.982 sec elapsed
+
+``` r
 rm(list = ls())
 gc()
 ```
 
+               used  (Mb) gc trigger  (Mb) max used  (Mb)
+    Ncells  6431471 343.5   10887908 581.5  9839373 525.5
+    Vcells 11267202  86.0   42854621 327.0 42854621 327.0
+
 ## References
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0" line-spacing="2">
+
+<div id="ref-summerauer2021central" class="csl-entry">
+
+Summerauer, L., Baumann, P., Ramirez-Lopez, L., Barthel, M., Bauters,
+M., Bukombe, B., et al.others. (2021). The central african soil spectral
+library: A new soil infrared repository and a geographical prediction
+analysis. *SOIL*, *7*(2), 693–715.
+doi:[10.5194/soil-7-693-2021](https://doi.org/10.5194/soil-7-693-2021)
+
+</div>
+
+</div>

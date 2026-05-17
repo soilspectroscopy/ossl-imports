@@ -18,7 +18,7 @@ Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-05-01  
+Last update: 2026-05-17  
 Additional documentation:
 
 ## Original data
@@ -62,6 +62,7 @@ hsdos.sitedata <- hsdos.metadata %>%
                                                PROFILE_LEVEL == 3 ~ 90,
                                                TRUE ~ NA_real_),
          layer.sequence_usda_uint16 = as.integer(PROFILE_LEVEL)) %>%
+  select(-PROFILE_LEVEL) %>%
   # mutate(id.project_ascii_txt = "Hungarian Soil Degradation Observation System",
   #        dataset.code_ascii_txt = "HSDOS.SSL",
   #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
@@ -548,7 +549,7 @@ hsdos.visnir.proc %>%
 toc()
 ```
 
-    21.586 sec elapsed
+    20.904 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -556,8 +557,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6407892 342.3   11461330 612.2 10048997 536.7
-    Vcells 11079262  84.6   50324061 384.0 62904878 480.0
+    Ncells  6407888 342.3   11461611 612.2 10048870 536.7
+    Vcells 11079251  84.6   50327818 384.0 62909115 480.0
 
 ## References
 

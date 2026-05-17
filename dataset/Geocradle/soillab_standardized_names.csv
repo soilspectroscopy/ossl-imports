@@ -5,7 +5,7 @@ SSL_GEOCRADLE_1.csv,Clay_Fraction,TRUE,%,Bouyoucos (1962) method,NA,clay.tot,usd
 SSL_GEOCRADLE_1.csv,Silt_Fraction,TRUE,%,Bouyoucos (1962) method,NA,silt.tot,usda.c407,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",silt.tot_usda.c407_w.pct
 SSL_GEOCRADLE_1.csv,USDA_texture,NA,NA,NA,NA,NA,NA,NA,NA,NA
 SSL_GEOCRADLE_1.csv,OC,TRUE,%,Walkley-Black method,NA,oc,iso.10694,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",oc_iso.10694_w.pct
-SSL_GEOCRADLE_1.csv,OM,NA,NA,NA,NA,NA,NA,NA,NA,NA
+SSL_GEOCRADLE_1.csv,OM,TRUE,%,Walkley-Black method,NA,NA,NA,NA,"ifelse(as.numeric(x) < 0, NA, as.numeric(x) * 1)",OM
 SSL_GEOCRADLE_1.csv,Soil_type_extended_WRB,NA,NA,NA,NA,NA,NA,NA,NA,NA
 SSL_GEOCRADLE_1.csv,Soil_type_USDA,NA,NA,NA,NA,NA,NA,NA,NA,NA
 SSL_GEOCRADLE_1.csv,Soil_extended_WRB,NA,NA,NA,NA,NA,NA,NA,NA,NA

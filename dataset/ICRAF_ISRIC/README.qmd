@@ -54,7 +54,7 @@ gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
 ```
 
 Directory/folder path with original files (not uploaded to GitHub). 
-```{r}
+```{r dir}
 # dir = "./"
 dir = "~/mnt-ossl-private/database/datasets/ICRAF_ISRIC"
 tic()
@@ -64,7 +64,7 @@ tic()
 
 ### Site information
 
-```{r}
+```{r soilsite}
 # Icraf site data
 icraf.isric.reference = fread(paste0(dir, "/ICRAF_ISRIC_reference_data.csv"))
 
@@ -736,7 +736,7 @@ icraf.isric.mir %>%
   theme_light()
 ```
 
-```{r}
+```{r end}
 toc()
 rm(list = ls())
 gc()

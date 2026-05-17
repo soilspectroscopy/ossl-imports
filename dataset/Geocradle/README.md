@@ -17,7 +17,7 @@ the Open Soil Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-05-01  
+Last update: 2026-05-17  
 Additional documentation:
 
 ## Original data
@@ -55,6 +55,15 @@ geocradle.sitedata <- geocradle.metadata %>%
          Climate_Koeppen, Elevation,
          Soil_type_WRB, Soil_type_extended_WRB,
          Soil_type_USDA, USDA_texture) %>%
+  mutate(USDA_texture = case_when(
+    # Silt loam and Sandy loam
+    USDA_texture %in% c("silty loam", "siltloam") ~ "silt loam",
+    USDA_texture %in% c("Sandy loam") ~ "sandy loam",
+    # NA: unknown
+    is.na(USDA_texture) ~ "unknown",
+    TRUE ~ USDA_texture)) %>%
+  mutate(origin = case_when(origin == "FYROM" ~ "North Macedonia",
+                            TRUE ~ origin)) %>%
   rename(id.layer_local_c = ID,
          longitude.point_wgs84_dd = Longitude,
          latitude.point_wgs84_dd = Latitude,
@@ -68,9 +77,10 @@ geocradle.sitedata <- geocradle.metadata %>%
          layer.texture_usda_txt = USDA_texture) %>%
   mutate(Sampling_date = str_remove(Sampling_date, "\\.+$")) %>%
   mutate(Sampling_date = str_replace_all(Sampling_date, "\\.", "-")) %>%
-  mutate(Sampling_date2 = case_when(grepl("-", Sampling_date) ~ dmy(Sampling_date),
-                                    !grepl("-", Sampling_date) ~ as_date(as.numeric(Sampling_date), origin = ymd("1899-12-30")),
-                                    TRUE ~ NA)) %>%
+  mutate(Sampling_date = case_when(
+    grepl("-", Sampling_date) ~ dmy(Sampling_date),
+    TRUE                      ~ as_date(as.numeric(Sampling_date), 
+                                        origin = ymd("1899-12-30")))) %>%
   rename(observation.date_src_yyyy.mm.dd = Sampling_date) %>%
   # mutate(id.project_ascii_txt = "Geocradle Regional Soil Spectral Library",
   #        dataset.code_ascii_txt = "GEOCRADLE.SSL",
@@ -91,7 +101,7 @@ geocradle.sitedata <- geocradle.metadata %>%
 
     Warning: There were 2 warnings in `mutate()`.
     The first warning was:
-    ℹ In argument: `Sampling_date2 = case_when(...)`.
+    ℹ In argument: `Sampling_date = case_when(...)`.
     Caused by warning:
     !  229 failed to parse.
     ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
@@ -229,6 +239,7 @@ knitr::kable(transvalues)
 | SSL_GEOCRADLE_1.csv | Clay_Fraction | % | clay.tot | usda.a334 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | clay.tot_usda.a334_w.pct |
 | SSL_GEOCRADLE_1.csv | Silt_Fraction | % | silt.tot | usda.c407 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | silt.tot_usda.c407_w.pct |
 | SSL_GEOCRADLE_1.csv | OC | % | oc | iso.10694 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | oc_iso.10694_w.pct |
+| SSL_GEOCRADLE_1.csv | OM | % | NA | NA | NA | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | OM |
 | SSL_GEOCRADLE_1.csv | CaCO3 | % | caco3 | iso.10693 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | caco3_iso.10693_w.pct |
 | SSL_GEOCRADLE_1.csv | pH_H2O | NA | ph.h2o | usda.a268 | index | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | ph.h2o_usda.a268_index |
 | SSL_GEOCRADLE_1.csv | EC_muS | mS/cm | ec | iso.11265 | ds.m | ifelse(as.numeric(x) \< 0, NA, as.numeric(x) \* 1) | ec_iso.11265_ds.m |
@@ -256,19 +267,26 @@ geocradle.soildata <- geocradle.reference %>%
   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
   as.data.frame()
 
+geocradle.soildata <- geocradle.soildata %>%
+  mutate(oc_iso.10694_w.pct = ifelse(is.na(oc_iso.10694_w.pct),
+                                     ifelse(is.na(OM), NA, OM/1.724),
+                                     oc_iso.10694_w.pct)) %>%
+  select(-OM)
+
 # Getting the formulas
 functions.list <- transvalues %>%
   filter(table == "SSL_GEOCRADLE_1.csv") %>%
+  filter(original_name != "OM") %>%
   mutate(ossl_name = factor(ossl_name, levels = names(geocradle.soildata))) %>%
   arrange(ossl_name) %>%
   pull(ossl_convert) %>%
-  c("x", .)
+  c("x",.)
 
 # Applying transformation rules
 geocradle.soildata.trans <- transform_values(df = geocradle.soildata,
-                                       out.name = names(geocradle.soildata),
-                                       in.name = names(geocradle.soildata),
-                                       fun.lst = functions.list)
+                                             out.name = names(geocradle.soildata),
+                                             in.name = names(geocradle.soildata),
+                                             fun.lst = functions.list)
 
 # Final soillab data
 geocradle.soildata <- geocradle.soildata.trans %>%
@@ -327,7 +345,7 @@ Data summary
 | sand.tot_usda.c405_w.pct |       264 | 53.48 | 22.85 | 0.40 | 36.85 | 54.00 | 69.00 |  99.00 |
 | clay.tot_usda.a334_w.pct |        77 | 21.26 | 16.01 | 0.00 |  9.39 | 17.00 | 29.10 |  94.80 |
 | silt.tot_usda.c407_w.pct |       264 | 26.67 | 14.31 | 0.00 | 16.00 | 26.00 | 37.40 |  68.00 |
-| oc_iso.10694_w.pct       |      1555 |  1.33 |  1.60 | 0.00 |  0.78 |  1.12 |  1.52 |  20.75 |
+| oc_iso.10694_w.pct       |       132 |  0.74 |  0.84 | 0.00 |  0.29 |  0.58 |  0.94 |  20.75 |
 | caco3_iso.10693_w.pct    |       388 |  6.83 | 14.87 | 0.00 |  0.00 |  0.20 |  3.40 |  89.99 |
 | ph.h2o_usda.a268_index   |      1141 |  7.22 |  1.09 | 3.50 |  6.50 |  7.44 |  8.01 |  10.07 |
 | ec_iso.11265_ds.m        |      1412 |  2.29 |  9.32 | 0.02 |  0.16 |  0.67 |  1.42 | 120.00 |
@@ -498,7 +516,7 @@ geocradle.availability %>%
     2 clay.tot_usda.a334_w.pct  1676
     3 ec_iso.11265_ds.m          341
     4 id.layer_local_c          1753
-    5 oc_iso.10694_w.pct         198
+    5 oc_iso.10694_w.pct        1621
     6 ph.h2o_usda.a268_index     612
     7 sand.tot_usda.c405_w.pct  1489
     8 scan_visnir.600_ref       1753
@@ -542,7 +560,7 @@ Data summary
 | sand.tot_usda.c405_w.pct |       264 | 53.47 | 22.86 | 0.40 | 36.85 | 54.00 | 69.00 |  99.00 |
 | clay.tot_usda.a334_w.pct |        77 | 21.28 | 16.04 | 0.00 |  9.39 | 17.00 | 29.10 |  94.80 |
 | silt.tot_usda.c407_w.pct |       264 | 26.66 | 14.31 | 0.00 | 16.00 | 26.00 | 37.10 |  68.00 |
-| oc_iso.10694_w.pct       |      1555 |  1.33 |  1.60 | 0.00 |  0.78 |  1.11 |  1.52 |  20.75 |
+| oc_iso.10694_w.pct       |       132 |  0.74 |  0.84 | 0.00 |  0.29 |  0.58 |  0.93 |  20.75 |
 | caco3_iso.10693_w.pct    |       386 |  6.83 | 14.86 | 0.00 |  0.00 |  0.20 |  3.50 |  89.99 |
 | ph.h2o_usda.a268_index   |      1141 |  7.22 |  1.09 | 3.50 |  6.52 |  7.44 |  8.01 |  10.07 |
 | ec_iso.11265_ds.m        |      1412 |  2.29 |  9.32 | 0.02 |  0.16 |  0.67 |  1.42 | 120.00 |
@@ -573,7 +591,7 @@ geocradle.visnir.proc %>%
 toc()
 ```
 
-    16.303 sec elapsed
+    16.035 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -581,8 +599,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6462423 345.2   11590118 619.0 11590118 619.0
-    Vcells 11170116  85.3   30109728 229.8 30109694 229.8
+    Ncells  6462474 345.2   11589991 619.0 11589991 619.0
+    Vcells 11170550  85.3   30111413 229.8 30111239 229.8
 
 ## References
 

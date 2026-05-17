@@ -8,6 +8,8 @@ public.dir <- "~/mnt-ossl-public/"
 datasets.path <- dir_ls(path(private.dir,"datasets/"))
 datasets.code <- basename(datasets.path)
 
+datasets.code <- grep("LUCAS|NEON|SRB",datasets.code, value = T)
+
 # dir_ls(path(public.dir,"datasets/"))
 
 # Making sure the folders exist
