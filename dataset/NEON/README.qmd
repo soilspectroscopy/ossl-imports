@@ -68,7 +68,7 @@ tic()
 
 ### Site information
 
-```{r}
+```{r soilsite}
 neon.soilp <- read_csv(path(dir, "NEON_soilp.csv"))
 
 neon.sitedata <- neon.soilp %>%
@@ -253,15 +253,33 @@ wcrc.mir <- spectra.wcrc %>%
          id.scan_local_c = as.character(id.scan_local_c)) %>%
   mutate(across(all_of(old.spectral.columns), as.numeric))
 
-# Removing X in the spectral columns
-clean.spectral.columns <- gsub("X", "", old.spectral.columns)
+# Removing spikes between 550-650
+spectral.cols.spike <- wcrc.mir %>%
+  pivot_longer(starts_with("X")) %>%
+  mutate(name = as.numeric(gsub("X", "", name))) %>%
+  filter(name >= 550 & name <= 650) %>%
+  mutate(name = paste0("X",name)) %>%
+  distinct(name) %>%
+  pull(name)
 
 wcrc.mir <- wcrc.mir %>%
-  rename_with(~clean.spectral.columns, all_of(old.spectral.columns))
+  arrange(id.scan_local_c) %>%
+  select(all_of(spectral.cols.spike)) %>%
+  as.matrix() %>%
+  mdatools::prep.spikes(., width = 11, threshold = 3) %>%
+  mdatools::prep.savgol(., width = 11, porder = 2, dorder = 0) %>%
+  as_tibble() %>%
+  bind_cols({wcrc.mir %>%
+      arrange(id.scan_local_c) %>%
+      select(-all_of(spectral.cols.spike))}, .) %>%
+  pivot_longer(starts_with("X")) %>%
+  mutate(name = as.numeric(gsub("X", "", name))) %>%
+  arrange(id.scan_local_c, name) %>%
+  pivot_wider()
 
 # Need to resample spectra
-old.wavenumbers <- as.numeric(clean.spectral.columns)
-new.wavenumbers <- rev(seq(628, 4000, by = 2))
+old.wavenumbers <- as.numeric(gsub("X","",old.spectral.columns))
+new.wavenumbers <- rev(seq(600, 4000, by = 2))
 
 wcrc.mir <- wcrc.mir %>%
   select(-starts_with("id.")) %>%
@@ -446,13 +464,13 @@ neon.mir %>%
   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
   geom_line(alpha = 0.1, color = "darkblue") +
-  scale_x_continuous(breaks = c(628, 1200, 1800, 2400, 3000, 3600, 4000),
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000),
                      transform = "reverse") +
   labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
   theme_light()
 ```
 
-```{r}
+```{r end}
 toc()
 rm(list = ls())
 gc()

@@ -18,7 +18,7 @@ Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-05-11  
+Last update: 2026-05-17  
 Additional documentation:
 
 ## Original data
@@ -362,15 +362,33 @@ wcrc.mir <- spectra.wcrc %>%
          id.scan_local_c = as.character(id.scan_local_c)) %>%
   mutate(across(all_of(old.spectral.columns), as.numeric))
 
-# Removing X in the spectral columns
-clean.spectral.columns <- gsub("X", "", old.spectral.columns)
+# Removing spikes between 550-650
+spectral.cols.spike <- wcrc.mir %>%
+  pivot_longer(starts_with("X")) %>%
+  mutate(name = as.numeric(gsub("X", "", name))) %>%
+  filter(name >= 550 & name <= 650) %>%
+  mutate(name = paste0("X",name)) %>%
+  distinct(name) %>%
+  pull(name)
 
 wcrc.mir <- wcrc.mir %>%
-  rename_with(~clean.spectral.columns, all_of(old.spectral.columns))
+  arrange(id.scan_local_c) %>%
+  select(all_of(spectral.cols.spike)) %>%
+  as.matrix() %>%
+  mdatools::prep.spikes(., width = 11, threshold = 3) %>%
+  mdatools::prep.savgol(., width = 11, porder = 2, dorder = 0) %>%
+  as_tibble() %>%
+  bind_cols({wcrc.mir %>%
+      arrange(id.scan_local_c) %>%
+      select(-all_of(spectral.cols.spike))}, .) %>%
+  pivot_longer(starts_with("X")) %>%
+  mutate(name = as.numeric(gsub("X", "", name))) %>%
+  arrange(id.scan_local_c, name) %>%
+  pivot_wider()
 
 # Need to resample spectra
-old.wavenumbers <- as.numeric(clean.spectral.columns)
-new.wavenumbers <- rev(seq(628, 4000, by = 2))
+old.wavenumbers <- as.numeric(gsub("X","",old.spectral.columns))
+new.wavenumbers <- rev(seq(600, 4000, by = 2))
 
 wcrc.mir <- wcrc.mir %>%
   select(-starts_with("id.")) %>%
@@ -618,16 +636,13 @@ neon.mir %>%
   theme_light()
 ```
 
-    Warning: Removed 1400 rows containing missing values or values outside the scale range
-    (`geom_line()`).
-
 ![](README_files/figure-commonmark/mir_plot-1.png)
 
 ``` r
 toc()
 ```
 
-    21.589 sec elapsed
+    23.135 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -635,8 +650,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6134060 327.6   10787088 576.1  8972577 479.2
-    Vcells 11502293  87.8   31091163 237.3 31066400 237.1
+    Ncells  6426089 343.2   11420458 610.0 10016931 535.0
+    Vcells 12027939  91.8   34826367 265.8 34826262 265.8
 
 ## References
 
