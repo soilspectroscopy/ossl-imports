@@ -87,7 +87,7 @@ neon.sitedata <- neon.soilp %>%
          site.id_src_txt = siteID,
          site.pit_src_txt = pitID,
          site.pit.name_src_txt = pitNamedLocation,
-         pedon.horizon_src_tst = horizonName,
+         pedon.horizon_src_txt = horizonName,
          observation.date_src_yyyy.mm.dd = collectDate,
          layer.upper.depth_usda_cm = biogeoTopDepth,
          layer.lower.depth_usda_cm = biogeoBottomDepth) %>%
@@ -630,7 +630,7 @@ neon.mir %>%
   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
   geom_line(alpha = 0.1, color = "darkblue") +
-  scale_x_continuous(breaks = c(628, 1200, 1800, 2400, 3000, 3600, 4000),
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000),
                      transform = "reverse") +
   labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") +
   theme_light()
@@ -642,7 +642,7 @@ neon.mir %>%
 toc()
 ```
 
-    23.135 sec elapsed
+    22.966 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -650,8 +650,8 @@ gc()
 ```
 
                used  (Mb) gc trigger  (Mb) max used  (Mb)
-    Ncells  6426089 343.2   11420458 610.0 10016931 535.0
-    Vcells 12027939  91.8   34826367 265.8 34826262 265.8
+    Ncells  6426430 343.3   10786761 576.1 10488616 560.2
+    Vcells 12028612  91.8   28956137 221.0 28956137 221.0
 
 ## References
 

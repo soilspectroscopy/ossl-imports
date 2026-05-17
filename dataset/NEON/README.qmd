@@ -82,7 +82,7 @@ neon.sitedata <- neon.soilp %>%
          site.id_src_txt = siteID,
          site.pit_src_txt = pitID,
          site.pit.name_src_txt = pitNamedLocation,
-         pedon.horizon_src_tst = horizonName,
+         pedon.horizon_src_txt = horizonName,
          observation.date_src_yyyy.mm.dd = collectDate,
          layer.upper.depth_usda_cm = biogeoTopDepth,
          layer.lower.depth_usda_cm = biogeoBottomDepth) %>%
