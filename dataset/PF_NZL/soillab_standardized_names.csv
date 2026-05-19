@@ -1,0 +1,379 @@
+table,original_name,import,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name,comment
+FR380_particlesize,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR380_particlesize,LCR_Soil profile ID,NA,NA,NA,NA,NA,NA,NA
+FR380_particlesize,LCR_Lab letter,NA,NA,NA,NA,NA,NA,NA
+FR380_particlesize,LCR_Horizon number,NA,NA,NA,NA,NA,NA,NA
+FR380_particlesize,Coarse sand (%),NA,NA,NA,NA,NA,NA,"Particle size was measured by dispersing the field-moist soil in water with an ultrasonic probe and sedimentation separating the fine earth (<2 mm) fraction (% sand, silt and clay); Watt et al. (2005; 2008) and Ross et al. (2009)"
+FR380_particlesize,Medium sand (%),NA,NA,NA,NA,NA,NA,"Pipett method, Watt et al (2008) and Ross et al. (2009)"
+FR380_particlesize,Fine sand (%),NA,NA,NA,NA,NA,NA,NA
+FR380_particlesize,Sand (%),TRUE,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct,NA
+FR380_particlesize,Silt (%),TRUE,sand.tot,usda.c60,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",sand.tot_usda.c60_w.pct,NA
+FR380_particlesize,Clay (%),TRUE,silt.tot,usda.c62,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",silt.tot_usda.c62_w.pct,NA
+FR380_physical,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Location of sample,NA,NA,NA,NA,NA,NA,NA; Watt et al. (2005; 2008)
+FR380_physical,Sample Method,NA,NA,NA,NA,NA,NA,NA; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_physical,Sample plots 'Disturbed' or 'Undisturbed',NA,NA,NA,NA,NA,NA,NA; Watt et al. (2005; 2008)
+FR380_physical,Horizon notation,NA,NA,NA,NA,NA,NA,"NA; Milne JDG, Clayden B, Singleton PL, Wilson AD, (1995) Soil description handbook. Manaaki Whenua Press. https://doi.org/10.7931/DL1JG6"
+FR380_physical,Horizon top (cm),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Horizon base (cm),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,LCR_Soil profile ID,NA,NA,NA,NA,NA,NA,NA
+FR380_physical,LCR_Lab letter,NA,NA,NA,NA,NA,NA,NA
+FR380_physical,LCR_Horizon number,NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Lab Code,NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Particle density (g/cm3),NA,NA,NA,NA,NA,NA,NA; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_physical,Bulk density (g/cm3),TRUE,bd,usda.a4,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a4_g.cm3,"I think the KSSL code is wrong, should be 3b6 (core samples, as 3b2 is for reconstructed clods)"
+FR380_physical,Porosity (%),NA,NA,NA,NA,NA,NA,Description Watt et al (2008) and Ross et al. (2009)
+FR380_physical,Macro-porosity (%),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Air capacity (%),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Void Ratio,NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Field capacity (%),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at saturation (calculation) (%w/w),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at 5 kPa (%w/w),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at 10 kPa (%w/w),TRUE,wr.10kPa,usda.a414,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.10kPa_usda.a414_w.pct,"Description Watt et al (2008) and Ross et al. (2009), the problem is that 33 kPa is not present, but it is roughly comparable to 10 kPa"
+FR380_physical,Water content at 100 kPa (%w/w),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at 1500 kPa (%w/w),TRUE,wr.1500kPa,usda.a417,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.1500kPa_usda.a417_w.pct,NA
+FR380_physical,Water content at saturation (calculation) (%v/v),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at 5 kPa (%v/v),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at 10 kPa (%v/v),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at 100 kPa (%v/v),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at 1500 kPa (%v/v),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,"Penetration Resistance at 10 kPa, 3-6 cm at FC, Mean of 2 reps (MPa)",NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at field moisture (%w/w),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Water content at field moisture (%v/v),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,"RAW 
+(10-100 kPa)",NA,NA,NA,NA,NA,NA,NA
+FR380_physical,"TAW
+(10-1500 kPa)",NA,NA,NA,NA,NA,NA,NA
+FR380_physical,Pedology stone content (%),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,RAW (10-100 kPa) (stone corr.) (%),NA,NA,NA,NA,NA,NA,NA
+FR380_physical,TAW (100-1500 kPa) (stone corr.) (%),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Sampling Date,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Sample Method,NA,NA,NA,NA,NA,NA,Description Watt et al (2008) and Ross et al. (2009)
+FR380_chemical,Horizon top (cm),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Horizon base (cm),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,0-10cm sample disturbed or undistrubed,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Comment,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,LCR_Sample ID,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,LCR_Soil profile ID,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,LCR_Lab letter,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,LCR_Horizon number,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,LCR_pH [H2O],NA,NA,NA,NA,NA,NA,pH measured by 1:2.5 soil/water suspension; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Total Carbon (%),TRUE,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_usda.a622_w.pct,total organic carbon (C) and total nitrogen (N) measured by LECO TruMac; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Total Nitrogen (%),TRUE,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_usda.a623_w.pct,NA; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Carbon/Nitrogen,NA,NA,NA,NA,NA,NA,ratio of total C and total N; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_P Olsen Available (ug/g),TRUE,p.ext,usda.a274,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_usda.a274_mg.kg,"available phosphorus using the Olsen P method, extraction 1:20 ratio, with 0.5M sodium hydrogen carbonate adjusted to pH 8.5; Watt et al. (2005; 2008) and Ross et al. (2009)"
+FR380_chemical,LCR_P Bray Available (ug/g),TRUE,p.ext,usda.a270,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_usda.a270_mg.kg,"available phosphorus using the Bray 2-soluble P method, extraction 0.3 M NH4F and 0.1 M HCl, at a ratio of 1:10 soil:extractant; Watt et al. (2005; 2008) and Ross et al. (2009)"
+FR380_chemical,LCR_P inorganic (mg%),NA,NA,NA,NA,NA,NA,"inorganic phosphorus, extraction 0.5M H2SO4 at a ratio of 1:200 soil:extractant; Watt et al. (2005; 2008) and Ross et al. (2009)"
+FR380_chemical,LCR_P organic (mg%),NA,NA,NA,NA,NA,NA,difference between total P and inorganic P: organic phosphorus measured by the increase in soluble P caused by ignition; ignition at 550°C and extraction 0.5M H2SO4 at a ratio of 1:200 soil:extractant; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_P Total (mg%),NA,NA,NA,NA,NA,NA,sum of inorganic and organic phosphorus; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_P retention (%),NA,NA,NA,NA,NA,NA,"phosphorus retention, soil shaken with 1,000 mg/L P solution at pH 4.6; Watt et al. (2005; 2008) and Ross et al. (2009)"
+FR380_chemical,LCR_CEC (me.%),TRUE,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_usda.a723_cmolc.kg,ammonium acetate extraction and leaching using sodium chloride; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Sum bases (me.%),NA,NA,NA,NA,NA,NA,calculation; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Base saturation (%),NA,NA,NA,NA,NA,NA,calculation; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Exchange Ca (me.%),TRUE,ca.ext,usda.a722,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a722_cmolc.kg,ammonium acetate leaching; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Exchange Mg (me.%),TRUE,mg.ext,usda.a724,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a724_cmolc.kg,ammonium acetate leaching; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Exchange K (me.%),TRUE,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a725_cmolc.kg,ammonium acetate leaching; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,LCR_Exchange Na (me.%),TRUE,na.ext,usda.a726,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a726_cmolc.kg,ammonium acetate leaching; Watt et al. (2005; 2008) and Ross et al. (2009)
+FR380_chemical,Scion_Sample ID,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Scion_pH [H2O],TRUE,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index,pH measured by 1:2.5 soil/water suspension; Garrett et al. (2022)
+FR380_chemical,Scion_Bray P (mg/kg) seq 1,NA,NA,NA,NA,NA,NA,"Bray-extractable (available) phosphorus using FIA colorimetry after sequential 1:10 Bray 2 (NH4F/HCl) extraction (sequential extraction 1, 2, and 3); Garrett et al. (2022)"
+FR380_chemical,Scion_Bray P (mg/kg) seq 2,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Scion_Bray P (mg/kg) seq 3,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Scion_Mehlich 3 B (mg/kg),TRUE,b.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",b.ext_mel3_mg.kg,"available elements (aluminium, boron, calcium, copper, iron, magnesium, manganese, sodium, phosphorus, potassium, zinc) using ICP-MS (inductively coupled plasma mass spectrometry) after Mehlich 3 extraction; Garrett et al. (2022)"
+FR380_chemical,Scion_Mehlich 3 Al (mg/kg),TRUE,al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a1056_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 Na (mg/kg),TRUE,na.ext,usda.a1068,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a1068_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 Mg (mg/kg),TRUE,mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a1066_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 P (mg/kg),TRUE,p.ext,usda.a652,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_usda.a652_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 K (mg/kg),TRUE,k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a1065_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 Ca (mg/kg),TRUE,ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a1059_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 Mn (mg/kg),TRUE,mn.ext,usda.a1067,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mn.ext_usda.a1067_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 Fe (mg/kg),TRUE,fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",fe.ext_usda.a1064_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 Cu (mg/kg),TRUE,cu.ext,usda.a1063,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cu.ext_usda.a1063_mg.kg,NA
+FR380_chemical,Scion_Mehlich 3 Zn (mg/kg),TRUE,zn.ext,usda.a1073,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",zn.ext_usda.a1073_mg.kg,NA
+FR380_chemical,Lab 3_Sulphate S (mg/kg),NA,NA,NA,NA,NA,NA,sulphate-S was measured by IC (Ion Chromatography) after 0.02M potassium phosphate extraction; Garrett et al. (2022)
+FR380_chemical,Lab 4_Total B (mg/kg),NA,NA,NA,NA,NA,NA,"Elemental totals for aluminium, arsenic, boron, barium, calcium, cadmium, cobalt, chromium, copper, iron, potassium, magnesium, manganese, sodium, nickel, phosphorus, lead, sulphur, selenium, strontium, thallium, uranium, vanadium, and zinc (Al, As, B, Ba, Ca, Cd, Co, Cr, Cu, Fe, K, Mg, Mn, Na, Ni, P, Pb, S, Se, Sr, Tl, U, V, and Zn) were measured by ICP-MS (inductively coupled plasma mass spectrometry) using a modified USEPA digestion method 3050B to include a reverse aqua regia digest of 1 HCl: 3 HNO3 to limit Cl- interference; Garrett et al. (2022)"
+FR380_chemical,Lab 4_Total Na (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Mg (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Al (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total P (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total S (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total K (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Ca (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total V (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Cr (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Mn (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Fe (mg/kg,NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Co (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Ni (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Cu (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Zn (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total As (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Se (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Sr (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Cd (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Ba (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Tl (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total Pb (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR380_chemical,Lab 4_Total U (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Site,NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,PSP ID,NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Sampling Date,NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Method,NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Depth increment (cm),NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Sample thickness (cm),NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,No. Bulked Samples,NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Area (cm2),NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Vol. Total (cm3),NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Bulk density (<2 mm) (g/cm3),TRUE,bd,usda.a4,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a4_g.cm3,NA
+FR531::4_Time zero soil bulk density,Bulk density (>2 mm) (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Total bulk density (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Bulk density dead organic material >2mm (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR531::4_Time zero soil bulk density,Comment,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Site,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,PSP ID,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Lab Job No.,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Lab ID,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Sampling Date,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Method,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Depth increment (cm),NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,No. Bulked Samples,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Size Class,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Sample thickness (cm),NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Total C (%),TRUE,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_usda.a622_w.pct,NA
+FR531::3_Time zero soil chemistry,Total N (%),TRUE,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_usda.a623_w.pct,NA
+FR531::3_Time zero soil chemistry,C/N,NA,NA,NA,NA,NA,NA,NA
+FR531::3_Time zero soil chemistry,Comment,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Site,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,PSP ID,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Lab Job No.,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Lab ID,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Sampling Date,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Sampling position ID,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Sampling Method,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Depth increment (cm),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,No. Bulked Samples,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Soil size class fraction,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Sample thickness (cm),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Sample Type,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Comment,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,pH,TRUE,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index,NA
+FR556::1_Pre-harvest soil chemistry,Total C (%),TRUE,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_usda.a622_w.pct,NA
+FR556::1_Pre-harvest soil chemistry,Total N (%),TRUE,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_usda.a623_w.pct,NA
+FR556::1_Pre-harvest soil chemistry,C/N,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total P (mg/kg)...19,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Bray P (mg/kg) seq 1,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Bray P (mg/kg) seq 2,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Bray P (mg/kg) seq 3,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Ex. Ca          (cmol/kg),TRUE,ca.ext,usda.a722,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a722_cmolc.kg,NA
+FR556::1_Pre-harvest soil chemistry,Ex. Mg (cmol/kg),TRUE,mg.ext,usda.a724,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a724_cmolc.kg,NA
+FR556::1_Pre-harvest soil chemistry,Ex. K  (cmol/kg),TRUE,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a725_cmolc.kg,NA
+FR556::1_Pre-harvest soil chemistry,Ex. Na (cmol/kg),TRUE,na.ext,usda.a726,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a726_cmolc.kg,NA
+FR556::1_Pre-harvest soil chemistry,CEC (cmol/kg),TRUE,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_usda.a723_cmolc.kg,NA
+FR556::1_Pre-harvest soil chemistry,BS (%),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Sulphate S (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 Al (mg/kg),TRUE,al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a1056_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 B (mg/kg),TRUE,b.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",b.ext_mel3_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 Ca (mg/kg),TRUE,ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a1059_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 Cu (mg/kg),TRUE,cu.ext,usda.a1063,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cu.ext_usda.a1063_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 Fe (mg/kg),TRUE,fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",fe.ext_usda.a1064_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 K (mg/kg),TRUE,k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a1065_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 Mg (mg/kg),TRUE,mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a1066_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 Mn (mg/kg),TRUE,mn.ext,usda.a1067,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mn.ext_usda.a1067_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 Na (mg/kg),TRUE,na.ext,usda.a1068,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a1068_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 P (mg/kg),TRUE,p.ext,usda.a652,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_usda.a652_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Mehlich 3 Zn (mg/kg),TRUE,zn.ext,usda.a1073,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",zn.ext_usda.a1073_mg.kg,NA
+FR556::1_Pre-harvest soil chemistry,Total B (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Na (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Mg (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Al (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total P (mg/kg)...45,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total S (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total K (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Ca (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total V (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Cr (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Mn (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Fe (mg/kg,NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Co (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Ni (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Cu (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Zn (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total As (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Se (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Sr (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Cd (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Ba (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Tl (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total Pb (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::1_Pre-harvest soil chemistry,Total U (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Site,NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,PSP ID,NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Sampling year,NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Sample replicate or description,NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Sampling Method,NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Depth increment (cm),NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Sample thickness (cm),NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,No. Bulked Samples,NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Area (cm2),NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Vol. Total (cm3),NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Bulk density (<2 mm) (g/cm3),TRUE,bd,usda.a4,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a4_g.cm3,NA
+FR556::2_Pre-harvest soil bulk density,Bulk density (>2 mm) (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Total bulk density (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR556::2_Pre-harvest soil bulk density,Bulk density dead organic material >2mm (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Site,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,PSP ID,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Lab Job No.,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Lab ID,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Sampling Date,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Sampling position ID,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Sampling Method,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Depth increment (cm),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,No. Bulked Samples,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Soil size class fraction,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Block,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Plot,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Sub-Plot ID,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Sample thickness (cm),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Sample Type,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Comment,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,pH,TRUE,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index,NA
+FR556::6_Time zero soil chemistry,Total C (%),TRUE,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_usda.a622_w.pct,NA
+FR556::6_Time zero soil chemistry,Total N (%),TRUE,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_usda.a623_w.pct,NA
+FR556::6_Time zero soil chemistry,C/N,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total P (mg/kg)...22,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Bray P (mg/kg) seq 1,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Bray P (mg/kg) seq 2,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Bray P (mg/kg) seq 3,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Ex. Ca          (cmol/kg),TRUE,ca.ext,usda.a722,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a722_cmolc.kg,NA
+FR556::6_Time zero soil chemistry,Ex. Mg (cmol/kg),TRUE,mg.ext,usda.a724,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a724_cmolc.kg,NA
+FR556::6_Time zero soil chemistry,Ex. K  (cmol/kg),TRUE,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a725_cmolc.kg,NA
+FR556::6_Time zero soil chemistry,Ex. Na (cmol/kg),TRUE,na.ext,usda.a726,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a726_cmolc.kg,NA
+FR556::6_Time zero soil chemistry,CEC (cmol/kg),TRUE,cec,usda.a723,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_usda.a723_cmolc.kg,NA
+FR556::6_Time zero soil chemistry,BS (%),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Sulphate S (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 Al (mg/kg),TRUE,al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a1056_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 B (mg/kg),TRUE,b.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",b.ext_mel3_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 Ca (mg/kg),TRUE,ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a1059_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 Cu (mg/kg),TRUE,cu.ext,usda.a1063,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cu.ext_usda.a1063_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 Fe (mg/kg),TRUE,fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",fe.ext_usda.a1064_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 K (mg/kg),TRUE,k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a1065_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 Mg (mg/kg),TRUE,mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a1066_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 Mn (mg/kg),TRUE,mn.ext,usda.a1067,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mn.ext_usda.a1067_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 Na (mg/kg),TRUE,na.ext,usda.a1068,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a1068_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 P (mg/kg),TRUE,p.ext,usda.a652,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_usda.a652_mg.kg,NA
+FR556::6_Time zero soil chemistry,Mehlich 3 Zn (mg/kg),TRUE,zn.ext,usda.a1073,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",zn.ext_usda.a1073_mg.kg,NA
+FR556::6_Time zero soil chemistry,Inorganic P (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Organic P (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,P Retention,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total B (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Na (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Mg (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Al (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total P (mg/kg)...51,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total S (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total K (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Ca (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total V (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Cr (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Mn (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Fe (mg/kg,NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Co (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Ni (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Cu (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Zn (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total As (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Se (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Sr (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Cd (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Ba (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Tl (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total Pb (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::6_Time zero soil chemistry,Total U (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Site,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,PSP ID,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Sampling year,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Block ID,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Plot ID,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Sub-plot ID,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Sample replicate or description,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Sampling Method,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Depth increment (cm),NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Sample thickness (cm),NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,No. Bulked Samples,NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Area (cm2),NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Vol. Total (cm3),NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Bulk density (<2 mm) (g/cm3),TRUE,bd,usda.a4,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a4_g.cm3,NA
+FR556::7_Time zero soil bulk density,Bulk density (>2 mm) (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Total bulk density (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR556::7_Time zero soil bulk density,Bulk density dead organic material >2mm (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Lab ID,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Sampling Date,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Method,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Depth increment (cm),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,No. Bulked Samples,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Size Class,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Sample thickness (cm),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,pH,TRUE,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index,NA
+FR559::2_Time zero soil chemistry,Total C (%),TRUE,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",c.tot_usda.a622_w.pct,NA
+FR559::2_Time zero soil chemistry,Total N (%),TRUE,n.tot,usda.a623,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",n.tot_usda.a623_w.pct,NA
+FR559::2_Time zero soil chemistry,Total P (mg/kg)...12,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Bray P (mg/kg) seq 1,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Bray P (mg/kg) seq 2,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Bray P (mg/kg) seq 3,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Sulphate S (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 B (mg/kg),TRUE,b.ext,mel3,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",b.ext_mel3_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 Al (mg/kg),TRUE,al.ext,usda.a1056,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",al.ext_usda.a1056_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 Na (mg/kg),TRUE,na.ext,usda.a1068,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",na.ext_usda.a1068_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 Mg (mg/kg),TRUE,mg.ext,usda.a1066,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mg.ext_usda.a1066_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 P (mg/kg),TRUE,p.ext,usda.a652,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_usda.a652_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 K (mg/kg),TRUE,k.ext,usda.a1065,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",k.ext_usda.a1065_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 Ca (mg/kg),TRUE,ca.ext,usda.a1059,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ca.ext_usda.a1059_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 Mn (mg/kg),TRUE,mn.ext,usda.a1067,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",mn.ext_usda.a1067_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 Fe (mg/kg),TRUE,fe.ext,usda.a1064,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",fe.ext_usda.a1064_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 Cu (mg/kg),TRUE,cu.ext,usda.a1063,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cu.ext_usda.a1063_mg.kg,NA
+FR559::2_Time zero soil chemistry,Mehlich 3 Zn (mg/kg),TRUE,zn.ext,usda.a1073,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",zn.ext_usda.a1073_mg.kg,NA
+FR559::2_Time zero soil chemistry,Total B (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Na (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Mg (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Al (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total P (mg/kg)...32,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total S (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total K (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Ca (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total V (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Cr (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Mn (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Fe (mg/kg,NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Co (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Ni (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Cu (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Zn (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total As (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Se (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Sr (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Cd (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Ba (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Tl (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total Pb (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::2_Time zero soil chemistry,Total U (mg/kg),NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Trial ID,NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Sub-plot number,NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Sampling Date,NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Method,NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Depth increment (cm),NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Sample thickness (cm),NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,No. Bulked Samples,NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Area (cm2),NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Vol. Total (cm3),NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Bulk density (<2 mm) (g/cm3),TRUE,bd,usda.a4,g.cm3,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",bd_usda.a4_g.cm3,NA
+FR559::3_Time zero soil bulk density,Bulk density (>2 mm) (g/cm3),NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Bulk density dead organic material >2mm (g cm3),NA,NA,NA,NA,NA,NA,NA
+FR559::3_Time zero soil bulk density,Comment,NA,NA,NA,NA,NA,NA,NA
