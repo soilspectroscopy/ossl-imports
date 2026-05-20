@@ -8,7 +8,7 @@ public.dir <- "~/mnt-ossl-public/"
 datasets.path <- dir_ls(path(private.dir,"datasets/"))
 datasets.code <- basename(datasets.path)
 
-datasets.code <- grep("NEON",datasets.code, value = T)
+datasets.code <- grep("Neospectra",datasets.code, value = T)
 
 # dir_ls(path(public.dir,"datasets/"))
 
@@ -39,5 +39,9 @@ public.dataset.files <- tibble(dataset_code = basename(dirname(paths)),
                                public_url = paths)
 
 public.dataset.files
+
+public.dataset.files %>%
+  distinct(dataset_code) %>%
+  pull(dataset_code)
 
 write_csv(public.dataset.files, "out/ossl_individual_datasets_urls_v1.3.csv")

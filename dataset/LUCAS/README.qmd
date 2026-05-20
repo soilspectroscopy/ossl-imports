@@ -191,10 +191,12 @@ data("World")
 
 ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
 
-points <- lucas.sitedata %>%
+points <- neospectra.sitedata %>%
   filter(!is.na(longitude.point_wgs84_dd),
          !is.na(latitude.point_wgs84_dd)) %>%
-  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+  distinct(longitude.point_wgs84_dd, latitude.point_wgs84_dd) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd','latitude.point_wgs84_dd'),
+           crs = 4326)
 
 tmap_mode("plot")
 
