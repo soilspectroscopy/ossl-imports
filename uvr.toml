@@ -1,0 +1,21 @@
+[project]
+name = "ossl-imports"
+
+[dependencies]
+"data.table" = "*"
+fs = "*"
+googledrive = "*"
+googlesheets4 = "*"
+lubridate = "*"
+measurements = "*"
+nanoparquet = "*"
+prospectr = "*"
+readxl = "*"
+rnaturalearth = "*"
+sf = "*"
+skimr = "*"
+stringr = "*"
+tictoc = "*"
+tidyverse = "*"
+tmap = "*"
+units = "*"

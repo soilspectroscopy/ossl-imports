@@ -1,0 +1,11 @@
+{
+  "positron.r.customBinaries": [
+    "/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/bin/R"
+  ],
+  "positron.r.customRootFolders": [
+    "/Users/jsafanelli/.uvr/r-versions"
+  ],
+  "positron.r.interpreters.default": "/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/bin/R",
+  "r.rpath.mac": "/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/bin/R",
+  "r.rterm.mac": "/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/bin/R"
+}

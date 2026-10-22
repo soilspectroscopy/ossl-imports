@@ -49,3 +49,5 @@ vignettes/*.pdf
 *.gpkg-shm
 
 *.RData
+/.uvr/library/
+/.uvr/activate*
