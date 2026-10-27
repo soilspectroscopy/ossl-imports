@@ -19,7 +19,7 @@ Library (lucas) into the Open Soil Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-05-17  
+Last update: 2026-10-27  
 Additional documentation:
 
 ## Original data
@@ -245,7 +245,9 @@ ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnc
 points <- lucas.sitedata %>%
   filter(!is.na(longitude.point_wgs84_dd),
          !is.na(latitude.point_wgs84_dd)) %>%
-  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326)
+  distinct(longitude.point_wgs84_dd, latitude.point_wgs84_dd) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd','latitude.point_wgs84_dd'),
+           crs = 4326)
 
 tmap_mode("plot")
 ```
@@ -370,7 +372,7 @@ knitr::kable(transvalues)
 | LUCAS 2009/2012; SoilAttr\_\*.gpkg | CaCO3 | caco3 | iso.10693 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | caco3_iso.10693_w.pct |
 | LUCAS 2009/2012; SoilAttr\_\*.gpkg | N | n.tot | iso.11261 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | n.tot_iso.11261_w.pct |
 | LUCAS 2009/2012; SoilAttr\_\*.gpkg | P | p.ext | iso.11263 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_iso.11263_mg.kg |
-| LUCAS 2009/2012; SoilAttr\_\*.gpkg | K | k.ext | usda.a725 | cmolc.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/(39.098\*10/2)) | k.ext_usda.a725_cmolc.kg |
+| LUCAS 2009/2012; SoilAttr\_\*.gpkg | K | k.ext | usda.a725 | cmolc.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/(39.098\*10/1)) | k.ext_usda.a725_cmolc.kg |
 | LUCAS 2009/2012; SoilAttr\_\*.gpkg | CEC | cec | iso.11260 | cmolc.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | cec_iso.11260_cmolc.kg |
 | LUCAS_Topsoil_2015.csv | Coarse | cf | iso.11464 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | cf_iso.11464_w.pct |
 | LUCAS_Topsoil_2015.csv | Clay | clay.tot | iso.11277 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | clay.tot_iso.11277_w.pct |
@@ -383,7 +385,7 @@ knitr::kable(transvalues)
 | LUCAS_Topsoil_2015.csv | CaCO3 | caco3 | iso.10693 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | caco3_iso.10693_w.pct |
 | LUCAS_Topsoil_2015.csv | P | p.ext | iso.11263 | mg.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | p.ext_iso.11263_mg.kg |
 | LUCAS_Topsoil_2015.csv | N | n.tot | iso.11261 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/10) | n.tot_iso.11261_w.pct |
-| LUCAS_Topsoil_2015.csv | K | k.ext | usda.a725 | cmolc.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/(39.098\*10/2)) | k.ext_usda.a725_cmolc.kg |
+| LUCAS_Topsoil_2015.csv | K | k.ext | usda.a725 | cmolc.kg | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)/(39.098\*10/1)) | k.ext_usda.a725_cmolc.kg |
 
 Standardizing soil data to the OSSL format:
 
@@ -615,7 +617,7 @@ Data summary
 | caco3_iso.10693_w.pct    |       697 |  5.44 | 13.05 | 0.00 |  0.00 |  0.10 |  1.60 |   97.60 |
 | n.tot_iso.11261_w.pct    |         7 |  0.30 |  0.36 | 0.00 |  0.12 |  0.18 |  0.30 |    3.86 |
 | p.ext_iso.11263_mg.kg    |       697 | 31.21 | 32.69 | 0.00 | 10.90 | 22.70 | 43.00 | 1366.40 |
-| k.ext_usda.a725_cmolc.kg |         2 |  1.02 |  1.18 | 0.00 |  0.39 |  0.74 |  1.29 |   51.31 |
+| k.ext_usda.a725_cmolc.kg |         2 |  0.51 |  0.59 | 0.00 |  0.20 |  0.37 |  0.64 |   25.66 |
 | cec_iso.11260_cmolc.kg   |     21882 | 17.31 | 15.19 | 0.00 |  7.50 | 13.50 | 22.80 |  234.00 |
 | ec_iso.11265_ds.m        |     22066 |  0.26 |  0.33 | 0.00 |  0.10 |  0.17 |  0.28 |    9.69 |
 
@@ -888,7 +890,7 @@ Data summary
 | caco3_iso.10693_w.pct    |         2 |  5.47 | 13.09 | 0.00 |  0.00 |  0.10 |  1.50 |   97.60 |
 | n.tot_iso.11261_w.pct    |         2 |  0.30 |  0.37 | 0.00 |  0.12 |  0.19 |  0.31 |    3.86 |
 | p.ext_iso.11263_mg.kg    |         2 | 31.43 | 32.64 | 0.00 | 11.10 | 23.10 | 43.40 | 1366.40 |
-| k.ext_usda.a725_cmolc.kg |         2 |  1.00 |  1.18 | 0.00 |  0.38 |  0.72 |  1.26 |   51.31 |
+| k.ext_usda.a725_cmolc.kg |         2 |  0.50 |  0.59 | 0.00 |  0.19 |  0.36 |  0.63 |   25.66 |
 | cec_iso.11260_cmolc.kg   |     21784 | 15.78 | 14.46 | 1.00 |  7.00 | 12.40 | 20.30 |  234.00 |
 | ec_iso.11265_ds.m        |     19036 |  0.26 |  0.33 | 0.00 |  0.10 |  0.17 |  0.28 |    9.69 |
 
@@ -1105,10 +1107,13 @@ lucas.availability2 %>%
   summarise(count = n())
 ```
 
-    `summarise()` has grouped output by 'column'. You can override using the
-    `.groups` argument.
-    `summarise()` has grouped output by 'column'. You can override using the
-    `.groups` argument.
+    `summarise()` has regrouped the output.
+    `summarise()` has regrouped the output.
+    ℹ Summaries were computed grouped by column and value.
+    ℹ Output is grouped by column.
+    ℹ Use `summarise(.groups = "drop_last")` to silence this message.
+    ℹ Use `summarise(.by = c(column, value))` for per-operation grouping
+      (`?dplyr::dplyr_by`) instead.
 
     # A tibble: 1 × 3
     # Groups:   column [1]
@@ -1161,7 +1166,7 @@ Data summary
 | caco3_iso.10693_w.pct    |         0 |  4.71 | 10.56 | 0.00 |  0.00 |  0.10 |  2.40 |  66.90 |
 | n.tot_iso.11261_w.pct    |         0 |  0.32 |  0.51 | 0.00 |  0.11 |  0.16 |  0.26 |   3.34 |
 | p.ext_iso.11263_mg.kg    |         0 | 23.80 | 30.87 | 0.00 |  0.00 | 15.40 | 34.50 | 288.00 |
-| k.ext_usda.a725_cmolc.kg |         0 |  1.31 |  2.67 | 0.00 |  0.36 |  0.73 |  1.49 |  37.56 |
+| k.ext_usda.a725_cmolc.kg |         0 |  0.66 |  1.33 | 0.00 |  0.18 |  0.36 |  0.74 |  18.78 |
 | cec_iso.11260_cmolc.kg   |         0 | 20.53 | 22.20 | 1.00 |  7.60 | 14.60 | 26.30 | 193.10 |
 | ec_iso.11265_ds.m        |       589 |   NaN |    NA |   NA |    NA |    NA |    NA |     NA |
 
@@ -1192,7 +1197,7 @@ lucas.mir.export %>%
 toc()
 ```
 
-    289.838 sec elapsed
+    386.521 sec elapsed
 
 ``` r
 rm(list = ls())
@@ -1200,8 +1205,8 @@ gc()
 ```
 
                used  (Mb) gc trigger   (Mb)  max used   (Mb)
-    Ncells  6469808 345.6   12649758  675.6  12649758  675.6
-    Vcells 12199964  93.1  348916503 2662.1 436145590 3327.6
+    Ncells  6087913 325.2   11404735  609.1  11404735  609.1
+    Vcells 11286549  86.2  321456320 2452.6 401819728 3065.7
 
 ## References
 

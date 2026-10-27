@@ -10,7 +10,7 @@ LUCAS 2009/2012; SoilAttr_*.gpkg,OC,originally g/kg,TRUE,oc,iso.10694,w.pct,"ife
 LUCAS 2009/2012; SoilAttr_*.gpkg,CaCO3,originally g/kg,TRUE,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_iso.10693_w.pct
 LUCAS 2009/2012; SoilAttr_*.gpkg,N,total nitrogen content (g/kg),TRUE,n.tot,iso.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_iso.11261_w.pct
 LUCAS 2009/2012; SoilAttr_*.gpkg,P,"phosphorous content (mg/kg), soluble fraction",TRUE,p.ext,iso.11263,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_iso.11263_mg.kg
-LUCAS 2009/2012; SoilAttr_*.gpkg,K,"extractable potassium content (mg/kg), USDA NH4OAc",TRUE,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/(39.098*10/2))",k.ext_usda.a725_cmolc.kg
+LUCAS 2009/2012; SoilAttr_*.gpkg,K,"extractable potassium content (mg/kg), USDA NH4OAc",TRUE,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/(39.098*10/1))",k.ext_usda.a725_cmolc.kg
 LUCAS 2009/2012; SoilAttr_*.gpkg,CEC,cation exchange capacity (cmol(+)/kg),TRUE,cec,iso.11260,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",cec_iso.11260_cmolc.kg
 LUCAS 2009/2012; SoilAttr_*.gpkg,NUTS_0,NA,NA,NA,NA,NA,NA,NA
 LUCAS 2009/2012; SoilAttr_*.gpkg,NUTS_1,NA,NA,NA,NA,NA,NA,NA
@@ -29,7 +29,7 @@ LUCAS_Topsoil_2015.csv,OC,originally g/kg,TRUE,oc,iso.10694,w.pct,"ifelse(as.num
 LUCAS_Topsoil_2015.csv,CaCO3,originally g/kg,TRUE,caco3,iso.10693,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",caco3_iso.10693_w.pct
 LUCAS_Topsoil_2015.csv,P,"phosphorous content (mg/kg), soluble fraction",TRUE,p.ext,iso.11263,mg.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",p.ext_iso.11263_mg.kg
 LUCAS_Topsoil_2015.csv,N,total nitrogen content (g/kg),TRUE,n.tot,iso.11261,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",n.tot_iso.11261_w.pct
-LUCAS_Topsoil_2015.csv,K,"extractable potassium content (mg/kg), USDA NH4OAc",TRUE,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/(39.098*10/2))",k.ext_usda.a725_cmolc.kg
+LUCAS_Topsoil_2015.csv,K,"extractable potassium content (mg/kg), USDA NH4OAc",TRUE,k.ext,usda.a725,cmolc.kg,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/(39.098*10/1))",k.ext_usda.a725_cmolc.kg
 LUCAS_Topsoil_2015.csv,Elevation,NA,NA,NA,NA,NA,NA,NA
 LUCAS_Topsoil_2015.csv,LC1,NA,NA,NA,NA,NA,NA,NA
 LUCAS_Topsoil_2015.csv,LU1,NA,NA,NA,NA,NA,NA,NA
