@@ -19,7 +19,7 @@ Spectral Library.
 Website: [Soil Spectroscopy for Global
 Good](https://soilspectroscopy.org)  
 Development: <https://github.com/soilspectroscopy>  
-Last update: 2026-05-17  
+Last update: 2026-10-27  
 Additional documentation:
 
 ## Original data
@@ -288,7 +288,7 @@ googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
 upload <- dplyr::as_tibble(soillab.names)
 
 # Uploading
-googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "ICRAF_ISRIC")
+googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP")
 
 # Checking metadata
 googlesheets4::as_sheets_id(OSSL.soildata.importing)
@@ -342,7 +342,7 @@ knitr::kable(transvalues)
 | ICRAF_ISRIC_reference_data.csv | Clay | clay.tot | usda.a334 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | clay.tot_usda.a334_w.pct |
 | ICRAF_ISRIC_reference_data.csv | BD | bd | usda.a21 | g.cm3 | ifelse(as.numeric(x) \< 0.05, NA, as.numeric(x)\*1) | bd_usda.a21_g.cm3 |
 | ICRAF_ISRIC_reference_data.csv | pF2.0 | wr.10kPa | usda.a8 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.10kPa_usda.a8_w.pct |
-| ICRAF_ISRIC_reference_data.csv | pF2.7 | wr.33kPa | usda.a9 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.33kPa_usda.a9_w.pct |
+| ICRAF_ISRIC_reference_data.csv | pF2.7 | wr.50kPa | usda.a9 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.50kPa_usda.a9_w.pct |
 | ICRAF_ISRIC_reference_data.csv | pF4.2 | wr.1500kPa | usda.a417 | w.pct | ifelse(as.numeric(x) \< 0, NA, as.numeric(x)\*1) | wr.1500kPa_usda.a417_w.pct |
 
 Standardizing soil data to the OSSL format:
@@ -466,7 +466,7 @@ Data summary
 | clay.tot_usda.a334_w.pct   |       333 | 32.60 | 22.27 | 0.00 | 14.70 | 30.10 | 47.00 |  96.80 |
 | bd_usda.a21_g.cm3          |      3074 |  1.26 |  0.29 | 0.28 |  1.10 |  1.31 |  1.48 |   1.89 |
 | wr.10kPa_usda.a8_w.pct     |      3145 | 36.77 | 13.27 | 4.40 | 28.60 | 36.45 | 45.62 |  77.30 |
-| wr.33kPa_usda.a9_w.pct     |      3150 | 31.82 | 13.34 | 2.30 | 22.90 | 31.40 | 41.50 |  71.40 |
+| wr.50kPa_usda.a9_w.pct     |      3150 | 31.82 | 13.34 | 2.30 | 22.90 | 31.40 | 41.50 |  71.40 |
 | wr.1500kPa_usda.a417_w.pct |      3102 | 21.74 | 11.44 | 0.10 | 12.90 | 21.90 | 29.55 |  56.40 |
 
 ### VisNIR spectra
@@ -1071,7 +1071,7 @@ icraf.isric.availability %>%
     17 silt.tot_usda.c62_w.pct     3734
     18 wr.10kPa_usda.a8_w.pct       928
     19 wr.1500kPa_usda.a417_w.pct   971
-    20 wr.33kPa_usda.a9_w.pct       923
+    20 wr.50kPa_usda.a9_w.pct       923
 
 Soil analytical data summary for Vis-NIR. Note: many scans could not be
 linked with the wetchem.
@@ -1124,7 +1124,7 @@ Data summary
 | clay.tot_usda.a334_w.pct   |       698 | 32.60 | 22.27 | 0.00 | 14.70 | 30.10 | 47.00 |  96.80 |
 | bd_usda.a21_g.cm3          |      3439 |  1.26 |  0.29 | 0.28 |  1.10 |  1.31 |  1.48 |   1.89 |
 | wr.10kPa_usda.a8_w.pct     |      3510 | 36.77 | 13.27 | 4.40 | 28.60 | 36.45 | 45.62 |  77.30 |
-| wr.33kPa_usda.a9_w.pct     |      3515 | 31.82 | 13.34 | 2.30 | 22.90 | 31.40 | 41.50 |  71.40 |
+| wr.50kPa_usda.a9_w.pct     |      3515 | 31.82 | 13.34 | 2.30 | 22.90 | 31.40 | 41.50 |  71.40 |
 | wr.1500kPa_usda.a417_w.pct |      3467 | 21.74 | 11.44 | 0.10 | 12.90 | 21.90 | 29.55 |  56.40 |
 
 Vis-NIR spectral visualization (100 random spectra):
@@ -1341,7 +1341,7 @@ icraf.isric.availability2 %>%
     17 silt.tot_usda.c62_w.pct     3732
     18 wr.10kPa_usda.a8_w.pct       928
     19 wr.1500kPa_usda.a417_w.pct   971
-    20 wr.33kPa_usda.a9_w.pct       923
+    20 wr.50kPa_usda.a9_w.pct       923
 
 ``` r
 # Repeats check - Duplicates are dropped
@@ -1355,10 +1355,13 @@ icraf.isric.availability2 %>%
   summarise(count = n())
 ```
 
-    `summarise()` has grouped output by 'column'. You can override using the
-    `.groups` argument.
-    `summarise()` has grouped output by 'column'. You can override using the
-    `.groups` argument.
+    `summarise()` has regrouped the output.
+    `summarise()` has regrouped the output.
+    ℹ Summaries were computed grouped by column and value.
+    ℹ Output is grouped by column.
+    ℹ Use `summarise(.groups = "drop_last")` to silence this message.
+    ℹ Use `summarise(.by = c(column, value))` for per-operation grouping
+      (`?dplyr::dplyr_by`) instead.
 
     # A tibble: 1 × 3
     # Groups:   column [1]
@@ -1417,7 +1420,7 @@ Data summary
 | clay.tot_usda.a334_w.pct   |       415 | 32.60 | 22.28 | 0.00 | 14.70 | 30.10 | 47.00 |  96.80 |
 | bd_usda.a21_g.cm3          |      3154 |  1.26 |  0.29 | 0.28 |  1.10 |  1.31 |  1.48 |   1.89 |
 | wr.10kPa_usda.a8_w.pct     |      3225 | 36.77 | 13.27 | 4.40 | 28.60 | 36.45 | 45.62 |  77.30 |
-| wr.33kPa_usda.a9_w.pct     |      3230 | 31.82 | 13.34 | 2.30 | 22.90 | 31.40 | 41.50 |  71.40 |
+| wr.50kPa_usda.a9_w.pct     |      3230 | 31.82 | 13.34 | 2.30 | 22.90 | 31.40 | 41.50 |  71.40 |
 | wr.1500kPa_usda.a417_w.pct |      3182 | 21.74 | 11.44 | 0.10 | 12.90 | 21.90 | 29.55 |  56.40 |
 
 MIR spectral visualization (100 random spectra):
@@ -1447,16 +1450,16 @@ icraf.isric.mir %>%
 toc()
 ```
 
-    153.841 sec elapsed
+    340.643 sec elapsed
 
 ``` r
 rm(list = ls())
 gc()
 ```
 
-               used  (Mb) gc trigger   (Mb) max used   (Mb)
-    Ncells  6468902 345.5   19039677 1016.9 19039677 1016.9
-    Vcells 11357554  86.7   77484104  591.2 96854836  739.0
+               used  (Mb) gc trigger  (Mb)  max used   (Mb)
+    Ncells  6088110 325.2   17031492 909.6  21289364 1137.0
+    Vcells 10446587  79.8   91795399 700.4 114743473  875.5
 
 ## References
 

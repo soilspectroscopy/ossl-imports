@@ -57,7 +57,7 @@ ICRAF_ISRIC_reference_data.csv,pF1.0,NA,NA,NA,NA,NA,NA,NA
 ICRAF_ISRIC_reference_data.csv,pF1.5,NA,NA,NA,NA,NA,NA,NA
 ICRAF_ISRIC_reference_data.csv,pF2.0,NA,TRUE,wr.10kPa,usda.a8,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.10kPa_usda.a8_w.pct
 ICRAF_ISRIC_reference_data.csv,pF2.3,NA,NA,NA,NA,NA,NA,NA
-ICRAF_ISRIC_reference_data.csv,pF2.7,NA,TRUE,wr.33kPa,usda.a9,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.33kPa_usda.a9_w.pct
+ICRAF_ISRIC_reference_data.csv,pF2.7,NA,TRUE,wr.50kPa,usda.a9,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.50kPa_usda.a9_w.pct
 ICRAF_ISRIC_reference_data.csv,pF3.4,NA,NA,NA,NA,NA,NA,NA
 ICRAF_ISRIC_reference_data.csv,pF4.2,NA,TRUE,wr.1500kPa,usda.a417,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",wr.1500kPa_usda.a417_w.pct
 ICRAF_ISRIC_reference_data.csv,COLE,NA,NA,NA,NA,NA,NA,NA

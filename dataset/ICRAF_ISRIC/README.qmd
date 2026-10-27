@@ -273,7 +273,7 @@ googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
 upload <- dplyr::as_tibble(soillab.names)
 
 # Uploading
-googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "ICRAF_ISRIC")
+googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP")
 
 # Checking metadata
 googlesheets4::as_sheets_id(OSSL.soildata.importing)
