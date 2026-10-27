@@ -20,9 +20,8 @@ editor:
 
 [<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />](http://creativecommons.org/licenses/by-sa/4.0/)
 
-This is a repository for the **INTERNAL** data import development of the [Soil Spectroscopy for Global Good](https://soilspectroscopy.org) project to compile the **Open Soil Spectral Library**.
+This is a repository for the **internal** data preparation/standardization/harmonization development  for the **Open Soil Spectral Library**, as part of the [**Soil Spectroscopy for Global Good**](https://soilspectroscopy.org) initiative.
 
-Full documentation is available in the [OSSL Manual](https://docs.soilspectroscopy.org/).
+You can find more information about the prepared soil spectral libraries in the [**Listed Libraries** section](https://docs.soilspectroscopy.org/libraries.html) in the [**Manual**](https://docs.soilspectroscopy.org/), or interactively at the [**OSSL Chemometrics** tool](https://soilspectroscopy.github.io/ossl-chemometrics/).
 
-For internal development only:  
-- [Google Drive](https://drive.google.com/drive/u/0/folders/1l9VM4fFks2xBloDE69EFTfPgQeFx5aGw) with formatting and standardization tables, original data, etc.
+Full documentation is available in the [**OSSL Manual**](https://docs.soilspectroscopy.org/).
