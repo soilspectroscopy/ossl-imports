@@ -5,20 +5,20 @@ library("fs")
 private.dir <- "~/mnt-ossl-private/database/"
 public.dir <- "~/mnt-ossl-public/"
 
-datasets.path <- dir_ls(path(private.dir,"datasets/"))
-datasets.code <- basename(datasets.path)
+# datasets.path <- dir_ls(path(private.dir,"datasets/"))
+# datasets.code <- basename(datasets.path)
 
-datasets.code <- grep("Neospectra",datasets.code, value = T)
+# datasets.code <- grep("ICRAF_ISRIC|LUCAS",datasets.code, value = T)
 
 # dir_ls(path(public.dir,"datasets/"))
 
-# Making sure the folders exist
+# # Making sure the folders exist
 # for(i in 1:length(datasets.code)){
 #   dir_create(path(public.dir,"datasets/",datasets.code[i]))
 #   cat("Created:", datasets.code[i],"\n")
 # }
 
-# Copying standardized files
+# # Copying standardized files
 # for(i in 1:length(datasets.code)){
 #   files <- dir_ls(path = path(private.dir,"datasets",datasets.code[i]),
 #                   glob = "*.parquet|*.csv.gz")
