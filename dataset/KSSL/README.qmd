@@ -1,5 +1,5 @@
 ---
-title: "Kellogg Soil Survey Laboratory (KSSL)"
+title: "KSSL (and RaCA) datasets"
 author: 
   - name: Jose L. Safanelli
     email: jsafanelli@woodwellclimate.org
@@ -22,9 +22,11 @@ twitter-card:
 editor: 
   markdown: 
     wrap: 72
+project:
+  execute-dir: project
 ---
 
-Code repository for standardizing and importing the Kellogg Soil Survey Laboratory (KSSL) into the Open Soil Spectral Library.
+Code repository for standardizing and importing the Kellogg Soil Survey Laboratory (KSSL) and and Rapid Carbon Assesment (RaCA)into the Open Soil Spectral Library.
 
 Website: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  \
 Development: <https://github.com/soilspectroscopy>\
@@ -33,448 +35,1262 @@ Additional documentation:
 
 ## Original data
 
-The USDA-NRCS NCSS Kellogg Soil Survey Laboratory (KSSL) has a largest and growing 
-mid-infrared (MIR) spectral library of the United States, along with a historical VisNIR dataset produced as part of the Rapid Carbon Assessment (RaCA).
+The USDA-NRCS NCSS Kellogg Soil Survey Laboratory (KSSL) has a largest and growing mid-infrared (MIR) spectral library of the United States, along with a historical VisNIR dataset produced as part of the Rapid Carbon Assessment (RaCA).
 
-An overview about the MIR analysis at the KSSL is available in <https://www.nrcs.usda.gov/conservation-basics/soil/mid-infrared-spectroscopy>, with the most of the data being distributed through the NCSS Lab Data Mart: <https://www.nrcs.usda.gov/resources/data-and-reports/ncss-soil-characterization-data-lab-data-mart>
+An overview about the MIR analysis at the KSSL is available in <https://www.nrcs.usda.gov/conservation-basics/soil/mid-infrared-spectroscopy>, with the most of the data being distributed through the NCSS Lab Data Mart: <https://www.nrcs.usda.gov/resources/data-and-reports/ncss-soil-characterization-data-lab-data-mart>. The RaCA is a legacy project with more information available at <https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca>.
 
-More information about the KSSL MIR library can be found in @Seybold2019 and @wijewardane2018predicting
+More information about the KSSL MIR library can be found in @Seybold2019 and @wijewardane2018predicting, while the @Wijewardane2016 explored the RaCA VNIR.
 
 Input datasets (snapshot from Jul 2025):  
-- `KSSL_202507_MIR_abs_raw_avg.csv`: csv file with averaged MIR scans processed from original Bruker Opus files;  
-- `RaCA_measured.csv`: csv file with averaged VNIR scans (from [RaCA project](https://www.nrcs.usda.gov/resources/data-and-reports/rapid-carbon-assessment-raca));  
-- `MIR_Spectra_Access_Portable_v2_3July2025.accdb`: Microsoft Access database with tables exported to csv files;  
-
-<!-- For the DB structure and use refer to "Introduction to the KSSL Laboratory Information Management System". -->
-
-<!-- ```{r packages, include=FALSE, echo=FALSE, eval=TRUE} -->
-<!-- packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr", -->
-<!--               "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth", -->
-<!--               "skimr", "prospectr", "tictoc", "nanoparquet", "fs") -->
-
-<!-- invisible(lapply(packages, library, character.only = TRUE)) -->
-
-<!-- source("../../R/functions/SSL_functions.R") -->
-<!-- gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json") -->
-<!-- ``` -->
-
-<!-- Directory/folder path with original files (not uploaded to GitHub). -->
-<!-- ```{r dir} -->
-<!-- # dir = "./" -->
-<!-- dir = "~/mnt-ossl-private/database/datasets/KSSL/" -->
-<!-- tic() -->
-<!-- ``` -->
-
-<!-- ## Data standardization to the OSSL format -->
-
-<!-- ### Site information -->
-
-<!-- ```{r soilsite} -->
-<!-- neon.soilp <- read_csv(path(dir, "NEON_soilp.csv")) -->
-
-<!-- neon.sitedata <- neon.soilp %>% -->
-<!--   select(uid, -->
-<!--          biogeoID, domainID, siteID, pitID, collectDate, -->
-<!--          pitNamedLocation, horizonName, -->
-<!--          biogeoTopDepth, biogeoBottomDepth) %>% -->
-<!--   rename(id.layer_local_c = uid, -->
-<!--          id.biogeo_src_txt = biogeoID, -->
-<!--          site.domain_src_txt = domainID, -->
-<!--          site.id_src_txt = siteID, -->
-<!--          site.pit_src_txt = pitID, -->
-<!--          site.pit.name_src_txt = pitNamedLocation, -->
-<!--          pedon.horizon_src_txt = horizonName, -->
-<!--          observation.date_src_yyyy.mm.dd = collectDate, -->
-<!--          layer.upper.depth_usda_cm = biogeoTopDepth, -->
-<!--          layer.lower.depth_usda_cm = biogeoBottomDepth) %>% -->
-<!--   mutate(observation.date_src_yyyy.mm.dd = mdy(observation.date_src_yyyy.mm.dd)) %>% -->
-<!--   mutate(dataset.code_ascii_txt = "NEON", -->
-<!--          id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)), -->
-<!--          .before = 1) %>% -->
-<!--   mutate_at(vars(starts_with("id.")), as.character) -->
-
-<!-- # Saving version to dataset root dir -->
-<!-- site.exp.file = path(dir, "ossl_soilsite_v1.3") -->
-<!-- readr::write_csv(neon.sitedata, str_c(site.exp.file, ".csv.gz")) -->
-<!-- nanoparquet::write_parquet(neon.sitedata, str_c(site.exp.file, ".parquet")) -->
-<!-- ``` -->
-
-<!-- ### Soil lab information (reference analytical data) -->
-
-<!-- NOTE: The code chunk below must be run just once for getting a template for scripted column standardization. Just run once for getting the original names of soil properties, descriptions, data types, and units. Then upload to Google Sheet for editing and manually defining the rules for integrating with the OSSL. Requires Google authentication. A copy of the output file is saved to this folder for archiving purposes. -->
-
-<!-- **Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.** -->
-
-<!-- ```{r soil_template, echo=TRUE, eval=FALSE} -->
-<!-- # Getting soillab original variables -->
-<!-- neon.soilp <- read_csv(path(dir, "NEON_soilp.csv")) -->
-
-<!-- soillab.names <- neon.soilp %>% -->
-<!--   names(.) %>% -->
-<!--   tibble(original_name = .) %>% -->
-<!--   dplyr::mutate(table = 'ssl_refdata_all', .before = 1) %>% -->
-<!--   dplyr::mutate(import = '', ossl_name = '', .after = original_name) %>% -->
-<!--   dplyr::mutate(comment = '') -->
-
-<!-- readr::write_csv(soillab.names, paste0(getwd(), "/soillab_original_names.csv")) -->
-
-<!-- # Uploading to google sheet -->
-
-<!-- # Drive 'Open Soil Spectral Library' -->
-<!-- # Use the ID of the file 'OSSL_v2_tab2_soildata_importing' -->
-<!-- OSSL.soildata.importing <- "1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es" -->
-
-<!-- # Checking metadata -->
-<!-- googlesheets4::as_sheets_id(OSSL.soildata.importing) -->
-
-<!-- # Checking readme -->
-<!-- googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme') -->
-
-<!-- # Preparing soillab.names for this dataset -->
-<!-- upload <- dplyr::as_tibble(soillab.names) -->
-
-<!-- # Uploading with TEMP name. Check online, move to sequence, and update name -->
-<!-- googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP") -->
-<!-- ``` -->
-
-<!-- NOTE: The code chunk below must be run just once. Run for getting the -->
-<!-- column standardization rules after editing online on Google Sheets. A -->
-<!-- copy of the edited standardization template is saved to this dataset folder. -->
-
-<!-- ```{r soilab_download, echo=TRUE, eval=FALSE} -->
-<!-- # Downloading from google sheet -->
-
-<!-- # Checking metadata -->
-<!-- googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es") -->
-
-<!-- # Preparing soillab.names -->
-<!-- transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es", -->
-<!--                                          sheet = "NEON") -->
-
-<!-- # Saving to folder -->
-<!-- write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv")) -->
-<!-- ``` -->
-
-<!-- Reading standardization rules: -->
-<!-- ```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE} -->
-<!-- transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"), -->
-<!--                         show_col_types = F) %>% -->
-<!--   filter(import == TRUE) %>% -->
-<!--   select(contains(c("table", "id", "original_name", "ossl_"))) -->
-
-<!-- knitr::kable(transvalues) -->
-<!-- ``` -->
-
-<!-- Standardizing soil data to the OSSL format: -->
-<!-- ```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE} -->
-<!-- neon.soilp <- read_csv(path(dir, "NEON_soilp.csv")) -->
-
-<!-- # Harmonization of names and units -->
-<!-- analytes.old.names <- transvalues %>% -->
-<!--   filter(table == "ssl_refdata_all") %>% -->
-<!--   pull(original_name) -->
-
-<!-- analytes.new.names <- transvalues %>% -->
-<!--   filter(table == "ssl_refdata_all") %>% -->
-<!--   pull(ossl_name) -->
-
-<!-- # Selecting and renaming -->
-<!-- neon.soildata <- neon.soilp %>% -->
-<!--   rename(id.layer_local_c = uid) %>% -->
-<!--   select(id.layer_local_c, all_of(analytes.old.names)) %>% -->
-<!--   rename_with(~analytes.new.names, all_of(analytes.old.names)) %>% -->
-<!--   mutate(id.layer_local_c = as.character(id.layer_local_c)) %>% -->
-<!--   as.data.frame() -->
-
-<!-- # Removing duplicates -->
-<!-- # neon.soildata %>% -->
-<!-- #   group_by(id.layer_local_c) %>% -->
-<!-- #   summarise(repeats = n()) %>% -->
-<!-- #   group_by(repeats) %>% -->
-<!-- #   summarise(count = n()) -->
-
-<!-- # Getting the formulas -->
-<!-- functions.list <- transvalues %>% -->
-<!--   filter(table == "ssl_refdata_all") %>% -->
-<!--   mutate(ossl_name = factor(ossl_name, levels = names(neon.soildata))) %>% -->
-<!--   arrange(ossl_name) %>% -->
-<!--   pull(ossl_convert) %>% -->
-<!--   c("x", .) -->
-
-<!-- # Applying transformation rules -->
-<!-- neon.soildata.trans <- transform_values(df = neon.soildata, -->
-<!--                                         out.name = names(neon.soildata), -->
-<!--                                         in.name = names(neon.soildata), -->
-<!--                                         fun.lst = functions.list) -->
-
-<!-- # Final soillab data -->
-<!-- neon.soildata <- neon.soildata.trans %>% -->
-<!--   mutate_at(vars(starts_with("id.")), as.character) %>% -->
-<!--   mutate(caco3_usda.a54_w.pct = replace_na(caco3_usda.a54_w.pct, 0)) -->
-
-<!-- # Checking total number of observations -->
-<!-- neon.soildata %>% -->
-<!--   distinct(id.layer_local_c) %>% -->
-<!--   summarise(count = n()) -->
-
-<!-- # Saving version to dataset root dir -->
-<!-- soillab.exp.file = path(dir, "ossl_soillab_v1.3") -->
-<!-- readr::write_csv(neon.soildata, str_c(soillab.exp.file, ".csv.gz")) -->
-<!-- nanoparquet::write_parquet(neon.soildata, str_c(soillab.exp.file, ".parquet")) -->
-<!-- ``` -->
-
-<!-- Soil lab data summary. -->
-<!-- ```{r soil_lab_summary, include=TRUE, echo=TRUE, eval=TRUE} -->
-<!-- neon.soildata %>% -->
-<!--   mutate(id.layer_local_c = factor(id.layer_local_c)) %>% -->
-<!--   skimr::skim() %>% -->
-<!--   dplyr::select(-numeric.hist, -complete_rate) -->
-<!-- ``` -->
-
-<!-- ### Mid-infrared spectra -->
-
-<!-- ```{r mir, include=TRUE, echo=TRUE, eval=TRUE} -->
-<!-- spectra.kssl <- read_csv(path(dir,"NEON_kssl.csv"), show_col_types = F) -->
-<!-- spectra.wcrc <- read_csv(path(dir,"NEON_whrc.csv"), show_col_types = F) -->
-
-<!-- ## Woodwell spectra -->
-
-<!-- # Renaming -->
-<!-- old.spectral.columns <- spectra.wcrc %>% -->
-<!--   select(starts_with("X")) %>% -->
-<!--   names() -->
-
-<!-- head(old.spectral.columns) -->
-<!-- tail(old.spectral.columns) -->
-
-<!-- wcrc.mir <- spectra.wcrc %>% -->
-<!--   rename(id.layer_local_c = uid, -->
-<!--          id.scan_local_c = WHRCID) %>% -->
-<!--   mutate(id.layer_local_c = as.character(id.layer_local_c), -->
-<!--          id.scan_local_c = as.character(id.scan_local_c)) %>% -->
-<!--   mutate(across(all_of(old.spectral.columns), as.numeric)) -->
-
-<!-- # Removing spikes between 550-650 -->
-<!-- spectral.cols.spike <- wcrc.mir %>% -->
-<!--   pivot_longer(starts_with("X")) %>% -->
-<!--   mutate(name = as.numeric(gsub("X", "", name))) %>% -->
-<!--   filter(name >= 550 & name <= 650) %>% -->
-<!--   mutate(name = paste0("X",name)) %>% -->
-<!--   distinct(name) %>% -->
-<!--   pull(name) -->
-
-<!-- wcrc.mir <- wcrc.mir %>% -->
-<!--   arrange(id.scan_local_c) %>% -->
-<!--   select(all_of(spectral.cols.spike)) %>% -->
-<!--   as.matrix() %>% -->
-<!--   mdatools::prep.spikes(., width = 11, threshold = 3) %>% -->
-<!--   mdatools::prep.savgol(., width = 11, porder = 2, dorder = 0) %>% -->
-<!--   as_tibble() %>% -->
-<!--   bind_cols({wcrc.mir %>% -->
-<!--       arrange(id.scan_local_c) %>% -->
-<!--       select(-all_of(spectral.cols.spike))}, .) %>% -->
-<!--   pivot_longer(starts_with("X")) %>% -->
-<!--   mutate(name = as.numeric(gsub("X", "", name))) %>% -->
-<!--   arrange(id.scan_local_c, desc(name)) %>% -->
-<!--   pivot_wider() -->
-
-<!-- # Need to resample spectra -->
-<!-- old.wavenumbers <- as.numeric(gsub("X","",old.spectral.columns)) -->
-<!-- new.wavenumbers <- rev(seq(600, 4000, by = 2)) -->
-
-<!-- wcrc.mir <- wcrc.mir %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   as.matrix() %>% -->
-<!--   prospectr::resample(X = ., -->
-<!--                       wav = old.wavenumbers, -->
-<!--                       new.wav = new.wavenumbers, -->
-<!--                       interpol = "spline") %>% -->
-<!--   as_tibble() %>% -->
-<!--   bind_cols({wcrc.mir %>% -->
-<!--       select(starts_with("id."))}, .) -->
-
-<!-- wcrc.mir <- wcrc.mir %>% -->
-<!--   mutate(id.scan.lab_src_txt = "WCRC", .before = 1) -->
-
-<!-- # Gaps -->
-<!-- scans.na.gaps <- wcrc.mir %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>% -->
-<!--   tibble(proportion_NA = .) %>% -->
-<!--   bind_cols({wcrc.mir %>% select(starts_with("id."))}, .) -->
-
-<!-- # Extreme negative - irreversible erratic patterns -->
-<!-- scans.extreme.neg <- wcrc.mir %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>% -->
-<!--   tibble(proportion_lower0 = .) %>% -->
-<!--   bind_cols({wcrc.mir %>% select(starts_with("id."))}, .) -->
-
-<!-- # Extreme positive, irreversible erratic patterns -->
-<!-- scans.extreme.pos <- wcrc.mir %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>% -->
-<!--   tibble(proportion_higherAbs5 = .) %>% -->
-<!--   bind_cols({wcrc.mir %>% select(starts_with("id."))}, .) -->
-
-<!-- # Consistency summary - problematic scans -->
-<!-- scans.summary <- scans.na.gaps %>% -->
-<!--   left_join(scans.extreme.neg) %>% -->
-<!--   left_join(scans.extreme.pos) -->
-
-<!-- scans.summary %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   pivot_longer(everything(), names_to = "check", values_to = "value") %>% -->
-<!--   filter(value > 0) %>% -->
-<!--   group_by(check) %>% -->
-<!--   summarise(count = n()) -->
-
-<!-- ## KSSL spectra -->
-
-<!-- # Renaming -->
-<!-- old.spectral.columns <- spectra.kssl %>% -->
-<!--   select(-sample_id, -uid) %>% -->
-<!--   names() -->
-
-<!-- head(old.spectral.columns) -->
-<!-- tail(old.spectral.columns) -->
-
-<!-- kssl.mir <- spectra.kssl %>% -->
-<!--   rename(id.layer_local_c = uid, -->
-<!--          id.scan_local_c = sample_id) %>% -->
-<!--   mutate(id.layer_local_c = as.character(id.layer_local_c), -->
-<!--          id.scan_local_c = as.character(id.scan_local_c)) %>% -->
-<!--   mutate(across(all_of(old.spectral.columns), as.numeric)) -->
-
-<!-- # Need to resample spectra -->
-<!-- old.wavenumbers <- as.numeric(old.spectral.columns) -->
-<!-- new.wavenumbers <- rev(seq(600, 4000, by = 2)) -->
-
-<!-- kssl.mir <- kssl.mir %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   as.matrix() %>% -->
-<!--   prospectr::resample(X = ., -->
-<!--                       wav = old.wavenumbers, -->
-<!--                       new.wav = new.wavenumbers, -->
-<!--                       interpol = "spline") %>% -->
-<!--   as_tibble() %>% -->
-<!--   bind_cols({kssl.mir %>% -->
-<!--       select(starts_with("id."))}, .) -->
-
-<!-- kssl.mir <- kssl.mir %>% -->
-<!--   mutate(id.scan.lab_src_txt = "KSSL", .before = 1) -->
-
-<!-- # Gaps -->
-<!-- scans.na.gaps <- kssl.mir %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>% -->
-<!--   tibble(proportion_NA = .) %>% -->
-<!--   bind_cols({kssl.mir %>% select(starts_with("id."))}, .) -->
-
-<!-- # Extreme negative - irreversible erratic patterns -->
-<!-- scans.extreme.neg <- kssl.mir %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>% -->
-<!--   tibble(proportion_lower0 = .) %>% -->
-<!--   bind_cols({kssl.mir %>% select(starts_with("id."))}, .) -->
-
-<!-- # Extreme positive, irreversible erratic patterns -->
-<!-- scans.extreme.pos <- kssl.mir %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>% -->
-<!--   tibble(proportion_higherAbs5 = .) %>% -->
-<!--   bind_cols({kssl.mir %>% select(starts_with("id."))}, .) -->
-
-<!-- # Consistency summary - problematic scans -->
-<!-- scans.summary <- scans.na.gaps %>% -->
-<!--   left_join(scans.extreme.neg) %>% -->
-<!--   left_join(scans.extreme.pos) -->
-
-<!-- scans.summary %>% -->
-<!--   select(-starts_with("id.")) %>% -->
-<!--   pivot_longer(everything(), names_to = "check", values_to = "value") %>% -->
-<!--   filter(value > 0) %>% -->
-<!--   group_by(check) %>% -->
-<!--   summarise(count = n()) -->
-
-<!-- ## Merging both spectral datasets together -->
-<!-- neon.mir <- bind_rows(kssl.mir, wcrc.mir) %>% -->
-<!--   select(starts_with("id"), -->
-<!--          all_of(as.character(rev(new.wavenumbers)))) -->
-
-<!-- # Renaming -->
-<!-- old.wavenumbers <- seq(600, 4000, by = 2) -->
-<!-- new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs") -->
-
-<!-- neon.mir <- neon.mir %>% -->
-<!--   rename_with(~new.wavenumbers, as.character(old.wavenumbers)) -->
-
-<!-- # Exporting -->
-<!-- mir.exp.file = path(dir, "ossl_mir_v1.3") -->
-<!-- readr::write_csv(neon.mir, str_c(mir.exp.file, ".csv.gz")) -->
-<!-- nanoparquet::write_parquet(neon.mir, str_c(mir.exp.file, ".parquet")) -->
-<!-- ``` -->
-
-
-<!-- ## Quality control -->
-
-<!-- The final table must be joined as follows: -->
-
-<!-- - MIR is used as first reference for pairing with soil data. -->
-<!-- - Soil lab data are left joined to MIR. This drop data without any available scan. -->
-
-<!-- The availability of data is summarized below: -->
-<!-- ```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE} -->
-<!-- # Taking a few representative columns for checking the consistency of joins -->
-<!-- # KSSL spectra dropped for this check -->
-<!-- neon.availability <- neon.mir %>% -->
-<!--   filter(id.scan.lab_src_txt == "WCRC") %>% -->
-<!--   select(id.layer_local_c, scan_mir.1000_abs) %>% -->
-<!--   left_join(neon.soildata, by = "id.layer_local_c") %>% -->
-<!--   filter(!is.na(id.layer_local_c)) -->
-
-<!-- # Availability of information from neon -->
-<!-- neon.availability %>% -->
-<!--   mutate_all(as.character) %>% -->
-<!--   pivot_longer(everything(), names_to = "column", values_to = "value") %>% -->
-<!--   filter(!is.na(value)) %>% -->
-<!--   group_by(column) %>% -->
-<!--   summarise(count = n()) -->
-
-<!-- # Repeats check - Duplicates are dropped -->
-<!-- neon.availability %>% -->
-<!--   mutate_all(as.character) %>% -->
-<!--   select(id.layer_local_c) %>% -->
-<!--   pivot_longer(everything(), names_to = "column", values_to = "value") %>% -->
-<!--   group_by(column, value) %>% -->
-<!--   summarise(repeats = n(), .groups = 'drop') %>% -->
-<!--   group_by(column, repeats) %>% -->
-<!--   summarise(count = n(), .groups = 'drop') -->
-<!-- ``` -->
-
-<!-- MIR spectral visualization (100 random spectra): -->
-<!-- ```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE} -->
-<!-- set.seed(42) -->
-<!-- neon.mir %>% -->
-<!--   filter(id.scan.lab_src_txt == "WCRC") %>% -->
-<!--   sample_n(100) %>% -->
-<!--   select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>% -->
-<!--   tidyr::pivot_longer(-all_of(c("id.layer_local_c")), -->
-<!--                       names_to = "wavenumber", values_to = "absorbance") %>% -->
-<!--   dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>% -->
-<!--   dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>% -->
-<!--   ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) + -->
-<!--   geom_line(alpha = 0.1, color = "darkblue") + -->
-<!--   scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000), -->
-<!--                      transform = "reverse") + -->
-<!--   labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance") + -->
-<!--   theme_light() -->
-<!-- ``` -->
-
-<!-- ```{r end} -->
-<!-- toc() -->
-<!-- rm(list = ls()) -->
-<!-- gc() -->
-<!-- ``` -->
-
-<!-- ## References -->
+- `KSSL_202507_MIR_abs_raw_avg.csv` and `RaCA_202507_VNIR_ref_raw_avg.csv`: csv file with averaged MIR or VNIR scans processed from Bruker Opus or Malver Pananalytical ASD files;  
+- `MIR_Spectra_Access_Portable_v2_3July2025.accdb` and `VNIR_Spectra_Access_Portable_7-8-2025.accdb`: Microsoft Access database with tables (site and soil) exported to csv files to `database` `database_vnir`;  
+
+```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
+packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
+              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
+              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
+
+invisible(lapply(packages, library, character.only = TRUE))
+
+source("../../R/functions/SSL_functions.R")
+gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
+```
+
+Directory/folder path with original files (not uploaded to GitHub).
+```{r dir}
+# dir = "./"
+dir = "~/mnt-ossl-private/database/datasets/KSSL/"
+tic()
+```
+
+## Data standardization to the OSSL format
+
+### Site information
+
+```{r soilsite}
+########################
+##### MIR database #####
+########################
+dir.db <- path(dir, "/database")
+
+# Reading tables with site info
+layer <- fread(path(dir.db, "/layer.csv"))
+sample <- fread(path(dir.db, "/sample.csv"))
+project <- fread(path(dir.db, "/project.csv"))
+lims.site <- fread(path(dir.db, "/lims_site.csv"))
+lims.pedtax <- fread(path(dir.db, "/lims_ped_tax_hist.csv"))
+centroid <- fread(path(dir.db, "/centroid.csv"))
+area <- fread(path(dir.db, "/area.csv"))
+site.area <- fread(path(dir.db, "/site_area_overlap.csv"))
+
+# Layer table contains only lay.id and horizon info
+layer <- layer %>%
+  select(lay.id, lay.type, proj.id, lims.site.id, lims.pedon.id,
+         lay.depth.to.top, lay.depth.to.bottom, horizon.designation, texture.description)
+
+# Sample table has lay and smp ids for linking all data in the database
+sample <- sample %>%
+  select(smp.id, lay.id)
+
+# Project table with date of observation and project name
+project <- project %>%
+  select(proj.id, fiscal.year, submit.proj.name)
+
+# Coordinates
+lims.site <- lims.site %>%
+  select(lims.site.id, horizontal.datum.name,
+         latitude.std.decimal.degrees, longitude.std.decimal.degrees)
+
+# Taxonomic classification
+lims.pedtax <- lims.pedtax %>%
+  select(lims.pedon.id, taxonomic.classification.name) %>%
+  group_by(lims.pedon.id) %>%
+  summarise_all(first)
+
+# County centroids for additional spatial reference
+centroid <- centroid %>%
+  select(area.id, lat.ycntr, long.xcntr, fips.code)
+
+# Area info
+area <- area %>%
+  select(area.id, area.type, area.name, area.code)
+
+# Link between layers
+site.area <- site.area %>%
+  select(lims.site.id, area.id)
+
+# Site area with county coordiantes
+site.overview <- site.area %>%
+  left_join(area, by = "area.id") %>%
+  left_join(centroid, by = "area.id") %>%
+  # filter(area.type %in% c("county"))
+  filter(area.type %in% c("county", "country")) %>%
+  pivot_wider(names_from = "area.type",
+              values_from = c("area.id", "area.name", "area.code")) %>%
+  group_by(lims.site.id) %>%
+  reframe(across(everything(), ~first(na.omit(.x)))) %>%
+  left_join(lims.site, by = "lims.site.id")
+
+# Joining all data
+kssl.sitedata <- layer %>%
+  left_join(sample, by = "lay.id") %>%
+  relocate(smp.id, .after = "lay.id") %>%
+  left_join(project, by = "proj.id") %>%
+  left_join(lims.pedtax, by = "lims.pedon.id") %>%
+  left_join(site.overview, by = "lims.site.id") %>%
+  as_tibble()
+
+# Cleaning repeats and internal projects
+kssl.sitedata <- kssl.sitedata %>%
+  filter(!(proj.id == 1)) # This proj is used internally
+
+# Just a few repeats, so we can first them
+# repeat.ids <- kssl.sitedata %>%
+#   group_by(lay.id) %>%
+#   summarise(repeats = n()) %>%
+#   filter(repeats > 1) %>%
+#   pull(lay.id)
+# 
+# kssl.sitedata %>% filter(lay.id %in% repeat.ids)
+
+kssl.sitedata <- kssl.sitedata %>%
+  group_by(lay.id) %>%
+  summarise(across(everything(), first))
+
+# Available datums
+kssl.sitedata %>%
+  rename(hor.datum = horizontal.datum.name) %>%
+  group_by(hor.datum) %>%
+  summarise(count = n())
+
+# We will assume layers with NA, empty and NULL in the datum column as NAD83
+# The error between this US system is way smaller than assuming a county centroid
+kssl.sitedata <- kssl.sitedata %>%
+  mutate(horizontal.datum.name = ifelse(is.na(latitude.std.decimal.degrees),
+                                        NA, 
+                                        ifelse(horizontal.datum.name == '' |
+                                                 horizontal.datum.name == 'NULL' |
+                                                 is.na(horizontal.datum.name),
+                                               "NAD83",
+                                               horizontal.datum.name)))
+
+# Corrected datums
+kssl.sitedata %>%
+  rename(hor.datum = horizontal.datum.name) %>%
+  group_by(hor.datum) %>%
+  summarise(count = n())
+
+# Transforming all datums to WGS84
+datums <- kssl.sitedata %>%
+  distinct(horizontal.datum.name) %>%
+  pull(horizontal.datum.name)
+
+projection.list <- list()
+
+for(i in 1:length(datums)) {
+  
+  idatum <- datums[i]
+  
+  if(is.na(idatum)) {
+    
+    newdata <- kssl.sitedata %>%
+      filter(is.na(horizontal.datum.name))
+    
+  } else if(idatum == "NAD27") {
+    
+    idata <- kssl.sitedata %>%
+      filter(horizontal.datum.name == idatum)
+    
+    new.coords <- st_as_sf(idata,
+                           crs = 4267,
+                           coords = c("longitude.std.decimal.degrees",
+                                      "latitude.std.decimal.degrees")) %>%
+      st_transform(crs = 4326)
+    
+    newdata <- idata %>%
+      mutate(longitude.std.decimal.degrees = st_coordinates(new.coords)[,1],
+             latitude.std.decimal.degrees = st_coordinates(new.coords)[,2],
+             horizontal.datum.name = "WGS84")
+    
+  }  else if(idatum == "NAD83") {
+    
+    idata <- kssl.sitedata %>%
+      filter(horizontal.datum.name == idatum)
+    
+    new.coords <- st_as_sf(idata,
+                           crs = 4269,
+                           coords = c("longitude.std.decimal.degrees",
+                                      "latitude.std.decimal.degrees")) %>%
+      st_transform(crs = 4326) 
+    
+    newdata <- idata %>%
+      mutate(longitude.std.decimal.degrees = st_coordinates(new.coords)[,1],
+             latitude.std.decimal.degrees = st_coordinates(new.coords)[,2],
+             horizontal.datum.name = "WGS84")
+    
+  } else if(idatum == "old hawaiian") {
+    
+    idata <- kssl.sitedata %>%
+      filter(horizontal.datum.name == idatum)
+    
+    new.coords <- st_as_sf(idata,
+                           crs = 4135,
+                           coords = c("longitude.std.decimal.degrees",
+                                      "latitude.std.decimal.degrees")) %>%
+      st_transform(crs = 4326) 
+    
+    newdata <- idata %>%
+      mutate(longitude.std.decimal.degrees = st_coordinates(new.coords)[,1],
+             latitude.std.decimal.degrees = st_coordinates(new.coords)[,2],
+             horizontal.datum.name = "WGS84")
+    
+  } else {
+    
+    newdata <- kssl.sitedata %>%
+      filter(horizontal.datum.name == idatum)
+    
+  }
+  
+  projection.list[[i]] <- newdata
+  
+}
+
+kssl.sitedata <- Reduce(bind_rows, projection.list)
+
+# Correcting incorrect points
+
+# Can't recover
+id.pedons.na <- c(11930, 12776, 12778, 12779)
+
+# Pedon ids that need a negative longitude
+id.pedons.neg.longitude <- c(40135, 38043, 36777,
+                             35124, 35125, 34509,
+                             32888, 38958)
+
+# Final corrected version
+kssl.sitedata <- kssl.sitedata %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.na, NA, longitude.std.decimal.degrees),
+         latitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.na, NA, latitude.std.decimal.degrees)) %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.neg.longitude, longitude.std.decimal.degrees*-1, longitude.std.decimal.degrees))
+
+## Summary of pedons, layers and coordinates
+kssl.sitedata %>%
+  summarise(var = "total_layers", count = n()) %>%
+  bind_rows(., tibble(var = "total_profiles", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(first_horizon = first(lay.id)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)})) %>%
+  bind_rows(., tibble(var = "profiles_with_point_coords", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(latitude.std.decimal.degrees = mean(latitude.std.decimal.degrees)) %>%
+      filter(!is.na(latitude.std.decimal.degrees)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)})) %>%
+  bind_rows(., tibble(var = "profiles_with_county_coords", count = {kssl.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(lat.ycntr = mean(lat.ycntr)) %>%
+      filter(!is.na(lat.ycntr)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)}))
+
+# Formatting to OSSL names
+kssl.sitedata <- kssl.sitedata %>%
+  rename(id.layer_local_c = lay.id,
+         id.project_ascii_txt = submit.proj.name,
+         id.dataset.site_ascii_txt = lims.pedon.id,
+         layer.upper.depth_usda_cm = lay.depth.to.top,
+         layer.lower.depth_usda_cm = lay.depth.to.bottom,
+         layer.texture_usda_txt = texture.description,
+         pedon.taxa_usda_txt = taxonomic.classification.name,
+         horizon.designation_usda_txt = horizon.designation,
+         observation.date.end_iso.8601_yyyy.mm.dd = fiscal.year,
+         longitude.point_wgs84_dd = longitude.std.decimal.degrees,
+         latitude.point_wgs84_dd = latitude.std.decimal.degrees,
+         longitude.county_wgs84_dd = long.xcntr,
+         latitude.county_wgs84_dd = lat.ycntr) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  select(id.layer_local_c, id.dataset.site_ascii_txt,
+         layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, layer.texture_usda_txt,
+         pedon.taxa_usda_txt, horizon.designation_usda_txt, observation.date.end_iso.8601_yyyy.mm.dd,
+         longitude.point_wgs84_dd, latitude.point_wgs84_dd,
+         longitude.county_wgs84_dd, latitude.county_wgs84_dd) %>%
+  mutate(observation.date.end_iso.8601_yyyy.mm.dd = ymd(paste0(observation.date.end_iso.8601_yyyy.mm.dd, "-12-31"))) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = floor_date(observation.date.end_iso.8601_yyyy.mm.dd, "year"),
+         .before = observation.date.end_iso.8601_yyyy.mm.dd) %>%
+  # mutate(location.point.error_any_m = 30,
+  #        location.country_iso.3166_txt = "USA",
+  #        observation.ogc.schema.title_ogc_txt = "Open Soil Spectroscopy Library",
+  #        observation.ogc.schema_idn_url = "https://soilspectroscopy.github.io",
+  #        surveyor.title_utf8_txt = "USDA NRCS staff",
+  #        surveyor.contact_ietf_email = "rich.ferguson@usda.gov",
+  #        surveyor.address_utf8_txt = "USDA-NRCS-NSSC, Federal Building, Room 152, Mail Stop, 100 Centennial Mall North, Lincoln, NE",
+  #        dataset.title_utf8_txt = "Kellogg Soil Survey Laboratory database",
+  #        dataset.owner_utf8_txt = "USDA, Soil and Plant Science Division, National Soil Survey Center",
+  #        dataset.code_ascii_txt = "KSSL.SSL",
+  #        dataset.address_idn_url = "http://ncsslabdatamart.sc.egov.usda.gov/",
+  #        dataset.license.title_ascii_txt = "CC-BY",
+  #        dataset.license.address_idn_url = "https://ncsslabdatamart.sc.egov.usda.gov/datause.aspx",
+  #        dataset.doi_idf_url = "https://doi.org/10.2136/sssaj2019.06.0205",
+  #        dataset.contact.name_utf8_txt = "Scarlett Murphy",
+  #        dataset.contact_ietf_email = "Scarlett.Murphy@usda.gov") %>%
+  mutate(dataset.code_ascii_txt = "KSSL",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+#########################
+##### VNIR database #####
+#########################
+dir.db.vnir <- path(dir, "database_vnir")
+
+# Reading tables with site info
+layer2 <- fread(path(dir.db.vnir, "/layer.csv"))
+sample2 <- fread(path(dir.db.vnir, "/sample.csv"))
+project2 <- fread(path(dir.db.vnir, "/project.csv"))
+lims.site2 <- fread(path(dir.db.vnir, "/lims_site.csv"))
+lims.pedtax2 <- fread(path(dir.db.vnir, "/lims_ped_tax_hist.csv"))
+centroid2 <- fread(path(dir.db.vnir, "/centroid.csv"))
+area2 <- fread(path(dir.db.vnir, "/area.csv"))
+site.area2 <- fread(path(dir.db.vnir, "/site_area_overlap.csv"))
+
+# Layer table contains only lay.id and horizon info
+layer2 <- layer2 %>%
+  select(lay.id, lay.type, proj.id, lims.site.id, lims.pedon.id,
+         lay.depth.to.top, lay.depth.to.bottom, horizon.designation, texture.description)
+
+# Sample table has lay and smp ids for linking all data in the database
+sample2 <- sample2 %>%
+  select(smp.id, lay.id)
+
+# Project table with date of observation and project name
+project2 <- project2 %>%
+  select(proj.id, fiscal.year, submit.proj.name)
+
+# Coordinates
+lims.site2 <- lims.site2 %>%
+  select(lims.site.id, horizontal.datum.name,
+         latitude.std.decimal.degrees, longitude.std.decimal.degrees)
+
+# Taxonomic classification
+lims.pedtax2 <- lims.pedtax2 %>%
+  select(lims.pedon.id, taxonomic.classification.name) %>%
+  group_by(lims.pedon.id) %>%
+  summarise_all(first)
+
+# County centroids for additional spatial reference
+centroid2 <- centroid2 %>%
+  select(area.id, lat.ycntr, long.xcntr, fips.code)
+
+# Area info
+area2 <- area2 %>%
+  select(area.id, area.type, area.name, area.code)
+
+# Link between layers
+site.area2 <- site.area2 %>%
+  select(lims.site.id, area.id)
+
+# Site area with county coordiantes
+site.overview2 <- site.area2 %>%
+  left_join(area2, by = "area.id") %>%
+  left_join(centroid2, by = "area.id") %>%
+  filter(area.type %in% c("county", "country")) %>%
+  pivot_wider(names_from = "area.type",
+              values_from = c("area.id", "area.name", "area.code")) %>%
+  group_by(lims.site.id) %>%
+  reframe(across(everything(), ~first(na.omit(.x)))) %>%
+  left_join(lims.site2, by = "lims.site.id")
+
+# Joining all data
+raca.sitedata <- layer2 %>%
+  left_join(sample2, by = "lay.id") %>%
+  relocate(smp.id, .after = "lay.id") %>%
+  left_join(project2, by = "proj.id") %>%
+  left_join(lims.pedtax2, by = "lims.pedon.id") %>%
+  left_join(site.overview2, by = "lims.site.id") %>%
+  as_tibble()
+
+# Cleaning repeats and internal projects
+raca.sitedata <- raca.sitedata %>%
+  filter(!(proj.id == 1)) # This proj is used internally
+
+raca.sitedata <- raca.sitedata %>%
+  group_by(lay.id) %>%
+  summarise_all(first)
+
+# Available datums
+raca.sitedata %>%
+  rename(hor.datum = horizontal.datum.name) %>%
+  group_by(hor.datum) %>%
+  summarise(count = n())
+
+# We will assume layers with NA, empty and NULL in the datum column as NAD83
+# The error between this US system is way smaller than assuming a county centroid
+raca.sitedata <- raca.sitedata %>%
+  mutate(horizontal.datum.name = ifelse(is.na(latitude.std.decimal.degrees),
+                                        NA, 
+                                        ifelse(horizontal.datum.name == '' |
+                                                 horizontal.datum.name == 'NULL' |
+                                                 is.na(horizontal.datum.name),
+                                               "NAD83",
+                                               horizontal.datum.name)))
+
+# Corrected datums
+raca.sitedata %>%
+  rename(hor.datum = horizontal.datum.name) %>%
+  group_by(hor.datum) %>%
+  summarise(count = n())
+
+# Transforming all datums to WGS84
+datums <- raca.sitedata %>%
+  distinct(horizontal.datum.name) %>%
+  pull(horizontal.datum.name)
+
+projection.list <- list()
+
+for(i in 1:length(datums)) {
+  
+  idatum <- datums[i]
+  
+  if(is.na(idatum)) {
+    
+    newdata <- raca.sitedata %>%
+      filter(is.na(horizontal.datum.name))
+    
+  } else if(idatum == "NAD27") {
+    
+    idata <- raca.sitedata %>%
+      filter(horizontal.datum.name == idatum)
+    
+    new.coords <- st_as_sf(idata,
+                           crs = 4267,
+                           coords = c("longitude.std.decimal.degrees",
+                                      "latitude.std.decimal.degrees")) %>%
+      st_transform(crs = 4326)
+    
+    newdata <- idata %>%
+      mutate(longitude.std.decimal.degrees = st_coordinates(new.coords)[,1],
+             latitude.std.decimal.degrees = st_coordinates(new.coords)[,2],
+             horizontal.datum.name = "WGS84")
+    
+  }  else if(idatum == "NAD83") {
+    
+    idata <- raca.sitedata %>%
+      filter(horizontal.datum.name == idatum)
+    
+    new.coords <- st_as_sf(idata,
+                           crs = 4269,
+                           coords = c("longitude.std.decimal.degrees",
+                                      "latitude.std.decimal.degrees")) %>%
+      st_transform(crs = 4326) 
+    
+    newdata <- idata %>%
+      mutate(longitude.std.decimal.degrees = st_coordinates(new.coords)[,1],
+             latitude.std.decimal.degrees = st_coordinates(new.coords)[,2],
+             horizontal.datum.name = "WGS84")
+    
+  } else if(idatum == "old hawaiian") {
+    
+    idata <- raca.sitedata %>%
+      filter(horizontal.datum.name == idatum)
+    
+    new.coords <- st_as_sf(idata,
+                           crs = 4135,
+                           coords = c("longitude.std.decimal.degrees",
+                                      "latitude.std.decimal.degrees")) %>%
+      st_transform(crs = 4326) 
+    
+    newdata <- idata %>%
+      mutate(longitude.std.decimal.degrees = st_coordinates(new.coords)[,1],
+             latitude.std.decimal.degrees = st_coordinates(new.coords)[,2],
+             horizontal.datum.name = "WGS84")
+    
+  } else {
+    
+    newdata <- raca.sitedata %>%
+      filter(horizontal.datum.name == idatum)
+    
+  }
+  
+  projection.list[[i]] <- newdata
+  
+}
+
+raca.sitedata <- Reduce(bind_rows, projection.list)
+
+# Unrecoverable ids
+id.pedons.na <- c(10134, 11930, 12450, 12451, 12452, 12453)
+
+# Pedon ids that need a negative longitude
+id.pedons.neg.longitude <- c(32888)
+
+# Final corrected version
+raca.sitedata <- raca.sitedata %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.na, NA, longitude.std.decimal.degrees),
+         latitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.na, NA, latitude.std.decimal.degrees)) %>%
+  mutate(longitude.std.decimal.degrees = ifelse(lims.pedon.id %in% id.pedons.neg.longitude, longitude.std.decimal.degrees*-1, longitude.std.decimal.degrees))
+
+## Summary of pedons, layers and coordinates
+raca.sitedata %>%
+  summarise(var = "total_layers", count = n()) %>%
+  bind_rows(., tibble(var = "total_profiles", count = {raca.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(first_horizon = first(lay.id)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)})) %>%
+  bind_rows(., tibble(var = "profiles_with_point_coords", count = {raca.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(latitude.std.decimal.degrees = mean(latitude.std.decimal.degrees)) %>%
+      filter(!is.na(latitude.std.decimal.degrees)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)})) %>%
+  bind_rows(., tibble(var = "profiles_with_county_coords", count = {raca.sitedata %>%
+      group_by(lims.pedon.id) %>%
+      summarise(lat.ycntr = mean(lat.ycntr)) %>%
+      filter(!is.na(lat.ycntr)) %>%
+      ungroup() %>%
+      summarise(count = n()) %>%
+      pull(count)}))
+
+# Formatting to OSSL names
+raca.sitedata <- raca.sitedata %>%
+  rename(id.layer_local_c = lay.id,
+         id.project_ascii_txt = submit.proj.name,
+         id.dataset.site_ascii_txt = lims.pedon.id,
+         layer.upper.depth_usda_cm = lay.depth.to.top,
+         layer.lower.depth_usda_cm = lay.depth.to.bottom,
+         layer.texture_usda_txt = texture.description,
+         pedon.taxa_usda_txt = taxonomic.classification.name,
+         horizon.designation_usda_txt = horizon.designation,
+         observation.date.end_iso.8601_yyyy.mm.dd = fiscal.year,
+         longitude.point_wgs84_dd = longitude.std.decimal.degrees,
+         latitude.point_wgs84_dd = latitude.std.decimal.degrees,
+         longitude.county_wgs84_dd = long.xcntr,
+         latitude.county_wgs84_dd = lat.ycntr) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  select(id.layer_local_c, id.dataset.site_ascii_txt,
+         layer.upper.depth_usda_cm, layer.lower.depth_usda_cm, layer.texture_usda_txt,
+         pedon.taxa_usda_txt, horizon.designation_usda_txt, observation.date.end_iso.8601_yyyy.mm.dd,
+         longitude.point_wgs84_dd, latitude.point_wgs84_dd,
+         longitude.county_wgs84_dd, latitude.county_wgs84_dd) %>%
+  mutate(observation.date.end_iso.8601_yyyy.mm.dd = ymd(paste0(observation.date.end_iso.8601_yyyy.mm.dd, "-12-31"))) %>%
+  mutate(observation.date.begin_iso.8601_yyyy.mm.dd = floor_date(observation.date.end_iso.8601_yyyy.mm.dd, "year"),
+         .before = observation.date.end_iso.8601_yyyy.mm.dd) %>%
+  mutate(dataset.code_ascii_txt = "KSSL",
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+# Combining both site data.
+# Some pedons/layers are available in both datasets, same info, so we first them
+all.sitedata <- bind_rows(kssl.sitedata, raca.sitedata)
+
+all.sitedata <- all.sitedata %>%
+  summarise(across(everything(), first), .by = id.layer_local_c)
+
+# Saving version to dataset root dir
+site.exp.file = path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(all.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(all.sitedata, str_c(site.exp.file, ".parquet"))
+```
+
+Plotting map:
+
+```{r map, include=TRUE, echo=TRUE, eval=TRUE}
+data("World")
+
+ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+
+points <- kssl.sitedata %>%
+  filter(!is.na(longitude.point_wgs84_dd),
+         !is.na(latitude.point_wgs84_dd)) %>%
+  st_as_sf(coords = c('longitude.point_wgs84_dd', 'latitude.point_wgs84_dd'), crs = 4326) %>%
+  distinct(geometry)
+
+tmap_mode("plot")
+tm_shape(ocean) +
+  tm_polygons(fill = "lightblue", col = NA) +
+  tm_shape(World) +
+  tm_polygons(fill = "#f0f0f0", fill_alpha = 0.5, col_alpha = 0.5) +
+  tm_shape(points) +
+  tm_dots(fill = "firebrick") +
+  tm_crs("ESRI:54030") +
+  tm_layout(frame = FALSE)
+```
+
+### Soil lab information (reference analytical data)
+
+NOTE: The code chunk below must be run just once for getting a template for scripted column standardization. Just run once for getting the original names of soil properties, descriptions, data types, and units. Then upload to Google Sheet for editing and manually defining the rules for integrating with the OSSL. Requires Google authentication. A copy of the output file is saved to this folder for archiving purposes.
+
+**Always leave the sheet name as TEMP to avoid overwritting, then rename online to download locally.**
+
+```{r soil_template, echo=TRUE, eval=FALSE}
+analyte <- read_csv(paste0(dir, "/database/analyte.csv"))
+calc <- read_csv(paste0(dir, "/database/calc.csv"))
+
+soillab.names <- analyte %>%
+  select(analyte.id, analyte.name, analyte.abbrev, uom.abbrev, analyte.desc) %>%
+  mutate(source = "kssl_analyte", .before = 1) %>%
+  rename(id = analyte.id, original_name = analyte.name, abbrev = analyte.abbrev,
+         unit = uom.abbrev, original_description = analyte.desc) %>%
+  bind_rows({calc %>%
+      select(calc.id, calc.name, calc.abbrev, uom.abbrev, calc.desc) %>%
+      mutate(source = "kssl_calc", .before = 1) %>%
+      rename(id = calc.id, original_name = calc.name, abbrev = calc.abbrev,
+             unit = uom.abbrev, original_description = calc.desc)}) %>%
+  arrange(original_name) %>%
+  dplyr::mutate(import = '', ossl_name = '', .after = original_name)
+
+readr::write_csv(soillab.names, paste0(getwd(), "/kssl_soillab_names.csv"))
+
+# Uploading to google sheet
+
+# FACT CIN folder. Get ID for soildata importing table
+googledrive::drive_ls(as_id("0AHDIWmLAj40_Uk9PVA"))
+
+OSSL.soildata.importing <- "19LeILz9AEnKVK7GK0ZbK3CCr2RfeP-gSWn5VpY8ETVM"
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+
+# Checking readme
+googlesheets4::read_sheet(OSSL.soildata.importing, sheet = 'readme')
+
+# Preparing soillab.names
+upload <- dplyr::as_tibble(soillab.names)
+
+# Uploading
+googlesheets4::write_sheet(upload, ss = OSSL.soildata.importing, sheet = "TEMP")
+
+# Checking metadata
+googlesheets4::as_sheets_id(OSSL.soildata.importing)
+```
+
+NOTE: The code chunk below must be run just once. Run for getting the
+column standardization rules after editing online on Google Sheets. A
+copy of the edited standardization template is saved to this dataset folder.
+
+```{r soilab_download, echo=TRUE, eval=FALSE}
+# Downloading from google sheet
+
+# Checking metadata
+googlesheets4::as_sheets_id("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es")
+
+# Preparing soillab.names
+transvalues <- googlesheets4::read_sheet("1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es",
+                                         sheet = "KSSL")
+
+# Saving to folder
+write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
+```
+
+Reading standardization rules:
+```{r soilab_transvalues, include=TRUE, echo=TRUE, eval=TRUE}
+transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"),
+                        show_col_types = F) %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "ossl_")))
+
+knitr::kable(transvalues)
+```
+
+Standardizing soil data to the OSSL format:
+```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+########################
+##### MIR database #####
+########################
+dir.db <- path(dir, "/database")
+
+# Reading tables with site info
+layer <- fread(path(dir.db, "/layer.csv"))
+sample <- fread(path(dir.db, "/sample.csv"))
+layer.analyte <- fread(path(dir.db, "/layer_analyte.csv"))
+result <- fread(path(dir.db, "/result.csv"))
+
+# Analyte selection
+analyte.sel.ids <- transvalues %>%
+  filter(table == "kssl_analyte") %>%
+  pull(id)
+
+analyte.sel.names <- transvalues %>%
+  filter(table == "kssl_analyte") %>%
+  select(id, contains("ossl"))
+
+layer.analyte.sel <- layer.analyte %>%
+  filter(analyte.id %in% analyte.sel.ids) %>%
+  select(analyte.id, lay.id, calc.value, master.prep.id) %>%
+  left_join(analyte.sel.names, by = c("analyte.id" = "id")) %>%
+  rename(value = calc.value, prep = master.prep.id) %>%
+  select(contains("ossl"), lay.id, value, prep)
+
+# Calc selection
+calc.sel.ids <- transvalues %>%
+  filter(table == "kssl_calc") %>%
+  pull(id)
+
+calc.sel.names <- transvalues %>%
+  filter(table == "kssl_calc") %>%
+  select(id, contains("ossl"))
+
+layer.calc.sel <- result %>%
+  filter(calc.id %in% calc.sel.ids) %>%
+  select(calc.id, result.source.id, calc.value) %>%
+  left_join(calc.sel.names, by = c("calc.id" = "id")) %>%
+  rename(value = calc.value, lay.id = result.source.id) %>%
+  select(contains("ossl"), lay.id, value)
+
+kssl.soildata <- bind_rows(layer.analyte.sel, layer.calc.sel)
+
+# Averaging minor repeats by unique numeric variable
+# Only 2 NA is produced, dont worry
+kssl.soildata.numeric <- kssl.soildata %>%
+  filter(ossl_name != "efferv_usda.a479_class") %>%
+  group_by(ossl_name, lay.id) %>%
+  summarise(value = mean(as.numeric(value)), .groups = "drop") %>%
+  filter(!is.na(value))
+
+kssl.soildata.numeric.bind <- kssl.soildata.numeric %>%
+  mutate(value = round(value, 5)) %>%
+  pivot_wider(names_from = "ossl_name", values_from = value) %>%
+  as.data.frame()
+
+# The first column lay.id is preserved the same
+functions.list <- transvalues %>%
+  filter(ossl_name %in% names(kssl.soildata.numeric.bind)) %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(kssl.soildata.numeric.bind))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+kssl.soildata.numeric.bind <- transform_values(df = kssl.soildata.numeric.bind,
+                                               out.name = names(kssl.soildata.numeric.bind),
+                                               in.name = names(kssl.soildata.numeric.bind),
+                                               fun.lst = functions.list)
+
+# Firsting minor repeats by unique character variable, i.e. only effervescence
+# Checking effervescence levels
+effervescence.levels <- kssl.soildata %>%
+  filter(ossl_name == "efferv_usda.a479_class") %>%
+  distinct(value) %>%
+  pull(value)
+
+# Simplifying to 5 levels: none, very slight, slight, strong, violent
+new.effervescence.levels <- c("very slight", "none", "strong",
+                              "violent", "slight", "none",
+                              "none", "slight", "slight",
+                              "strong", "violent", "very slight",
+                              "very slight", "violent", "very slight",
+                              "slight", "very slight", "violent",
+                              "strong", "slight", "slight", "strong")
+
+print(bind_cols(old = effervescence.levels, new = new.effervescence.levels), n=Inf)
+
+# Recoding
+names(new.effervescence.levels) <- effervescence.levels
+
+kssl.soildata.class <- kssl.soildata %>%
+  filter(ossl_name == "efferv_usda.a479_class") %>%
+  group_by(ossl_name, lay.id) %>%
+  summarise(value = first(value), .groups = "drop") %>%
+  mutate(value = recode(value, !!!new.effervescence.levels))
+
+kssl.soildata.class %>%
+  distinct(value) %>%
+  pull(value)
+
+kssl.soildata.class.bind <- kssl.soildata.class %>%
+  pivot_wider(names_from = "ossl_name", values_from = value)
+
+# Final soillab data
+kssl.soildata <- left_join(kssl.soildata.numeric.bind, kssl.soildata.class.bind, by = "lay.id") %>%
+  rename(id.layer_local_c = lay.id) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+kssl.soildata %>%
+  count(id.layer_local_c) %>%
+  count(n)
+
+#########################
+##### VNIR database #####
+#########################
+dir.db.vnir <- path(dir, "database_vnir")
+
+analyte2 <- fread(path(dir.db.vnir, "/analyte.csv"))
+calc2 <- fread(path(dir.db.vnir, "/calc.csv"))
+layer2 <- fread(path(dir.db.vnir, "/layer.csv"))
+sample2 <- fread(path(dir.db.vnir, "/sample.csv"))
+layer.analyte2 <- fread(path(dir.db.vnir, "/layer_analyte.csv"))
+result2 <- fread(path(dir.db.vnir, "/result.csv"))
+
+# Analyte selection
+analyte.sel.ids <- transvalues %>%
+  filter(table == "kssl_analyte") %>%
+  pull(id)
+
+analyte.sel.names <- transvalues %>%
+  filter(table == "kssl_analyte") %>%
+  select(id, contains("ossl"))
+
+layer.analyte.sel2 <- layer.analyte2 %>%
+  filter(analyte.id %in% analyte.sel.ids) %>%
+  select(analyte.id, lay.id, calc.value, master.prep.id) %>%
+  left_join(analyte.sel.names, by = c("analyte.id" = "id")) %>%
+  rename(value = calc.value, prep = master.prep.id) %>%
+  select(contains("ossl"), lay.id, value, prep)
+
+# Calc selection
+calc.sel.ids <- transvalues %>%
+  filter(table == "kssl_calc") %>%
+  pull(id)
+
+calc.sel.names <- transvalues %>%
+  filter(table == "kssl_calc") %>%
+  select(id, contains("ossl"))
+
+layer.calc.sel2 <- result2 %>%
+  filter(calc.id %in% calc.sel.ids) %>%
+  select(calc.id, result.source.id, calc.value) %>%
+  left_join(calc.sel.names, by = c("calc.id" = "id")) %>%
+  rename(value = calc.value, lay.id = result.source.id) %>%
+  select(contains("ossl"), lay.id, value)
+
+raca.soildata <- bind_rows(layer.analyte.sel2, layer.calc.sel2)
+
+# Averaging minor repeats by unique numeric variable
+# NA may be produced, dont worry
+raca.soildata.numeric <- raca.soildata %>%
+  filter(ossl_name != "efferv_usda.a479_class") %>%
+  group_by(ossl_name, lay.id) %>%
+  summarise(value = mean(as.numeric(value)), .groups = "drop") %>%
+  filter(!is.na(value))
+
+raca.soildata.numeric.bind <- raca.soildata.numeric %>%
+  mutate(value = round(value, 5)) %>%
+  pivot_wider(names_from = "ossl_name", values_from = value) %>%
+  as.data.frame()
+
+# The first column lay.id is preserved the same
+functions.list <- transvalues %>%
+  filter(ossl_name %in% names(raca.soildata.numeric.bind)) %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(raca.soildata.numeric.bind))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Applying transformation rules
+raca.soildata.numeric.bind <- transform_values(df = raca.soildata.numeric.bind,
+                                               out.name = names(raca.soildata.numeric.bind),
+                                               in.name = names(raca.soildata.numeric.bind),
+                                               fun.lst = functions.list)
+
+# Firsting minor repeats by unique character variable, i.e. only effervescence
+# Checking effervescence levels
+effervescence.levels <- raca.soildata %>%
+  filter(ossl_name == "efferv_usda.a479_class") %>%
+  distinct(value) %>%
+  pull(value)
+
+# Simplifying to 5 levels: none, very slight, slight, strong, violent
+new.effervescence.levels <- c("none", "violent", "strong",
+                              "slight", "very slight", "none",
+                              "strong", "slight", "very slight",
+                              "violent", "very slight", "very slight",
+                              "violent", "slight", "strong",
+                              "slight", "strong", "slight", "very slight")
+
+print(bind_cols(old = effervescence.levels, new = new.effervescence.levels), n=Inf)
+
+# Recoding
+names(new.effervescence.levels) <- effervescence.levels
+
+raca.soildata.class <- raca.soildata %>%
+  filter(ossl_name == "efferv_usda.a479_class") %>%
+  group_by(ossl_name, lay.id) %>%
+  summarise(value = first(value), .groups = "drop") %>%
+  mutate(value = recode(value, !!!new.effervescence.levels))
+
+raca.soildata.class %>%
+  distinct(value) %>%
+  pull(value)
+
+raca.soildata.class.bind <- raca.soildata.class %>%
+  pivot_wider(names_from = "ossl_name", values_from = value)
+
+# Final soillab data
+raca.soildata <- left_join(raca.soildata.numeric.bind, raca.soildata.class.bind, by = "lay.id") %>%
+  rename(id.layer_local_c = lay.id) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
+
+raca.soildata %>%
+  count(id.layer_local_c) %>%
+  count(n)
+
+# Combining both site data.
+# Some pedons/layers are available in both datasets, same info, so we first them
+all.soildata <- bind_rows(kssl.soildata, raca.soildata)
+
+all.soildata <- as.data.table(all.soildata)[,lapply(.SD, \(x){first(x[!is.na(x)])}),keyby=id.layer_local_c]
+
+all.soildata <- as_tibble(all.soildata)
+
+# Saving version to dataset root dir
+soillab.exp.file = path(dir, "ossl_soillab_v1.3")
+readr::write_csv(all.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(all.soildata, str_c(soillab.exp.file, ".parquet"))
+```
+
+Soil lab data summary.
+```{r soil_lab_summary, include=TRUE, echo=TRUE, eval=TRUE}
+all.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+### MIR spectra
+
+MIR is stored in reflectance units, so we transform to absorbance.
+
+```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
+# MIR averaged
+mir.scans <- fread(path(dir, "/KSSL_202507_MIR_abs_raw_avg.csv"), header = TRUE)
+
+# Getting only XS and XN prep scans
+imported.mir.ids <- mir.scans %>%
+  rename(scan.id = sample_id) %>% # recoded to scan id = sample+prep
+  select(scan.id) %>%
+  as_tibble() %>%
+  mutate(prep = str_sub(scan.id, -2, -1),
+         smp.id = as.numeric(str_sub(scan.id, 1, -3)))
+
+mir.selected.smp.ids <- imported.mir.ids %>%
+  filter(prep %in% c("XS", "XN")) %>% 
+  distinct(smp.id) %>%
+  pull()
+
+mir.selected.scan.ids <- imported.mir.ids %>%
+  filter(prep %in% c("XS", "XN")) %>% 
+  distinct(scan.id) %>%
+  pull()
+
+mir.scans <- mir.scans %>%
+  filter(sample_id %in% mir.selected.scan.ids)
+
+# Recoding smp.id to lay.id for filtering joining with other tables
+mir.selected.lay.ids <- sample %>%
+  filter(smp.id %in% mir.selected.smp.ids) %>%
+  select(smp.id, lay.id)
+
+# Final preparation
+kssl.mir <- imported.mir.ids %>%
+  filter(smp.id %in% mir.selected.smp.ids) %>%
+  left_join(mir.selected.lay.ids, by = "smp.id") %>%
+  right_join(mir.scans, by = c("scan.id" = "sample_id"))
+
+# Spectral consistency analysis
+
+# Repeats check - Duplicates are dropped
+kssl.mir.check <- kssl.mir %>%
+  select(lay.id, `600`) %>%
+  filter(!is.na(lay.id))
+
+dupli.ids <- kssl.mir.check %>%
+  count(lay.id) %>%
+  filter(n > 1) %>%
+  pull(lay.id)
+
+kssl.mir <- kssl.mir %>%
+  filter(!(lay.id %in% dupli.ids)) %>%
+  filter(!is.na(lay.id))
+
+# Gaps
+scans.na.gaps <- kssl.mir %>%
+  select(-all_of(c("scan.id","prep","smp.id","lay.id"))) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({kssl.mir %>% select(lay.id)}, .)
+
+# Extreme negative - irreversible erratic patterns
+scans.extreme.neg <- kssl.mir %>%
+  select(-all_of(c("scan.id","prep","smp.id","lay.id"))) %>%
+  apply(., 1, function(x) {round(100*(sum(x < -1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({kssl.mir %>% select(lay.id)}, .)
+
+# Extreme positive, irreversible erratic patterns
+scans.extreme.pos <- kssl.mir %>%
+  select(-all_of(c("scan.id","prep","smp.id","lay.id"))) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 5, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols({kssl.mir %>% select(lay.id)}, .)
+
+# Consistency summary - problematic scans
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "lay.id") %>%
+  left_join(scans.extreme.pos, by = "lay.id")
+
+scans.summary %>%
+  select(-lay.id) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+
+# Formatting to OSSL specs
+old.wavenumbers <- seq(600, 4000, by = 2)
+new.wavenumbers <- paste0("scan_mir.", old.wavenumbers, "_abs")
+
+kssl.mir <- kssl.mir %>%
+  rename_with(~new.wavenumbers, all_of(as.character(old.wavenumbers)))
+
+kssl.mir <- kssl.mir %>%
+  select(-prep) %>%
+  rename(id.scan_local_c = scan.id,
+         id.sample_local_c = smp.id,
+         id.layer_local_c = lay.id) %>%
+  mutate(across(starts_with("id"), as.character))
+
+# Saving version to dataset root dir
+mir.exp.file = path(dir, "ossl_mir_v1.3")
+readr::write_csv(kssl.mir, str_c(mir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(kssl.mir, str_c(mir.exp.file, ".parquet"))
+```
+
+### Quality control for MIR
+
+The final table must be joined as follows:
+
+- MIR is used as first reference for pairing with soil data.
+- Soil lab data are left joined to MIR. This drop data without any available scan.
+
+The availability of data is summarized below:
+```{r bind_test_mir, include=TRUE, echo=TRUE, eval=TRUE}
+# Taking a few representative columns for checking the consistency of joins
+kssl.mir.availability <- kssl.mir %>%
+  select(id.layer_local_c, scan_mir.1000_abs) %>%
+  left_join(kssl.soildata, by = "id.layer_local_c")
+
+# Repeats double-check - Duplicates were previously dropped
+kssl.mir.availability %>%
+  mutate_all(as.character) %>%
+  select(id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  group_by(column, value) %>%
+  summarise(repeats = n()) %>%
+  group_by(column, repeats) %>%
+  summarise(count = n())
+
+# Availability of data-spectra pairs
+kssl.mir.availability %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
+```
+
+Soil analytical data summary for MIR. Note: many scans could not be linked with the wetchem.
+```{r summary_mir, include=TRUE, echo=TRUE, eval=TRUE}
+kssl.mir.availability %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+MIR spectral visualization (100 random spectra):
+```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+set.seed(42)
+kssl.mir %>%
+  sample_n(100) %>%
+  select(all_of(c("id.layer_local_c")), starts_with("scan_mir.")) %>%
+  tidyr::pivot_longer(-all_of(c("id.layer_local_c")),
+                      names_to = "wavenumber", values_to = "reflectance") %>%
+  dplyr::mutate(wavenumber = gsub("scan_mir.|_abs", "", wavenumber)) %>%
+  dplyr::mutate(wavenumber = as.numeric(wavenumber)) %>%
+  ggplot(aes(x = wavenumber, y = reflectance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1, color = "darkblue") +
+  scale_x_continuous(breaks = c(600, 1200, 1800, 2400, 3000, 3600, 4000),
+                     transform = "reverse") +
+  labs(title = "MIR Spectra (100 random scans)",
+       x = bquote("Wavenumber"~(cm^-1)),
+       y = "Absorbance")+
+  theme_light()
+```
+
+### VisNIR spectra
+
+Reading the ViSNIR scans. The spectra is in reflectance units, space 10 nm, and need splice correction.
+
+```{r visnir, include=TRUE, echo=TRUE, eval=TRUE}
+dir.db.vnir <- path(dir, "database_vnir")
+
+# sample <- read_csv(path(dir.db.vnir, "/sample.csv"))
+# vnir_scan_mas_data <- read_csv(path(dir.db.vnir, "/vnir_scan_mas_data.csv"))
+# vnir_scan_det_data <- read_csv(path(dir.db.vnir, "/vnir_scan_det_data.csv"))
+
+# vnir_scan_mas_data <- vnir_scan_mas_data %>%
+#   select(smp.id, vnir.scan.mas.id)
+
+# vnir_scan_det_data <- vnir_scan_det_data %>%
+#   select(vnir.scan.mas.id, scan.path.name, light.source, scan.date, rep.num)
+
+# vnir.meta <- left_join(vnir_scan_det_data, vnir_scan_mas_data, by = "vnir.scan.mas.id")
+
+# # Sample x Repeats per scanning method
+# vnir.meta %>%
+#   count(smp.id, light.source, name = "reps") %>%
+#   count(light.source, reps)
+
+# # Sample with different scanning method
+# vnir.meta %>%
+#   count(smp.id, light.source, name = "reps") %>%
+#   count(smp.id, name = "distinct") %>%
+#   count(distinct)
+
+# Already formatted to 350-2500 nm, with 1 nm interval
+vnir.spectra <- fread(path(dir, "RaCA_202507_VNIR_ref_raw_avg.csv"))
+
+raca.vnir <- vnir.spectra %>%
+  as_tibble() %>%
+  mutate(scan.id = str_c(smp.id, "::", str_remove(light.source, " ")), .before = 1)
+
+wavelength.ids <- paste0(seq(350, 2500, by = 2))
+
+# Gaps
+scans.na.gaps <- raca.vnir %>%
+  select(all_of(wavelength.ids)) %>%
+  apply(., 1, function(x) round(100*(sum(is.na(x)))/(length(x)), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({raca.vnir %>% select(scan.id)}, .)
+
+# Extreme negative
+scans.extreme.neg <- raca.vnir %>%
+  select(all_of(wavelength.ids)) %>%
+  apply(., 1, function(x) {round(100*(sum(x < 0, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({raca.vnir %>% select(scan.id)}, .)
+
+# Extreme positive
+scans.extreme.pos <- raca.vnir %>%
+  select(all_of(wavelength.ids)) %>%
+  apply(., 1, function(x) {round(100*(sum(x > 1, na.rm=TRUE))/(length(x)), 2)}) %>%
+  tibble(proportion_higherRef1 = .) %>%
+  bind_cols({raca.vnir %>% select(scan.id)}, .)
+
+# Consistency summary
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "scan.id") %>%
+  left_join(scans.extreme.pos, by = "scan.id")
+
+scans.summary %>%
+  select(-scan.id) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(count = n())
+
+# Checking duplicates
+dupli.ids <- raca.vnir %>%
+  count(scan.id) %>%
+  filter(n > 1) %>%
+  pull(scan.id)
+
+# Filtering
+# Passing but no duplicates found
+raca.vnir <- raca.vnir %>%
+  filter(!(scan.id %in% dupli.ids))
+
+bad.ids <- scans.summary %>%
+  pivot_longer(-scan.id, names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  pull(scan.id)
+
+raca.vnir <- raca.vnir %>%
+  filter(!(scan.id %in% bad.ids))
+
+# Renaming and final table
+new.wavelengths <- paste0("scan_visnir.", wavelength.ids, "_ref")
+
+raca.vnir <- raca.vnir %>%
+  rename(id.scan_local_c = scan.id,
+         id.sample_local_c = smp.id,
+         id.layer_local_c = lay.id,
+         scan.visnir.method.optics_any_txt = light.source,
+         scan.visnir.date.begin_iso.8601_yyyy.mm.dd = scan.date) %>%
+  rename_with(~new.wavelengths, all_of(as.character(wavelength.ids)))
+
+raca.vnir <- raca.vnir %>%
+  mutate_at(vars(starts_with("id.")), as.character) %>%
+  as_tibble()
+
+# Saving version to dataset root dir
+visnir.exp.file = path(dir, "ossl_visnir_v1.3")
+readr::write_csv(raca.vnir, str_c(visnir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(raca.vnir, str_c(visnir.exp.file, ".parquet"))
+```
+
+### Quality control for Vis-NIR
+
+The final table must be joined as follows:
+
+- VisNIR is used as first reference for pairing with soil data.
+- Site and soil lab data are left joined to VisNIR. This drop data without any available scan.
+
+The availability of data is summarized below:
+
+```{r bind_test_visnir, include=TRUE, echo=TRUE, eval=TRUE}
+# Taking a few representative columns for checking the consistency of joins
+raca.availability <- raca.vnir %>%
+  select(id.scan_local_c, id.layer_local_c, scan_visnir.600_ref) %>%
+  left_join(all.soildata, by = "id.layer_local_c")
+
+# Availability of information from icraf.isric
+raca.availability %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
+```
+
+Soil analytical data summary for Vis-NIR. Note: many scans could not be linked with the wetchem.
+```{r summary_visnir, include=TRUE, echo=TRUE, eval=TRUE}
+raca.availability %>%
+  mutate(id.scan_local_c = factor(id.scan_local_c),
+         id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+Vis-NIR spectral visualization (100 random spectra):
+```{r visnir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+set.seed(42)
+raca.vnir %>%
+  sample_n(100) %>%
+  pivot_longer(starts_with("scan_visnir."),
+               names_to = "wavelength", values_to = "intensity") %>%
+  mutate(wavelength = gsub("scan_visnir.|_ref", "", wavelength)) %>%
+  mutate(wavelength = as.numeric(wavelength),
+         intensity = as.numeric(intensity)) %>%
+  ggplot(aes(x = wavelength, y = intensity, group = id.layer_local_c)) +
+  geom_line(alpha = 0.1, color = "darkblue") +
+  scale_x_continuous(breaks = seq(350, 2500, by = 250))+
+  labs(title = "VisNIR Spectra (100 random scans)",
+       x = "Wavelength (nm)",
+       y = "Reflectance") +
+  theme_light()
+```
+
+```{r end}
+toc()
+rm(list = ls())
+gc()
+```
+
+## References
