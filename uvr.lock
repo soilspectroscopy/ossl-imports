@@ -1,3 +1,5 @@
+manifest_fingerprint = "sha256:2cb2c11b5ec45589780c650d912ef1f8a5c5c57be16cf52f3239f0101a40c773"
+
 [r]
 version = "4.5.3"
 
@@ -370,6 +372,14 @@ source = "cran"
 raw_version = "0.6.39"
 url = "https://cran.r-project.org/src/contrib/digest_0.6.39.tar.gz"
 checksum = "md5:2b7268922b0f86dbc8064ff8e3a1ca1b"
+
+[[package]]
+name = "dotCall64"
+version = "1.2.0"
+source = "cran"
+raw_version = "1.2"
+url = "https://cran.r-project.org/src/contrib/dotCall64_1.2.tar.gz"
+checksum = "md5:e645e9c27a51360d272da63737862e42"
 
 [[package]]
 name = "dplyr"
@@ -1033,6 +1043,18 @@ url = "https://cran.r-project.org/src/contrib/mathjaxr_2.0-0.tar.gz"
 checksum = "md5:c36b29ba5a3426b110e290d25631a474"
 
 [[package]]
+name = "mdatools"
+version = "0.16.0"
+source = "cran"
+raw_version = "0.16.0"
+url = "https://cran.r-project.org/src/contrib/mdatools_0.16.0.tar.gz"
+checksum = "md5:0d6567b489fed8ad32a3f5b48ca36cff"
+requires = [
+    "spam",
+    "pcv",
+]
+
+[[package]]
 name = "measurements"
 version = "1.5.1"
 source = "cran"
@@ -1102,6 +1124,14 @@ source = "cran"
 raw_version = "0.2.0"
 url = "https://cran.r-project.org/src/contrib/otel_0.2.0.tar.gz"
 checksum = "md5:cecd0f434a6327dcf5ca0bc2da494d06"
+
+[[package]]
+name = "pcv"
+version = "1.2.0"
+source = "cran"
+raw_version = "1.2.0"
+url = "https://cran.r-project.org/src/contrib/pcv_1.2.0.tar.gz"
+checksum = "md5:fb9375a0df5255800d7994e0b7da9b55"
 
 [[package]]
 name = "pillar"
@@ -1577,6 +1607,19 @@ raw_version = "1.6-0"
 url = "https://cran.r-project.org/src/contrib/spacesXYZ_1.6-0.tar.gz"
 checksum = "md5:3631e6271b379577bcacba50fef33320"
 requires = ["logger"]
+
+[[package]]
+name = "spam"
+version = "2.11.4"
+source = "cran"
+raw_version = "2.11-4"
+url = "https://cran.r-project.org/src/contrib/spam_2.11-4.tar.gz"
+checksum = "md5:508ecd7d53a3d466b7ee92078ab419ba"
+requires = [
+    "dotCall64",
+    "Rcpp",
+    "Rcpp",
+]
 
 [[package]]
 name = "stars"

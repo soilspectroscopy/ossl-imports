@@ -1,7 +1,6 @@
-
-# pak::pak("nbafrank/uvr-r")
+# remotes::install_github("nbafrank/uvr-r")
 library("uvr")
-uvr::init()
+# uvr::init()
 
 # listed_libraries <- readLines("R/_dependencies.R")
 # library_pattern <- "(?:library|require)\\([\"']?([a-zA-Z0-9.]+)?[\"']?\\)"
@@ -10,5 +9,6 @@ uvr::init()
 # packages <- unique(packages[!is.na(packages)])
 # packages
 
-uvr::add(packages)
-uvr::sync()
+# uvr::add(packages)
+# uvr::sync()
+
