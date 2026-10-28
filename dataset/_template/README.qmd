@@ -1,0 +1,335 @@
+---
+title: "[Dataset Name] ([DATASET_CODE]) dataset preparation for the OSSL"
+author: 
+  - name: [Contributor Name]
+    email: [contributor@email.org]
+  - name: Jose L. Safanelli
+    email: jsafanelli@woodwellclimate.org
+  - name: Jonathan Sanderman
+    email: jsanderman@woodwellclimate.org
+format: 
+  gfm:
+    toc: true
+    toc-depth: 3
+bibliography: reference.bib
+csl: ../../tex/apa.csl
+cite-method: citeproc
+link-citations: true
+twitter-card:
+  site: "@soilspec"
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+Code repository for standardizing and importing the [Dataset Name] ([DATASET_CODE]) into the Open Soil Spectral Library (OSSL).
+
+Website: [Soil Spectroscopy for Global Good](https://soilspectroscopy.org)  
+Development: <https://github.com/soilspectroscopy>  
+Last update: `r Sys.Date()`  
+
+## Original data
+
+[Describe the origin, geographical scope, sampling design, and main soil properties of the dataset. Add reference citation, e.g., @dataset_citation_key].
+
+Input files:  
+- `[raw_metadata_file].csv`: File containing site and geographic coordinates.  
+- `[raw_soillab_file].csv`: File containing wet chemistry / laboratory analytical reference data.  
+- `[raw_spectra_file].csv`: File containing spectral scans (MIR and/or VisNIR).  
+
+```{r packages, include=FALSE, echo=FALSE, eval=TRUE}
+packages <- c("tidyverse", "data.table", "lubridate", "units", "readxl", "stringr",
+              "googledrive", "googlesheets4", "tmap", "sf", "rnaturalearth",
+              "skimr", "prospectr", "tictoc", "nanoparquet", "fs")
+
+invisible(lapply(packages, library, character.only = TRUE))
+
+source("../../R/functions/SSL_functions.R")
+
+# Google Sheets authentication (only needed if fetching standardization tables online)
+# gs4_auth(path = "~/secrets/soilcarbon-soilspec-845d0d3f2fbe.json")
+```
+
+Directory/folder path with original files (raw data files are not tracked in GitHub). 
+```{r dir}
+# Specify dataset code and raw data directory
+dataset_code <- "[DATASET_CODE]" # e.g. "CAF", "AUT"
+dir <- file.path("~/mnt-ossl-private/database/datasets", dataset_code)
+# Alternatively, use local path during development:
+# dir <- file.path("./data")
+
+tic()
+```
+
+## Data standardization to the OSSL format
+
+### Site information
+
+Ingesting site coordinates, sampling dates, USDA depth layers, and administrative boundaries.
+Refer to `out/ossl_level0_names_soilsite.csv` for allowed column names and descriptions.
+
+```{r soilsite}
+# TODO: Read raw metadata file
+raw_metadata <- fread(path(dir, "[raw_metadata_file].csv"), header = TRUE)
+
+dataset.sitedata <- raw_metadata %>%
+  # TODO: Select and rename relevant columns to OSSL Level 0 names
+  select(sample_id, latitude, longitude, upper_depth, lower_depth) %>%
+  rename(id.layer_local_c = sample_id,
+         latitude.point_wgs84_dd = latitude,
+         longitude.point_wgs84_dd = longitude,
+         layer.upper.depth_usda_cm = upper_depth,
+         layer.lower.depth_usda_cm = lower_depth) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  # Calculate USDA layer sequence (1 for top layer, 2+ for deeper layers)
+  mutate(layer.sequence_usda_uint16 = ifelse(layer.upper.depth_usda_cm == 0, 1, 2)) %>%
+  # Set dataset code and generate unique layer UUID
+  mutate(dataset.code_ascii_txt = dataset_code,
+         id.layer_uuid_txt = openssl::md5(paste0(dataset.code_ascii_txt, id.layer_local_c)),
+         .before = 1) %>%
+  mutate(across(starts_with("id."), as.character))
+
+# Saving standardized version to dataset root directory
+site.exp.file <- path(dir, "ossl_soilsite_v1.3")
+readr::write_csv(dataset.sitedata, str_c(site.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(dataset.sitedata, str_c(site.exp.file, ".parquet"))
+```
+
+Plotting spatial distribution:
+```{r map, include=TRUE, echo=TRUE, eval=TRUE}
+data("World")
+ocean <- ne_download(scale = 110, type = "ocean", category = "physical", returnclass = "sf")
+
+points <- dataset.sitedata %>%
+  filter(!is.na(longitude.point_wgs84_dd),
+         !is.na(latitude.point_wgs84_dd)) %>%
+  st_as_sf(coords = c("longitude.point_wgs84_dd", "latitude.point_wgs84_dd"), crs = 4326)
+
+tmap_mode("plot")
+tm_shape(ocean) +
+  tm_polygons(fill = "lightblue", col = NA) +
+  tm_shape(World) +
+  tm_polygons(fill = "#f0f0f0", fill_alpha = 0.5, col_alpha = 0.5) +
+  tm_shape(points) +
+  tm_dots(fill = "firebrick", size = 0.5) +
+  tm_crs("ESRI:54030") +
+  tm_layout(frame = FALSE)
+```
+
+### Soil lab information (reference analytical data)
+
+#### 1. Extracting original column names (run once)
+Run this chunk once when initiating the dataset to create `soillab_original_names.csv`. You can then map the columns in `soillab_standardized_names.csv` (either locally or on Google Sheets).
+
+```{r soil_template, echo=TRUE, eval=FALSE}
+raw_soildata <- fread(path(dir, "[raw_soillab_file].csv"), header = TRUE)
+
+soillab.names <- raw_soildata %>%
+  names(.) %>%
+  tibble(original_name = .) %>%
+  mutate(table = "[raw_soillab_file].csv", .before = 1) %>%
+  mutate(import = "", original_unit = "", original_method = "", comment = "",
+         ossl_abbrev = "", ossl_method = "", ossl_unit = "", ossl_convert = "", ossl_name = "",
+         .after = original_name)
+
+readr::write_csv(soillab.names, path(getwd(), "soillab_original_names.csv"))
+
+# Optional: Upload to Google Sheet for collaborative mapping
+# ss_id <- "1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es"
+# googlesheets4::write_sheet(soillab.names, ss = ss_id, sheet = dataset_code)
+```
+
+#### 2. Downloading edited standardization rules (if using Google Sheets)
+```{r soillab_download, echo=TRUE, eval=FALSE}
+# ss_id <- "1mWTDJDuMp4oObcCxAy9gofSkrkcSWWf1TtEW2SuC1es"
+# transvalues <- googlesheets4::read_sheet(ss_id, sheet = dataset_code)
+# write_csv(transvalues, path(getwd(), "soillab_standardized_names.csv"))
+```
+
+#### 3. Standardizing soil laboratory properties
+```{r soilab_preparation, include=TRUE, echo=TRUE, eval=TRUE}
+# Read standardization rules from local CSV
+transvalues <- read_csv(path(getwd(), "soillab_standardized_names.csv"), show_col_types = FALSE) %>%
+  filter(import == TRUE) %>%
+  select(contains(c("table", "id", "original_name", "ossl_")))
+
+knitr::kable(transvalues)
+
+# Read raw soil data
+dataset.reference <- fread(path(dir, "[raw_soillab_file].csv"), header = TRUE)
+
+analytes.old.names <- transvalues %>%
+  filter(table == "[raw_soillab_file].csv") %>%
+  pull(original_name)
+
+analytes.new.names <- transvalues %>%
+  filter(table == "[raw_soillab_file].csv") %>%
+  pull(ossl_name)
+
+# Select and rename mapped columns
+dataset.soildata <- dataset.reference %>%
+  rename(id.layer_local_c = [sample_id_column]) %>%
+  select(id.layer_local_c, all_of(analytes.old.names)) %>%
+  rename_with(~analytes.new.names, all_of(analytes.old.names)) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c)) %>%
+  as.data.frame()
+
+# Extract conversion formulas (first entry is "x" for id.layer_local_c)
+functions.list <- transvalues %>%
+  filter(table == "[raw_soillab_file].csv") %>%
+  mutate(ossl_name = factor(ossl_name, levels = names(dataset.soildata))) %>%
+  arrange(ossl_name) %>%
+  pull(ossl_convert) %>%
+  c("x", .)
+
+# Apply value transformations and unit conversions
+dataset.soildata.trans <- transform_values(df = dataset.soildata,
+                                           out.name = names(dataset.soildata),
+                                           in.name = names(dataset.soildata),
+                                           fun.lst = functions.list)
+
+dataset.soildata <- dataset.soildata.trans %>%
+  mutate(across(starts_with("id."), as.character))
+
+# Export standardized soil lab data
+soillab.exp.file <- path(dir, "ossl_soillab_v1.3")
+readr::write_csv(dataset.soildata, str_c(soillab.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(dataset.soildata, str_c(soillab.exp.file, ".parquet"))
+```
+
+Soil lab summary:
+```{r soil_lab_summary, include=TRUE, echo=TRUE, eval=TRUE}
+dataset.soildata %>%
+  mutate(id.layer_local_c = factor(id.layer_local_c)) %>%
+  skimr::skim() %>%
+  dplyr::select(-numeric.hist, -complete_rate)
+```
+
+### Spectral data
+
+#### Mid-infrared spectra (MIR)
+OSSL standardizes MIR to absorbance units from 600 to 4000 cm⁻¹ with a 2 cm⁻¹ step (`scan_mir.600_abs` to `scan_mir.4000_abs`).
+
+```{r mir, include=TRUE, echo=TRUE, eval=TRUE}
+# TODO: Read raw MIR file
+raw_mir <- fread(path(dir, "[raw_spectra_mir_file].csv"), header = TRUE)
+
+dataset.mir <- raw_mir %>%
+  rename(id.layer_local_c = [sample_id_column]) %>%
+  mutate(id.layer_local_c = as.character(id.layer_local_c))
+
+# Resampling to OSSL target grid (600 to 4000 cm-1 by 2)
+old.wavenumbers <- na.omit(as.numeric(names(dataset.mir)[-1]))
+new.wavenumbers <- rev(seq(600, 4000, by = 2))
+
+dataset.mir.resampled <- dataset.mir %>%
+  select(-id.layer_local_c) %>%
+  as.matrix() %>%
+  prospectr::resample(X = ., wav = old.wavenumbers,
+                      new.wav = new.wavenumbers, interpol = "spline") %>%
+  as_tibble() %>%
+  bind_cols({dataset.mir %>% select(id.layer_local_c)}, .) %>%
+  select(id.layer_local_c, as.character(rev(new.wavenumbers)))
+
+# Quality Control Checks
+# 1. Proportion of NA gaps
+scans.na.gaps <- dataset.mir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100 * (sum(is.na(x))) / length(x), 2)) %>%
+  tibble(proportion_NA = .) %>%
+  bind_cols({dataset.mir.resampled %>% select(id.layer_local_c)}, .)
+
+# 2. Extreme negative values (< -1)
+scans.extreme.neg <- dataset.mir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100 * (sum(x < -1, na.rm = TRUE)) / length(x), 2)) %>%
+  tibble(proportion_lower0 = .) %>%
+  bind_cols({dataset.mir.resampled %>% select(id.layer_local_c)}, .)
+
+# 3. Extreme positive values (> 5)
+scans.extreme.pos <- dataset.mir.resampled %>%
+  select(-id.layer_local_c) %>%
+  apply(., 1, function(x) round(100 * (sum(x > 5, na.rm = TRUE)) / length(x), 2)) %>%
+  tibble(proportion_higherAbs5 = .) %>%
+  bind_cols({dataset.mir.resampled %>% select(id.layer_local_c)}, .)
+
+# Consistency summary
+scans.summary <- scans.na.gaps %>%
+  left_join(scans.extreme.neg, by = "id.layer_local_c") %>%
+  left_join(scans.extreme.pos, by = "id.layer_local_c")
+
+scans.summary %>%
+  select(-id.layer_local_c) %>%
+  pivot_longer(everything(), names_to = "check", values_to = "value") %>%
+  filter(value > 0) %>%
+  group_by(check) %>%
+  summarise(problematic_scans = n())
+
+# Rename columns to standard OSSL format: scan_mir.XXXX_abs
+target.wavenumbers <- seq(600, 4000, by = 2)
+formatted.wavenumbers <- paste0("scan_mir.", target.wavenumbers, "_abs")
+
+dataset.mir.export <- dataset.mir.resampled %>%
+  rename_with(~formatted.wavenumbers, as.character(target.wavenumbers))
+
+# Export standardized MIR data
+mir.exp.file <- path(dir, "ossl_mir_v1.3")
+readr::write_csv(dataset.mir.export, str_c(mir.exp.file, ".csv.gz"))
+nanoparquet::write_parquet(dataset.mir.export, str_c(mir.exp.file, ".parquet"))
+```
+
+#### Visible and Near-infrared spectra (VisNIR)
+*(Optional / If available in dataset: Standardized to fraction reflectance 0-1, from 350 to 2500 nm by 2 nm: `scan_visnir.350_ref` to `scan_visnir.2500_ref`)*
+
+## Quality control & Table verification
+
+Checking joins across site, soil lab, and spectral tables:
+```{r bind_test, include=TRUE, echo=TRUE, eval=TRUE}
+dataset.availability <- dataset.mir.export %>%
+  select(id.layer_local_c, scan_mir.600_abs) %>%
+  left_join(dataset.soildata, by = "id.layer_local_c") %>%
+  filter(!is.na(id.layer_local_c))
+
+# Data completeness
+dataset.availability %>%
+  mutate_all(as.character) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  group_by(column) %>%
+  summarise(count = n())
+
+# Check for duplicate sample IDs
+repeats_summary <- dataset.availability %>%
+  group_by(id.layer_local_c) %>%
+  summarise(repeats = n()) %>%
+  group_by(repeats) %>%
+  summarise(count = n())
+
+knitr::kable(repeats_summary, caption = "Observation repeats check")
+```
+
+MIR spectral visualization (sample of up to 100 spectra):
+```{r mir_plot, include=TRUE, echo=TRUE, eval=TRUE}
+set.seed(42)
+sample_n_count <- min(100, nrow(dataset.mir.export))
+
+dataset.mir.export %>%
+  sample_n(sample_n_count) %>%
+  select(id.layer_local_c, starts_with("scan_mir.")) %>%
+  pivot_longer(-id.layer_local_c, names_to = "wavenumber", values_to = "absorbance") %>%
+  mutate(wavenumber = as.numeric(gsub("scan_mir.|_abs", "", wavenumber))) %>%
+  ggplot(aes(x = wavenumber, y = absorbance, group = id.layer_local_c)) +
+  geom_line(alpha = 0.15, color = "darkblue") +
+  scale_x_continuous(breaks = seq(600, 4000, by = 600), transform = "reverse") +
+  labs(x = bquote("Wavenumber"~(cm^-1)), y = "Absorbance",
+       title = paste("Spectral preview (n =", sample_n_count, ")")) +
+  theme_light()
+```
+
+```{r end}
+toc()
+rm(list = ls())
+gc()
+```
+
+## References

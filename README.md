@@ -1,15 +1,17 @@
 
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7599269.svg)](https://doi.org/10.5281/zenodo.7599269)
+[![](https://zenodo.org/badge/DOI/10.5281/zenodo.7599269.svg)](https://doi.org/10.5281/zenodo.7599269)
 
 [<img src="img/soilspec4gg-logo_fc.png" alt="SoilSpec4GG logo" width="250"/>](https://soilspectroscopy.org/)
 
 [<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />](http://creativecommons.org/licenses/by-sa/4.0/)
 
-This is a repository for the **internal** data
-preparation/standardization/harmonization development for the **Open
-Soil Spectral Library**, as part of the [**Soil Spectroscopy for Global
-Good**](https://soilspectroscopy.org) initiative.
+# Overview
+
+This repository hosts the reproducible data ingestion, standardization,
+and quality control pipelines used to integrate diverse soil spectral
+libraries into the Open Soil Spectral Library (OSSL) in standardized
+Level 0 format (Level 1 currently under revision).
 
 You can find more information about the prepared soil spectral libraries
 in the [**Listed Libraries**
@@ -18,5 +20,14 @@ section](https://docs.soilspectroscopy.org/libraries.html) in the
 the [**OSSL Chemometrics**
 tool](https://soilspectroscopy.github.io/ossl-chemometrics/).
 
-Full documentation is available in the [**OSSL
-Manual**](https://docs.soilspectroscopy.org/).
+# Contributing
+
+Thank you for your interest in contributing to the OSSL data import
+pipelines!
+
+To get started with contributing datasets, pipelines, or updates:
+
+- Check the contribution guide in
+  [dataset/\_contributing.md](./dataset/_contributing.md).  
+- Use the provided dataset template in
+  [dataset/\_template](dataset/_template).

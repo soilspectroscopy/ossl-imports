@@ -1,0 +1,5 @@
+table,original_name,import,original_unit,original_method,comment,ossl_abbrev,ossl_method,ossl_unit,ossl_convert,ossl_name
+raw_soil_data.csv,sample_id,NA,NA,NA,Local sample/layer identifier (used for joining),NA,NA,NA,NA,NA
+raw_soil_data.csv,total_carbon,TRUE,g/kg,Dry combustion (ISO 10694),Converted from g/kg to wt%,c.tot,usda.a622,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)/10)",c.tot_usda.a622_w.pct
+raw_soil_data.csv,ph_water,TRUE,index,1:5 soil:water suspension,Standard water pH,ph.h2o,usda.a268,index,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",ph.h2o_usda.a268_index
+raw_soil_data.csv,clay_pct,TRUE,%,Pipette method,Total clay,clay.tot,usda.a334,w.pct,"ifelse(as.numeric(x) < 0, NA, as.numeric(x)*1)",clay.tot_usda.a334_w.pct
