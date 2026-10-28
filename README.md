@@ -27,7 +27,6 @@ pipelines!
 
 To get started with contributing datasets, pipelines, or updates:
 
-- Check the contribution guide in
-  [dataset/\_contributing.md](./dataset/_contributing.md).  
+- Check the contribution guide in [CONTRIBUTING.md](CONTRIBUTING.md).  
 - Use the provided dataset template in
   [dataset/\_template](dataset/_template).
