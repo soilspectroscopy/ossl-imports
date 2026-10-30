@@ -1,5 +1,5 @@
 # remotes::install_github("nbafrank/uvr-r")
-library("uvr")
+# library("uvr")
 # uvr::init()
 
 # listed_libraries <- readLines("R/_dependencies.R")

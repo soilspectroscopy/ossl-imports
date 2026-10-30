@@ -1215,19 +1215,19 @@ raca.vnir <- raca.vnir %>%
   filter(!(scan.id %in% bad.ids))
 
 # Renaming and final table
-new.wavelengths <- paste0("scan_visnir.", wavelength.ids, "_ref")
-
 raca.vnir <- raca.vnir %>%
   rename(id.scan_local_c = scan.id,
          id.sample_local_c = smp.id,
          id.layer_local_c = lay.id,
          scan.visnir.method.optics_any_txt = light.source,
-         scan.visnir.date.begin_iso.8601_yyyy.mm.dd = scan.date) %>%
-  rename_with(~new.wavelengths, all_of(as.character(wavelength.ids)))
+         scan.visnir.date.begin_iso.8601_yyyy.mm.dd = scan.date)
+
+old.wavelength <- as.character(seq(350, 2500, by = 2))
+new.wavelength <- paste0("scan_visnir.", old.wavelength, "_ref")
 
 raca.vnir <- raca.vnir %>%
-  mutate_at(vars(starts_with("id.")), as.character) %>%
-  as_tibble()
+  rename_with(~new.wavelength, all_of(as.character(old.wavelength))) %>%
+  mutate_at(vars(starts_with("id.")), as.character)
 
 # Saving version to dataset root dir
 visnir.exp.file = path(dir, "ossl_visnir_v1.3")

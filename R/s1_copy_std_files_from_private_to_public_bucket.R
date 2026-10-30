@@ -8,7 +8,7 @@ public.dir <- "~/mnt-ossl-public/"
 # datasets.path <- dir_ls(path(private.dir,"datasets/"))
 # datasets.code <- basename(datasets.path)
 
-# datasets.code <- grep("ICRAF_ISRIC|LUCAS",datasets.code, value = T)
+# datasets.code <- grep("KSSL",datasets.code, value = T)
 
 # dir_ls(path(public.dir,"datasets/"))
 

@@ -1,4 +1,4 @@
-manifest_fingerprint = "sha256:2cb2c11b5ec45589780c650d912ef1f8a5c5c57be16cf52f3239f0101a40c773"
+manifest_fingerprint = "sha256:7e2c1a2e5cc7a28fedcebe6a1b6b63a96336923d7ee318ae20d7e69a79c66ec9"
 
 [r]
 version = "4.5.3"
@@ -80,6 +80,25 @@ url = "https://cran.r-project.org/src/contrib/abind_1.4-8.tar.gz"
 checksum = "md5:7a440111cd1e24356d558ac55a65dc98"
 
 [[package]]
+name = "arrow"
+version = "26.0.0"
+source = "cran"
+raw_version = "26.0.0"
+url = "https://cran.r-project.org/src/contrib/arrow_26.0.0.tar.gz"
+checksum = "md5:856f159373ecc6746d3eef6e963993b0"
+requires = [
+    "assertthat",
+    "bit64",
+    "glue",
+    "purrr",
+    "R6",
+    "rlang",
+    "tidyselect",
+    "vctrs",
+    "cpp11",
+]
+
+[[package]]
 name = "askpass"
 version = "1.2.1"
 source = "cran"
@@ -87,6 +106,14 @@ raw_version = "1.2.1"
 url = "https://cran.r-project.org/src/contrib/askpass_1.2.1.tar.gz"
 checksum = "md5:fc2c6a61b6a354707586b01950366f37"
 requires = ["sys"]
+
+[[package]]
+name = "assertthat"
+version = "0.2.1"
+source = "cran"
+raw_version = "0.2.1"
+url = "https://cran.r-project.org/src/contrib/assertthat_0.2.1.tar.gz"
+checksum = "md5:9f2eae3d20a9d6b40856a6fed013cb05"
 
 [[package]]
 name = "backports"
@@ -507,11 +534,11 @@ checksum = "md5:6011a5e758c21acc297ed8bbcf97e7d9"
 
 [[package]]
 name = "gargle"
-version = "1.6.1"
+version = "1.7.0"
 source = "cran"
-raw_version = "1.6.1"
-url = "https://cran.r-project.org/src/contrib/gargle_1.6.1.tar.gz"
-checksum = "md5:a0ca8a66d77f1417539ad13bb3e85b5d"
+raw_version = "1.7.0"
+url = "https://cran.r-project.org/src/contrib/gargle_1.7.0.tar.gz"
+checksum = "md5:a9fa47dd8abb7187360f09c9a48261ab"
 requires = [
     "cli",
     "fs",
@@ -520,6 +547,7 @@ requires = [
     "jsonlite",
     "lifecycle",
     "openssl",
+    "R6",
     "rappdirs",
     "rlang",
     "withr",
@@ -590,11 +618,11 @@ checksum = "md5:24e3cd382f52015c929538a5208d11aa"
 
 [[package]]
 name = "googledrive"
-version = "2.1.2"
+version = "2.2.0"
 source = "cran"
-raw_version = "2.1.2"
-url = "https://cran.r-project.org/src/contrib/googledrive_2.1.2.tar.gz"
-checksum = "md5:8aeb39196ae48307a903bba1e5d73fa5"
+raw_version = "2.2.0"
+url = "https://cran.r-project.org/src/contrib/googledrive_2.2.0.tar.gz"
+checksum = "md5:1fb09b1ba4fed95d93b03406bb0447f5"
 requires = [
     "cli",
     "gargle",
@@ -614,11 +642,11 @@ requires = [
 
 [[package]]
 name = "googlesheets4"
-version = "1.1.2"
+version = "1.1.3"
 source = "cran"
-raw_version = "1.1.2"
-url = "https://cran.r-project.org/src/contrib/googlesheets4_1.1.2.tar.gz"
-checksum = "md5:21094083f375d8f9d1499263de1d9ecc"
+raw_version = "1.1.3"
+url = "https://cran.r-project.org/src/contrib/googlesheets4_1.1.3.tar.gz"
+checksum = "md5:bf92d615c0f33c62c3f7e916d43195c7"
 requires = [
     "cellranger",
     "cli",
@@ -628,7 +656,6 @@ requires = [
     "googledrive",
     "httr",
     "ids",
-    "lifecycle",
     "magrittr",
     "purrr",
     "rematch2",
@@ -754,6 +781,26 @@ requires = [
     "mime",
     "openssl",
     "R6",
+]
+
+[[package]]
+name = "httr2"
+version = "1.3.0"
+source = "cran"
+raw_version = "1.3.0"
+url = "https://cran.r-project.org/src/contrib/httr2_1.3.0.tar.gz"
+checksum = "md5:790051880d410d91692fbd4cb3c29414"
+requires = [
+    "cli",
+    "curl",
+    "glue",
+    "lifecycle",
+    "magrittr",
+    "openssl",
+    "R6",
+    "rlang",
+    "vctrs",
+    "withr",
 ]
 
 [[package]]
@@ -2018,3 +2065,12 @@ source = "cran"
 raw_version = "0.1.22"
 url = "https://cran.r-project.org/src/contrib/yyjsonr_0.1.22.tar.gz"
 checksum = "md5:caed9391d911cdc1368e0845545aa06a"
+
+[[package]]
+name = "zip"
+version = "3.0.2"
+source = "cran"
+raw_version = "3.0.2"
+url = "https://cran.r-project.org/src/contrib/zip_3.0.2.tar.gz"
+checksum = "md5:95c0f66d6240403c2e1059068e617124"
+requires = ["cli"]
